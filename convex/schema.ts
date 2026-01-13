@@ -40,6 +40,12 @@ export default defineSchema({
 
     // Admin
     organizerId: v.string(), // Clerk user ID
+    seedingType: v.union(
+      v.literal("random"),
+      v.literal("manual"),
+      v.literal("ranking"),
+    ),
+    gameFormatRules: v.optional(v.any()),
   }),
 
   teams: defineTable({
@@ -58,7 +64,7 @@ export default defineSchema({
       v.literal("inactive"),
       v.literal("suspended"),
     ),
-    captainPlayerId: v.id("players"),
+    captainPlayerId: v.optional(v.id("players")),
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
@@ -81,6 +87,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
+
   games: defineTable({
     tournamentId: v.id("tournaments"),
     round: v.number(), // 1 = quarterfinals, 2 = semis, 3 = finals, etc.
@@ -102,6 +109,7 @@ export default defineSchema({
       v.literal("cancelled"),
     ),
   }),
+
   fields: defineTable({
     tournamentId: v.id("tournaments"),
     name: v.string(),
@@ -112,9 +120,12 @@ export default defineSchema({
       v.literal("unavailable"),
     ),
   }),
+
   gameStats: defineTable({
     gameId: v.id("games"),
     playerId: v.id("players"),
+    sportType: v.optional(v.string()),
+    gamesPlayed: v.number(),
     atBats: v.number(),
     hits: v.number(),
     singles: v.number(),
@@ -123,6 +134,7 @@ export default defineSchema({
     homeRuns: v.number(),
     rbi: v.number(),
   }),
+
   userProfiles: defineTable({
     userId: v.string(), // Clerk user ID
     role: v.union(
