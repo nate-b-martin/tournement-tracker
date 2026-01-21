@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TournamentspageIndexRouteImport } from './routes/tournamentspage/index'
+import { Route as TeamspageIndexRouteImport } from './routes/teamspage/index'
+import { Route as PlayerspageIndexRouteImport } from './routes/playerspage/index'
 import { Route as DemoMcpTodosRouteImport } from './routes/demo/mcp-todos'
 import { Route as DemoConvexRouteImport } from './routes/demo/convex'
 import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
@@ -31,6 +34,21 @@ const McpRoute = McpRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentspageIndexRoute = TournamentspageIndexRouteImport.update({
+  id: '/tournamentspage/',
+  path: '/tournamentspage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamspageIndexRoute = TeamspageIndexRouteImport.update({
+  id: '/teamspage/',
+  path: '/teamspage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayerspageIndexRoute = PlayerspageIndexRouteImport.update({
+  id: '/playerspage/',
+  path: '/playerspage/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoMcpTodosRoute = DemoMcpTodosRouteImport.update({
@@ -95,6 +113,9 @@ export interface FileRoutesByFullPath {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/convex': typeof DemoConvexRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
+  '/playerspage': typeof PlayerspageIndexRoute
+  '/teamspage': typeof TeamspageIndexRoute
+  '/tournamentspage': typeof TournamentspageIndexRoute
   '/demo/api/mcp-todos': typeof DemoApiMcpTodosRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -110,6 +131,9 @@ export interface FileRoutesByTo {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/convex': typeof DemoConvexRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
+  '/playerspage': typeof PlayerspageIndexRoute
+  '/teamspage': typeof TeamspageIndexRoute
+  '/tournamentspage': typeof TournamentspageIndexRoute
   '/demo/api/mcp-todos': typeof DemoApiMcpTodosRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -126,6 +150,9 @@ export interface FileRoutesById {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/convex': typeof DemoConvexRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
+  '/playerspage/': typeof PlayerspageIndexRoute
+  '/teamspage/': typeof TeamspageIndexRoute
+  '/tournamentspage/': typeof TournamentspageIndexRoute
   '/demo/api/mcp-todos': typeof DemoApiMcpTodosRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
@@ -143,6 +170,9 @@ export interface FileRouteTypes {
     | '/demo/clerk'
     | '/demo/convex'
     | '/demo/mcp-todos'
+    | '/playerspage'
+    | '/teamspage'
+    | '/tournamentspage'
     | '/demo/api/mcp-todos'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -158,6 +188,9 @@ export interface FileRouteTypes {
     | '/demo/clerk'
     | '/demo/convex'
     | '/demo/mcp-todos'
+    | '/playerspage'
+    | '/teamspage'
+    | '/tournamentspage'
     | '/demo/api/mcp-todos'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -173,6 +206,9 @@ export interface FileRouteTypes {
     | '/demo/clerk'
     | '/demo/convex'
     | '/demo/mcp-todos'
+    | '/playerspage/'
+    | '/teamspage/'
+    | '/tournamentspage/'
     | '/demo/api/mcp-todos'
     | '/demo/api/names'
     | '/demo/start/api-request'
@@ -189,6 +225,9 @@ export interface RootRouteChildren {
   DemoClerkRoute: typeof DemoClerkRoute
   DemoConvexRoute: typeof DemoConvexRoute
   DemoMcpTodosRoute: typeof DemoMcpTodosRoute
+  PlayerspageIndexRoute: typeof PlayerspageIndexRoute
+  TeamspageIndexRoute: typeof TeamspageIndexRoute
+  TournamentspageIndexRoute: typeof TournamentspageIndexRoute
   DemoApiMcpTodosRoute: typeof DemoApiMcpTodosRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
@@ -213,6 +252,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournamentspage/': {
+      id: '/tournamentspage/'
+      path: '/tournamentspage'
+      fullPath: '/tournamentspage'
+      preLoaderRoute: typeof TournamentspageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teamspage/': {
+      id: '/teamspage/'
+      path: '/teamspage'
+      fullPath: '/teamspage'
+      preLoaderRoute: typeof TeamspageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/playerspage/': {
+      id: '/playerspage/'
+      path: '/playerspage'
+      fullPath: '/playerspage'
+      preLoaderRoute: typeof PlayerspageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/mcp-todos': {
@@ -301,6 +361,9 @@ const rootRouteChildren: RootRouteChildren = {
   DemoClerkRoute: DemoClerkRoute,
   DemoConvexRoute: DemoConvexRoute,
   DemoMcpTodosRoute: DemoMcpTodosRoute,
+  PlayerspageIndexRoute: PlayerspageIndexRoute,
+  TeamspageIndexRoute: TeamspageIndexRoute,
+  TournamentspageIndexRoute: TournamentspageIndexRoute,
   DemoApiMcpTodosRoute: DemoApiMcpTodosRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,
