@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TournamentspageIndexRouteImport } from './routes/tournamentspage/index'
 import { Route as TeamspageIndexRouteImport } from './routes/teamspage/index'
 import { Route as PlayerspageIndexRouteImport } from './routes/playerspage/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DemoMcpTodosRouteImport } from './routes/demo/mcp-todos'
 import { Route as DemoConvexRouteImport } from './routes/demo/convex'
 import { Route as DemoClerkRouteImport } from './routes/demo/clerk'
@@ -49,6 +50,11 @@ const TeamspageIndexRoute = TeamspageIndexRouteImport.update({
 const PlayerspageIndexRoute = PlayerspageIndexRouteImport.update({
   id: '/playerspage/',
   path: '/playerspage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoMcpTodosRoute = DemoMcpTodosRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/convex': typeof DemoConvexRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/playerspage': typeof PlayerspageIndexRoute
   '/teamspage': typeof TeamspageIndexRoute
   '/tournamentspage': typeof TournamentspageIndexRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/convex': typeof DemoConvexRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/playerspage': typeof PlayerspageIndexRoute
   '/teamspage': typeof TeamspageIndexRoute
   '/tournamentspage': typeof TournamentspageIndexRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/demo/clerk': typeof DemoClerkRoute
   '/demo/convex': typeof DemoConvexRoute
   '/demo/mcp-todos': typeof DemoMcpTodosRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/playerspage/': typeof PlayerspageIndexRoute
   '/teamspage/': typeof TeamspageIndexRoute
   '/tournamentspage/': typeof TournamentspageIndexRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/demo/clerk'
     | '/demo/convex'
     | '/demo/mcp-todos'
+    | '/dashboard'
     | '/playerspage'
     | '/teamspage'
     | '/tournamentspage'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/demo/clerk'
     | '/demo/convex'
     | '/demo/mcp-todos'
+    | '/dashboard'
     | '/playerspage'
     | '/teamspage'
     | '/tournamentspage'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/demo/clerk'
     | '/demo/convex'
     | '/demo/mcp-todos'
+    | '/dashboard/'
     | '/playerspage/'
     | '/teamspage/'
     | '/tournamentspage/'
@@ -225,6 +237,7 @@ export interface RootRouteChildren {
   DemoClerkRoute: typeof DemoClerkRoute
   DemoConvexRoute: typeof DemoConvexRoute
   DemoMcpTodosRoute: typeof DemoMcpTodosRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
   PlayerspageIndexRoute: typeof PlayerspageIndexRoute
   TeamspageIndexRoute: typeof TeamspageIndexRoute
   TournamentspageIndexRoute: typeof TournamentspageIndexRoute
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/playerspage'
       fullPath: '/playerspage'
       preLoaderRoute: typeof PlayerspageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/mcp-todos': {
@@ -361,6 +381,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoClerkRoute: DemoClerkRoute,
   DemoConvexRoute: DemoConvexRoute,
   DemoMcpTodosRoute: DemoMcpTodosRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
   PlayerspageIndexRoute: PlayerspageIndexRoute,
   TeamspageIndexRoute: TeamspageIndexRoute,
   TournamentspageIndexRoute: TournamentspageIndexRoute,

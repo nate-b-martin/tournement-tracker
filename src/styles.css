@@ -33,6 +33,9 @@ code {
 
   /****** Sizing *******/
   --radius: 0.625rem;
+
+  /****** Font Sizing *******/
+  --table-default-font-size: 1rem;
 }
 
 @theme inline {
@@ -76,6 +79,7 @@ code {
   --color-sidebar-ring: var(--sidebar-ring);
   --font-inter: "Inter", sans-serif;
   --font-orbitron: "Orbitron", sans-serif;
+  --text-table-default: var(--table-default-font-size);
 }
 
 @layer base {
