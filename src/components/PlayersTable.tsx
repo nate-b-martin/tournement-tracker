@@ -21,6 +21,7 @@ import {
   type PlayerWithTeam,
 } from "@/hooks/usePlayers";
 import { useMockPlayers } from "@/mocks/hooks";
+import { PaginationControls } from "./PaginationControls";
 
 interface PlayersTableProps {
   /** Optional initial options for the players query */
@@ -45,22 +46,44 @@ interface PlayersTableProps {
  * ```
  */
 export function PlayersTable({ initialOptions }: PlayersTableProps) {
-  const { players, totalCount, isLoading, currentOptions } =
-    usePlayers(initialOptions);
+  const {
+    players,
+    totalCount,
+    isLoading,
+    setPagination,
+    setSorting,
+    setFiltering,
+    currentOptions,
+  } = usePlayers(initialOptions);
+
+  const currentPage = currentOptions.pagination?.pageIndex || 0;
+  const pageSize = currentOptions.pagination?.pageSize || 10;
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = currentPage * pageSize + 1;
+  const endIndex = Math.min((currentPage + 1) * pageSize, totalCount);
+  const hasNextPage = (currentPage + 1) * pageSize < totalCount;
+  const hasPreviousPage = currentPage > 0;
 
   if (isLoading) {
     return <div className="p-4">Loading players...</div>;
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-3 max-h-1/2">
       {/* Summary */}
-      <div className="text-sm text-gray-600">
-        Showing {players.length} of {totalCount} players
+      <div className="text-sm text-gray-600 mb-4">
+        <span>
+          Showing {startIndex}---{endIndex} of {totalCount} players
+        </span>
+        {totalPages > 1 && (
+          <span className="ml-4 text-gray-500">
+            (Page {currentPage + 1} of {totalPages})
+          </span>
+        )}
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="rounded-md border max-h-full overflow-y-auto">
         <Table className="text-table-default">
           <TableHeader>
             <TableRow>
@@ -102,6 +125,19 @@ export function PlayersTable({ initialOptions }: PlayersTableProps) {
           </TableBody>
         </Table>
       </div>
+
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        totalCount={totalCount}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+        onPageChange={(page) => setPagination({ pageIndex: page, pageSize })}
+        onPageSizeChange={(size) =>
+          setPagination({ pageIndex: 0, pageSize: size })
+        }
+      />
 
       {/* Empty state */}
       {players.length === 0 && (

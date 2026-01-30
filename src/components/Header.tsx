@@ -75,8 +75,8 @@ export default function Header() {
             <span className="font-medium">Home</span>
           </Link>
 
-          {/*<Link
-            to="/demo/convex"
+          <Link
+            to="/dashboard"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
             activeProps={{
@@ -84,9 +84,20 @@ export default function Header() {
                 "flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2",
             }}
           >
-            <Globe size={20} />
-            <span className="font-medium">Convex</span>
-          </Link>*/}
+            <span className="font-medium">Dashboard</span>
+          </Link>
+
+          <Link
+            to="/playerspage"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+            activeProps={{
+              className:
+                "flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2",
+            }}
+          >
+            <span className="font-medium">Players</span>
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-gray-700 bg-gray-800 flex flex-col gap-2">
