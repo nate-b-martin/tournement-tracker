@@ -4,5 +4,6 @@ export const PlayerFilters = () => {
   const [filters, setFilters] = useState({
     search: "",
     status: [],
-    teamId: undefined
+    teamId: undefined,
   });
+};

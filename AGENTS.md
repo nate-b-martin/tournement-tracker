@@ -5,6 +5,7 @@
 - `npm run build` - Build for production
 - `npm run test` - Run all tests with Vitest
 - `npm run test <path>` - Run single test file (e.g., `npm run test src/components/Button.test.tsx`)
+- `npm run test:watch` - Run tests in watch mode (not yet configured, would be `vitest watch`)
 - `npm run lint` - Run Biome linter
 - `npm run format` - Format code with Biome
 - `npm run check` - Run Biome format + lint
@@ -15,6 +16,7 @@
 - Use Biome for formatting (tab indentation, double quotes)
 - Run `npm run check` before committing to ensure code passes format + lint
 - Never disable lint rules without explicit justification
+- Biome organizes imports automatically per configuration
 
 ### Import Organization
 Order imports as follows:
@@ -52,6 +54,14 @@ Order imports as follows:
 - Use `v` validator builder for schema definitions
 - Document indices clearly on tables
 - Reference https://docs.convex.dev/database/types for built-in types
+- Every document has automatic system fields `_id` and `_creationTime`
+- Use `.index()` for query performance on frequently queried fields
+
+### Documentation & Research
+- Use Context7 MCP server when needing library documentation or API references
+- Call `context7_resolve-library-id` first to get the correct library ID, then `context7_query-docs` for specific queries
+- Use codesearch for programming examples and implementation patterns
+- Use websearch for current information beyond knowledge cutoff
 
 ## Design System
 
@@ -59,6 +69,7 @@ Order imports as follows:
 - Use shadcn components for UI elements: `bunx shadcn@latest add <component>`
 - Common components: Button, Card, Table, Badge, Dialog, DropdownMenu, Input, Form
 - Run `npm run format` after adding new components
+- Components use `cn()` utility from `@/lib/utils` for class merging
 
 ### TailwindCSS
 - Use utility classes consistently - check existing patterns first
@@ -67,6 +78,7 @@ Order imports as follows:
   - Grid: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6`
   - Cards: `bg-white dark:bg-slate-800 rounded-xl shadow-sm`
 - Prefer semantic class names over arbitrary values
+- Use `tw-animate-css` for animations
 
 ### Accessibility
 - Always add `type="button"` to button elements not in forms

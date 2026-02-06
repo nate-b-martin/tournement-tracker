@@ -8,7 +8,6 @@ import { PlayersTable } from "@/components/PlayersTable";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { PlayerFilters } from "@/components/PlayerFilters";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardPageComponent,
