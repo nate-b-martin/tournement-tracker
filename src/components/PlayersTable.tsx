@@ -97,6 +97,14 @@ export function PlayersTable({ initialOptions }: PlayersTableProps) {
     setPagination(pagination);
   };
 
+  const handleEdit = (player: PlayerWithTeam) => {
+    console.log("Editing player:", player);
+  };
+
+  const handleDelete = (player: PlayerWithTeam) => {
+    console.log("Deleting player:", player);
+  };
+
   return (
     <DataTable
       data={players}
@@ -109,6 +117,12 @@ export function PlayersTable({ initialOptions }: PlayersTableProps) {
       onSort={handleSort}
       emptyMessage="No players found"
       itemName="players"
+      actions={{
+        canEdit: true,
+        canDelete: true,
+        onEdit: handleEdit,
+        onDelete: handleDelete,
+      }}
     />
   );
 }
