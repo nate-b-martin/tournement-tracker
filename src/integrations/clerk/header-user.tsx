@@ -1,19 +1,30 @@
 import {
-  SignedIn,
-  SignInButton,
-  SignedOut,
-  UserButton,
-} from '@clerk/clerk-react'
+	SignedIn,
+	SignedOut,
+	SignInButton,
+	UserButton,
+} from "@clerk/clerk-react";
+import { useEffect, useState } from "react";
 
 export default function HeaderUser() {
-  return (
-    <>
-      <SignedIn>
-        <UserButton />
-      </SignedIn>
-      <SignedOut>
-        <SignInButton />
-      </SignedOut>
-    </>
-  )
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	if (!mounted) {
+		return null;
+	}
+
+	return (
+		<>
+			<SignedIn>
+				<UserButton />
+			</SignedIn>
+			<SignedOut>
+				<SignInButton />
+			</SignedOut>
+		</>
+	);
 }

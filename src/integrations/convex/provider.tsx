@@ -1,20 +1,35 @@
-import { ConvexProvider } from 'convex/react'
-import { ConvexQueryClient } from '@convex-dev/react-query'
+import { useAuth } from "@clerk/clerk-react";
+import { ConvexQueryClient } from "@convex-dev/react-query";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { useEffect, useState } from "react";
 
-const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL
+const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL;
 if (!CONVEX_URL) {
-  console.error('missing envar CONVEX_URL')
+	console.error("missing envar CONVEX_URL");
 }
-const convexQueryClient = new ConvexQueryClient(CONVEX_URL)
+const convexQueryClient = new ConvexQueryClient(CONVEX_URL);
 
 export default function AppConvexProvider({
-  children,
+	children,
 }: {
-  children: React.ReactNode
+	children: React.ReactNode;
 }) {
-  return (
-    <ConvexProvider client={convexQueryClient.convexClient}>
-      {children}
-    </ConvexProvider>
-  )
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	if (!mounted) {
+		return <>{children}</>;
+	}
+
+	return (
+		<ConvexProviderWithClerk
+			client={convexQueryClient.convexClient}
+			useAuth={useAuth}
+		>
+			{children}
+		</ConvexProviderWithClerk>
+	);
 }

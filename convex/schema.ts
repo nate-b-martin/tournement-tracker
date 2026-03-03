@@ -145,5 +145,7 @@ export default defineSchema({
     ),
     displayName: v.optional(v.string()),
     email: v.optional(v.string()),
-  }),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_role", ["role"]),
 });
