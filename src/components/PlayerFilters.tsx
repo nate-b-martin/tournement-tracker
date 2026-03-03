@@ -1,9 +1,9 @@
 import { useState } from "react";
 
 export const PlayerFilters = () => {
-  const [filters, setFilters] = useState({
-    search: "",
-    status: [],
-    teamId: undefined,
-  });
+	const [filters, setFilters] = useState({
+		search: "",
+		status: [],
+		teamId: undefined,
+	});
 };

@@ -1,13 +1,9 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-
+import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import Header from "../components/Header";
-
-import ConvexProvider from "../integrations/convex/provider";
-
-import ClerkProvider from "../integrations/clerk/provider";
-
+import { Toaster } from "@/components/ui/sonner";
+import ConvexClerkProvider from "../integrations/convex-clerk-provider";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -42,24 +38,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ConvexProvider>
-          <ClerkProvider>
-            <Header />
+        <ConvexClerkProvider>
+          <Header />
 
-            <div className="container mx-auto px-4">{children}</div>
-            <TanStackDevtools
-              config={{
-                position: "bottom-right",
-              }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-              ]}
-            />
-          </ClerkProvider>
-        </ConvexProvider>
+          <div className="container mx-auto px-4">{children}</div>
+          <Toaster />
+          <TanStackDevtools
+            config={{
+              position: "bottom-right",
+            }}
+            plugins={[
+              {
+                name: "Tanstack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        </ConvexClerkProvider>
         <Scripts />
       </body>
     </html>
