@@ -2,7 +2,6 @@ name: CI
 
 on:
   pull_request:
-    branches: ["main"]
   push:
     branches: ["main"]
 
@@ -56,9 +55,9 @@ jobs:
       - name: Check for e2e script
         id: check_e2e
         run: |
-          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json')); const has=Boolean(pkg.scripts && pkg.scripts.e2e); console.log(has); process.stdout.write(has? 'true':'false');" > has_e2e.txt
+          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json')); const has=Boolean(pkg.scripts && (pkg.scripts['test:e2e'] || pkg.scripts.e2e)); process.stdout.write(has? 'true':'false');" > has_e2e.txt
           echo "has_e2e=$(cat has_e2e.txt)" >> $GITHUB_OUTPUT
 
       - name: Run e2e tests (if configured)
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
-        run: npm run e2e
+        run: npm run test:e2e
