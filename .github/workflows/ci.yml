@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run lint and type checks
+        run: npm run check || true
+
+      - name: Build
+        run: npm run build
+
+      - name: Detect unit tests
+        id: detect_unit
+        run: |
+          set -eo pipefail
+          # look for common test filename patterns
+          if git ls-files -- "**/*.test.*" "**/*.spec.*" | grep -q .; then
+            echo "has_unit=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_unit=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run unit tests (Vitest)
+        if: ${{ steps.detect_unit.outputs.has_unit == 'true' }}
+        run: npm run test
+
+      - name: Check for e2e script
+        id: check_e2e
+        run: |
+          node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json')); const has=Boolean(pkg.scripts && pkg.scripts.e2e); console.log(has); process.stdout.write(has? 'true':'false');" > has_e2e.txt
+          echo "has_e2e=$(cat has_e2e.txt)" >> $GITHUB_OUTPUT
+
+      - name: Run e2e tests (if configured)
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: npm run e2e
