@@ -16,6 +16,10 @@ mcp-todos.json
 .netlify
 .claude/**
 error-screenshots
+<<<<<<< HEAD
 playwright-report/index.html
 playwright/.clerk
 
+=======
+playwright-report/*.html
+>>>>>>> 529da0e (Update node versino in ci.yml github workflows)
