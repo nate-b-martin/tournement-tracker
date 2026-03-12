@@ -74,16 +74,24 @@ jobs:
           done
           tail -n +1 convex.log | sed -n '1,200p'
 
-      - name: Seed Convex (optional)
+      - name: Seed Convex database
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: |
-          npx convex seed || true
+          # Call the seed mutation via HTTP endpoint (Convex server is already running)
+          sleep 5  # Give Convex server time to fully initialize
+          curl -X POST http://localhost:8787/api/seed \
+            -H "Content-Type: application/json" \
+            -d '{}' || true
+
+      - name: Install Playwright Browsers
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: npx playwright install --with-deps
 
       - name: Export Convex and Clerk env for e2e
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: |
           echo "VITE_CONVEX_URL=http://127.0.0.1:8787" >> $GITHUB_ENV
-          echo "VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
+          echo "VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
           echo "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" >> $GITHUB_ENV
 
       - name: Run e2e tests (Playwright)
