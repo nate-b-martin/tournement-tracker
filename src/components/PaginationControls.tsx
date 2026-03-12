@@ -4,7 +4,7 @@ interface PaginationControlsProps {
 	currentPage: number;
 	totalPages: number;
 	pageSize: number;
-	totalCount: number;
+	_totalCount: number;
 	hasNextPage: boolean;
 	hasPreviousPage: boolean;
 	onPageChange: (page: number) => void;
@@ -15,7 +15,7 @@ export const PaginationControls = ({
 	currentPage,
 	totalPages,
 	pageSize,
-	totalCount,
+	_totalCount,
 	hasNextPage,
 	hasPreviousPage,
 	onPageChange,

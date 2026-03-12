@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export const PlayerFilters = () => {
-	const [filters, setFilters] = useState({
+	const [_filters, _setFilters] = useState({
 		search: "",
 		status: [],
 		teamId: undefined,

@@ -61,12 +61,12 @@ jobs:
       - name: Start local Convex (for e2e)
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: |
-          echo "Starting Convex dev on port 8787"
-          npx convex dev --port 8787 &> convex.log & echo $! > convex.pid
-          # wait for convex to be reachable
+          echo "Starting Convex dev server"
+          npx convex dev &> convex.log & echo $! > convex.pid
+          # wait for convex to be ready (check if it's running and has initialized)
           for i in $(seq 1 60); do
-            if bash -c 'cat < /dev/tcp/127.0.0.1/8787 >/dev/null 2>&1'; then
-              echo "Convex is up"
+            if grep -q "Convex functions ready" convex.log 2>/dev/null; then
+              echo "Convex is up and ready"
               break
             fi
             echo "Waiting for Convex... ($i)"
@@ -77,11 +77,9 @@ jobs:
       - name: Seed Convex database
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: |
-          # Call the seed mutation via HTTP endpoint (Convex server is already running)
-          sleep 5  # Give Convex server time to fully initialize
-          curl -X POST http://localhost:8787/api/seed \
-            -H "Content-Type: application/json" \
-            -d '{}' || true
+          # Call the seed function via Convex CLI
+          sleep 2
+          npx convex run seed || true
 
       - name: Install Playwright Browsers
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
@@ -90,7 +88,7 @@ jobs:
       - name: Export Convex and Clerk env for e2e
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: |
-          echo "VITE_CONVEX_URL=http://127.0.0.1:8787" >> $GITHUB_ENV
+          echo "VITE_CONVEX_URL=http://localhost:3210" >> $GITHUB_ENV
           echo "VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
           echo "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" >> $GITHUB_ENV
 
