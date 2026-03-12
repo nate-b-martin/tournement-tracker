@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { PlayersTable } from "@/components/PlayersTable";
 
 export const Route = createFileRoute("/playerspage/")({
@@ -7,7 +6,6 @@ export const Route = createFileRoute("/playerspage/")({
 });
 
 function PlayersPageComponent() {
-	const [pageSize, setPageSize] = useState(10);
 	return (
 		<div className="container mx-auto p-6">
 			<h1 className="text-2xl font-bold mb-6">Players</h1>

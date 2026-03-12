@@ -24,28 +24,11 @@ interface UseAuthResult {
 }
 
 export function useAuth(): UseAuthResult {
-	// If the app is running without Clerk (e.g. in CI or local dev without keys),
-	// short-circuit so components that rely on auth still render an unauthenticated
-	// state instead of stalling in a loading state. Tests that require an
-	// authenticated session should skip when Clerk keys aren't present.
-	const PUBLISHABLE_KEY = (import.meta as any).env.VITE_CLERK_PUBLISHABLE_KEY;
-	if (!PUBLISHABLE_KEY) {
-		return {
-			isLoaded: true,
-			isSignedIn: false,
-			user: null,
-			profile: null,
-			isAdmin: false,
-			isOrganizer: false,
-			isPlayer: false,
-			isSpectator: false,
-			isLoading: false,
-			error: null,
-			hasError: false,
-			refetch: () => {},
-		};
-	}
+	// Get Clerk config key early (checked later after hooks)
+	const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
+	// Call all hooks unconditionally at the top level (React Rules of Hooks)
+	// If Clerk is not configured, these will return safe defaults.
 	const { isLoaded, isSignedIn, user } = useUser();
 	const [isCreatingProfile, setIsCreatingProfile] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
@@ -57,7 +40,13 @@ export function useAuth(): UseAuthResult {
 
 	const createProfile = useMutation(api.userProfiles.createUserProfile);
 
+	// Effect must be called before conditional returns (React Rules of Hooks)
 	useEffect(() => {
+		// If Clerk is not configured, skip profile creation
+		if (!PUBLISHABLE_KEY) {
+			return;
+		}
+
 		if (
 			isLoaded &&
 			isSignedIn &&
@@ -84,6 +73,26 @@ export function useAuth(): UseAuthResult {
 				});
 		}
 	}, [isLoaded, isSignedIn, user, profile, isCreatingProfile, createProfile]);
+
+	// If Clerk is not configured (e.g. in CI or local dev without keys),
+	// return a safe unauthenticated state so components still render instead of
+	// stalling. Tests that require auth should skip when Clerk keys aren't present.
+	if (!PUBLISHABLE_KEY) {
+		return {
+			isLoaded: true,
+			isSignedIn: false,
+			user: null,
+			profile: null,
+			isAdmin: false,
+			isOrganizer: false,
+			isPlayer: false,
+			isSpectator: false,
+			isLoading: false,
+			error: null,
+			hasError: false,
+			refetch: () => {},
+		};
+	}
 
 	const currentProfile = profile ?? null;
 	const isAdmin = currentProfile?.role === "admin";
