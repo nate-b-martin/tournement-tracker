@@ -58,6 +58,34 @@ jobs:
           node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json')); const has=Boolean(pkg.scripts && (pkg.scripts['test:e2e'] || pkg.scripts.e2e)); process.stdout.write(has? 'true':'false');" > has_e2e.txt
           echo "has_e2e=$(cat has_e2e.txt)" >> $GITHUB_OUTPUT
 
-      - name: Run e2e tests (if configured)
+      - name: Start local Convex (for e2e)
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: |
+          echo "Starting Convex dev on port 8787"
+          npx convex dev --port 8787 &> convex.log & echo $! > convex.pid
+          # wait for convex to be reachable
+          for i in $(seq 1 60); do
+            if bash -c 'cat < /dev/tcp/127.0.0.1/8787 >/dev/null 2>&1'; then
+              echo "Convex is up"
+              break
+            fi
+            echo "Waiting for Convex... ($i)"
+            sleep 1
+          done
+          tail -n +1 convex.log | sed -n '1,200p'
+
+      - name: Seed Convex (optional)
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: |
+          npx convex seed || true
+
+      - name: Export Convex and Clerk env for e2e
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: |
+          echo "VITE_CONVEX_URL=http://127.0.0.1:8787" >> $GITHUB_ENV
+          echo "VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
+          echo "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" >> $GITHUB_ENV
+
+      - name: Run e2e tests (Playwright)
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: npm run test:e2e
