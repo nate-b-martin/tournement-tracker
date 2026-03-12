@@ -24,6 +24,28 @@ interface UseAuthResult {
 }
 
 export function useAuth(): UseAuthResult {
+	// If the app is running without Clerk (e.g. in CI or local dev without keys),
+	// short-circuit so components that rely on auth still render an unauthenticated
+	// state instead of stalling in a loading state. Tests that require an
+	// authenticated session should skip when Clerk keys aren't present.
+	const PUBLISHABLE_KEY = (import.meta as any).env.VITE_CLERK_PUBLISHABLE_KEY;
+	if (!PUBLISHABLE_KEY) {
+		return {
+			isLoaded: true,
+			isSignedIn: false,
+			user: null,
+			profile: null,
+			isAdmin: false,
+			isOrganizer: false,
+			isPlayer: false,
+			isSpectator: false,
+			isLoading: false,
+			error: null,
+			hasError: false,
+			refetch: () => {},
+		};
+	}
+
 	const { isLoaded, isSignedIn, user } = useUser();
 	const [isCreatingProfile, setIsCreatingProfile] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
