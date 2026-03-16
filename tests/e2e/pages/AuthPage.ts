@@ -8,7 +8,7 @@ export class AuthPage {
 	}
 
 	get userButton() {
-		return this.page.locator(".cl-userButton");
+		return this.page.getByRole("button", { name: /open user menu/i });
 	}
 
 	async clickSignIn() {

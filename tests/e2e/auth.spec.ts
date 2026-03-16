@@ -1,25 +1,22 @@
 import { test, expect } from "./fixtures/auth";
 import { AuthPage } from "./pages/AuthPage";
+import { Navigation } from "./pages/Navigation";
 import { ProtectedPage } from "./pages/ProtectedPage";
 
 test.describe("Authentication", () => {
 	test.describe("Unauthenticated", () => {
-		test("shows sign in button on home", async ({ unauthenticatedPage }) => {
-			const authPage = new AuthPage(unauthenticatedPage.page);
+		test.use({ storageState: { cookies: [], origins: [] } });
+
+		test("shows sign in button on home", async ({ page }) => {
+			const authPage = new AuthPage(page);
 			await authPage.goto("/");
 			await expect(authPage.signInButton).toBeVisible();
 		});
 
-		test("shows user button when signed in", async ({ authenticatedPage }) => {
-			const authPage = new AuthPage(authenticatedPage.page);
-			await authPage.goto("/");
-			await expect(authPage.userButton).toBeVisible();
-		});
-
 		test(
 			"redirects from protected route when signed out",
-			async ({ unauthenticatedPage }) => {
-				const protectedPage = new ProtectedPage(unauthenticatedPage.page);
+			async ({ page }) => {
+				const protectedPage = new ProtectedPage(page);
 				await protectedPage.goto();
 				await protectedPage.waitForAccessDenied();
 			},
@@ -27,8 +24,8 @@ test.describe("Authentication", () => {
 
 		test(
 			"shows access denied message on protected route",
-			async ({ unauthenticatedPage }) => {
-				const protectedPage = new ProtectedPage(unauthenticatedPage.page);
+			async ({ page }) => {
+				const protectedPage = new ProtectedPage(page);
 				await protectedPage.goto();
 				await protectedPage.waitForAccessDenied();
 				await expect(protectedPage.accessDeniedTitle).toContainText(
@@ -39,15 +36,26 @@ test.describe("Authentication", () => {
 	});
 
 	test.describe("Authenticated", () => {
-		test("can access protected route when signed in", async ({ authenticatedPage }) => {
-			const protectedPage = new ProtectedPage(authenticatedPage.page);
+		test("shows user button when signed in", async ({ page }) => {
+			const authPage = new AuthPage(page);
+			await authPage.goto("/");
+
+			const navigation = new Navigation(page);
+			await navigation.openMenu();
+			await expect(authPage.userButton).toBeVisible();
+		});
+
+		test("can access protected route when signed in", async ({ page }) => {
+			const protectedPage = new ProtectedPage(page);
 			await protectedPage.goto();
 			await protectedPage.waitForLoader();
 		});
 
-		test("can sign out", async ({ authenticatedPage }) => {
-			const authPage = new AuthPage(authenticatedPage.page);
+		test("can sign out", async ({ page }) => {
+			const authPage = new AuthPage(page);
 			await authPage.goto("/");
+			const navigation = new Navigation(page);
+			await navigation.openMenu();
 			await authPage.signOut();
 			await expect(authPage.signInButton).toBeVisible();
 		});
