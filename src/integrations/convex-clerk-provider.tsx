@@ -13,7 +13,9 @@ if (!PUBLISHABLE_KEY) {
 	console.error("missing envar VITE_CLERK_PUBLISHABLE_KEY");
 }
 
-const convex = new ConvexReactClient(CONVEX_URL);
+// Only create Convex client if URL is provided, otherwise create a dummy client
+// that won't work but also won't break initialization
+const convex = CONVEX_URL ? new ConvexReactClient(CONVEX_URL) : new ConvexReactClient("");
 
 function ClientProviders({ children }: { children: React.ReactNode }) {
 	const [mounted, setMounted] = useState(false);
@@ -31,7 +33,7 @@ function ClientProviders({ children }: { children: React.ReactNode }) {
 	}
 
 	return (
-		<ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+		<ClerkProvider publishableKey={PUBLISHABLE_KEY || ""} afterSignOutUrl="/">
 			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
 				{children}
 			</ConvexProviderWithClerk>

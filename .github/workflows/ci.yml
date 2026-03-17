@@ -58,6 +58,54 @@ jobs:
           node -e "const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json')); const has=Boolean(pkg.scripts && (pkg.scripts['test:e2e'] || pkg.scripts.e2e)); process.stdout.write(has? 'true':'false');" > has_e2e.txt
           echo "has_e2e=$(cat has_e2e.txt)" >> $GITHUB_OUTPUT
 
-      - name: Run e2e tests (if configured)
+      - name: Start local Convex (for e2e)
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: |
+          echo "Starting Convex dev server"
+          npx convex dev &> convex.log & echo $! > convex.pid
+          # wait for convex to be ready (check if it's running and has initialized)
+          for i in $(seq 1 60); do
+            if grep -q "Convex functions ready" convex.log 2>/dev/null; then
+              echo "Convex is up and ready"
+              break
+            fi
+            echo "Waiting for Convex... ($i)"
+            sleep 1
+          done
+          tail -n +1 convex.log | sed -n '1,200p'
+
+      - name: Seed Convex database
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: |
+          # Call the seed function via Convex CLI
+          sleep 2
+          npx convex run seed || true
+
+      - name: Install Playwright Browsers
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: npx playwright install --with-deps
+
+      - name: Export Convex and Clerk env for e2e
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: |
+          echo "VITE_CONVEX_URL=http://localhost:3210" >> $GITHUB_ENV
+          echo "VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
+          echo "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "CLERK_TEST_EMAIL=${{ secrets.CLERK_TEST_EMAIL }}" >> $GITHUB_ENV
+
+      - name: Debug - Verify env vars are set
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: |
+          echo "VITE_CONVEX_URL: $VITE_CONVEX_URL"
+          echo "VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:0:10}..." 
+          echo "CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:0:10}..."
+          echo "CLERK_TEST_EMAIL: ${CLERK_TEST_EMAIL:0:10}..."
+          if [ -z "$VITE_CLERK_PUBLISHABLE_KEY" ] || [ -z "$CLERK_SECRET_KEY" ] || [ -z "$CLERK_TEST_EMAIL" ]; then
+            echo "❌ ERROR: Secrets are empty! Check GitHub repository secrets configuration."
+            exit 1
+          fi
+          echo "✅ All secrets are populated"
+
+      - name: Run e2e tests (Playwright)
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: npm run test:e2e

@@ -16,4 +16,5 @@ mcp-todos.json
 .netlify
 .claude/**
 error-screenshots
+playwright/.clerk
 playwright-report/*.html
