@@ -106,6 +106,22 @@ jobs:
           fi
           echo "✅ All secrets are populated"
 
+      - name: Start dev server (for e2e)
+        if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
+        run: |
+          echo "Starting dev server"
+          npm run dev &> dev.log & echo $! > dev.pid
+          # wait for dev server to be ready (check if it's listening on port 3000)
+          for i in $(seq 1 30); do
+            if timeout 1 bash -c "cat < /dev/null > /dev/tcp/127.0.0.1/3000" 2>/dev/null; then
+              echo "Dev server is ready"
+              break
+            fi
+            echo "Waiting for dev server... ($i)"
+            sleep 1
+          done
+          tail -n +1 dev.log | head -30
+
       - name: Run e2e tests (Playwright)
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: npm run test:e2e
