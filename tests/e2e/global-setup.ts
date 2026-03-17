@@ -5,13 +5,23 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Load environment variables from .env.local
+// Load environment variables from .env.local (if it exists)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, "../../.env.local") });
+const envLocalPath = path.resolve(__dirname, "../../.env.local");
+if (fs.existsSync(envLocalPath)) {
+	dotenv.config({ path: envLocalPath });
+} else {
+	console.log("ℹ️  .env.local not found (expected in CI), using process.env from GitHub Actions");
+}
 
 const CLERK_PUBLISHABLE_KEY = process.env.VITE_CLERK_PUBLISHABLE_KEY;
 const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 const CLERK_TEST_EMAIL = process.env.CLERK_TEST_EMAIL;
+
+// Debug logging
+console.log(`DEBUG: CLERK_PUBLISHABLE_KEY exists: ${!!CLERK_PUBLISHABLE_KEY}`);
+console.log(`DEBUG: CLERK_SECRET_KEY exists: ${!!CLERK_SECRET_KEY}`);
+console.log(`DEBUG: CLERK_TEST_EMAIL exists: ${!!CLERK_TEST_EMAIL}`);
 
 const authFile = path.join(__dirname, "../../playwright/.clerk/user.json");
 const authDir = path.dirname(authFile);
