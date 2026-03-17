@@ -91,6 +91,7 @@ jobs:
           echo "VITE_CONVEX_URL=http://localhost:3210" >> $GITHUB_ENV
           echo "VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
           echo "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "CLERK_TEST_EMAIL=${{ secrets.CLERK_TEST_EMAIL }}" >> $GITHUB_ENV
 
       - name: Run e2e tests (Playwright)
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
