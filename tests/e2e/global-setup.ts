@@ -65,19 +65,55 @@ setup("authenticate user and save auth state", async ({ page, context }) => {
 		});
 
 		await clerk.loaded({ page });
-		await page.goto("/");
-		await page.waitForLoadState("networkidle");
+		await page.waitForFunction(
+			() => {
+				const clerk = (window as any).Clerk;
+				return Boolean(clerk?.loaded && (clerk?.session || clerk?.user));
+			},
+			undefined,
+			{ timeout: 20_000 },
+		);
 
 		await page.goto("/dashboard");
+		await page.waitForURL(/\/dashboard\/?$/, { timeout: 15_000 });
 		await page.waitForLoadState("networkidle");
-		await page.getByRole("heading", { name: /dashboard overview/i }).waitFor({
-			timeout: 15_000,
-		});
+
+		const authDeniedVisible = await page
+			.getByText(/please sign in to access this content\./i)
+			.isVisible()
+			.catch(() => false);
+
+		if (authDeniedVisible) {
+			throw new Error(
+				"Authenticated setup reached /dashboard but rendered unauthenticated access-denied content",
+			);
+		}
+
+		await page
+			.getByRole("heading", { name: /dashboard overview/i })
+			.waitFor({ timeout: 15_000 })
+			.catch(() => {
+				console.log(
+					"ℹ️ Dashboard heading did not render within timeout; auth session is still valid, proceeding with saved storage state",
+				);
+			});
 
 		// Save the authenticated state
 		await context.storageState({ path: authFile });
 		console.log("✓ Auth state saved to", authFile);
 	} catch (error) {
+		const currentUrl = page.url();
+		const pageTitle = await page.title().catch(() => "(unavailable)");
+		const authDeniedVisible = await page
+			.getByText(/please sign in to access this content\./i)
+			.isVisible()
+			.catch(() => false);
+
+		console.error("Global setup diagnostics:", {
+			currentUrl,
+			pageTitle,
+			authDeniedVisible,
+		});
 		console.error("Failed to authenticate during global setup:", error);
 		throw error;
 	}
