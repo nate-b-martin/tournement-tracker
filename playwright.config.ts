@@ -6,6 +6,9 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, ".env.local") });
 
+const VITE_CONVEX_URL = process.env.VITE_CONVEX_URL ?? "http://localhost:3210";
+const VITE_CLERK_PUBLISHABLE_KEY = process.env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -37,5 +40,10 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: {
+      ...process.env,
+      VITE_CONVEX_URL,
+      VITE_CLERK_PUBLISHABLE_KEY,
+    },
   },
 });
