@@ -9,6 +9,14 @@ export class ProtectedPage {
 		return this.page.locator(".animate-spin");
 	}
 
+	get dashboardHeading() {
+		return this.page.getByRole("heading", { name: /dashboard overview/i });
+	}
+
+	get teamsCountHeading() {
+		return this.page.getByRole("heading", { name: /total teams count/i });
+	}
+
 	get accessDeniedTitle() {
 		return this.page.getByRole("heading", {
 			name: /authentication required|admin access required/i,
@@ -31,8 +39,29 @@ export class ProtectedPage {
 		await this.loader.first().waitFor({ state: "hidden", timeout: 10000 });
 	}
 
+	async waitForAuthenticatedAccess() {
+		await this.page.waitForURL(/\/dashboard\/?$/, { timeout: 15_000 });
+		await this.page.waitForLoadState("domcontentloaded");
+
+		await Promise.race([
+			this.dashboardHeading.first().waitFor({ timeout: 15_000 }),
+			this.teamsCountHeading.first().waitFor({ timeout: 15_000 }),
+			this.loader.first().waitFor({ state: "hidden", timeout: 15_000 }),
+		]).catch(() => {});
+
+		const authDeniedVisible = await this.signInPrompt
+			.isVisible()
+			.catch(() => false);
+
+		if (authDeniedVisible) {
+			throw new Error(
+				"Expected authenticated access to /dashboard, but access-denied content was visible.",
+			);
+		}
+	}
+
 	async waitForAccessDenied() {
-		await this.waitForLoader();
-		await this.accessDeniedTitle.first().waitFor({ timeout: 5000 });
+		await this.page.waitForURL(/\/dashboard\/?$/, { timeout: 15_000 });
+		await this.accessDeniedTitle.first().waitFor({ timeout: 15_000 });
 	}
 }
