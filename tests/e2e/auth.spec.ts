@@ -48,7 +48,7 @@ test.describe("Authentication", () => {
 		test("can access protected route when signed in", async ({ page }) => {
 			const protectedPage = new ProtectedPage(page);
 			await protectedPage.goto();
-			await protectedPage.waitForLoader();
+			await protectedPage.waitForAuthenticatedAccess();
 		});
 
 		test("can sign out", async ({ page }) => {
