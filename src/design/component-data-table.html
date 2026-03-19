@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Data Table Component Designs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #eff4f7;
+        --surface: #ffffff;
+        --surface-soft: #f7fafc;
+        --line: #d7e2e8;
+        --ink: #1f3748;
+        --muted: #607483;
+        --primary: #2f718b;
+        --primary-soft: #dcebf2;
+        --accent-soft: #e3efe9;
+        --warning-soft: #f3eade;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 12% 8%, #dce8ef 0%, transparent 28%),
+          radial-gradient(circle at 85% 14%, #dce9e3 0%, transparent 24%),
+          linear-gradient(180deg, #eef4f7 0%, #e8f0f4 100%);
+        padding: 26px;
+        display: grid;
+        gap: 28px;
+      }
+
+      .artboard {
+        width: 1520px;
+        height: 920px;
+        border: 1px solid #cfdce4;
+        border-radius: 20px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #f4f8fa 0%, #eef4f7 100%);
+        box-shadow: 0 20px 60px rgba(45, 71, 89, 0.14);
+        padding: 26px;
+        position: relative;
+      }
+
+      .artboard::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(17, 31, 41, 0.03) 0.5px, transparent 0.5px);
+        background-size: 3px 3px;
+        pointer-events: none;
+      }
+
+      .title {
+        font-family: "Orbitron", sans-serif;
+        font-size: 42px;
+        margin: 0 0 6px;
+        color: #213c4d;
+        letter-spacing: 0.01em;
+      }
+
+      .subtitle {
+        color: #5f7483;
+        margin: 0 0 18px;
+        font-size: 18px;
+      }
+
+      .table-card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(4px);
+        padding: 16px;
+      }
+
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .left,
+      .right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .search {
+        width: 420px;
+        height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+      }
+
+      .chip {
+        border: 1px solid #c7d7e1;
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #4b6577;
+        background: #f7fbfd;
+      }
+
+      .btn {
+        border: 1px solid #bfd1dc;
+        border-radius: 11px;
+        background: #ffffff;
+        color: #2d495b;
+        padding: 10px 14px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .btn.primary {
+        color: #ecf8fc;
+        background: linear-gradient(180deg, #3d7f9b 0%, #2f708b 100%);
+        border-color: #2f6981;
+      }
+
+      .summary {
+        color: #5f7484;
+        font-size: 14px;
+        margin: 0 0 10px;
+      }
+
+      .grid {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .thead,
+      .trow {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr 0.9fr 1fr 0.8fr;
+        align-items: center;
+        padding: 0 16px;
+      }
+
+      .thead {
+        min-height: 52px;
+        background: #f0f6f9;
+        color: #567082;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .trow {
+        min-height: 72px;
+        border-bottom: 1px solid #edf2f5;
+        font-size: 18px;
+        color: #2a4456;
+      }
+
+      .trow:last-child {
+        border-bottom: 0;
+      }
+
+      .team {
+        font-weight: 600;
+        font-size: 28px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 6px 11px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .pill.active {
+        background: var(--accent-soft);
+        color: #2d6f63;
+      }
+
+      .pill.draft {
+        background: #ebf1f5;
+        color: #5f7485;
+      }
+
+      .pill.wait {
+        background: var(--warning-soft);
+        color: #87633e;
+      }
+
+      .players {
+        font-family: "Orbitron", sans-serif;
+        font-size: 24px;
+        color: #223b4d;
+      }
+
+      .actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .icon-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        border: 1px solid #c8d8e2;
+        background: #f8fbfd;
+      }
+
+      .footer {
+        margin-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        color: #5d7281;
+      }
+
+      .pagination {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .page {
+        min-width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid #c8d8e2;
+        background: #fff;
+        display: grid;
+        place-items: center;
+      }
+
+      .page.active {
+        background: var(--primary-soft);
+        border-color: #a9c8d8;
+        color: #2c667f;
+        font-weight: 700;
+      }
+
+      .layout-02 {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 14px;
+      }
+
+      .filters-panel {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #f9fcfd;
+        padding: 14px;
+      }
+
+      .filters-title {
+        font-family: "Orbitron", sans-serif;
+        font-size: 24px;
+        margin: 0 0 10px;
+      }
+
+      .row-filter {
+        margin-bottom: 10px;
+      }
+
+      .label {
+        color: #5f7483;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .input {
+        margin-top: 4px;
+        height: 38px;
+        border: 1px solid #cad8e1;
+        border-radius: 10px;
+        background: #fff;
+      }
+
+      .mobile-card {
+        max-width: 530px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: #fff;
+        padding: 14px;
+      }
+
+      .mobile-row {
+        border: 1px solid #d7e2e8;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 9px;
+        background: #fbfdfe;
+      }
+
+      .mobile-row .name {
+        font-size: 23px;
+        font-weight: 600;
+        margin-bottom: 7px;
+      }
+
+      .mobile-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #4f6878;
+      }
+
+      .empty {
+        min-height: 300px;
+        border: 1px dashed #bed1dd;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(180deg, #fbfdff 0%, #f6fbfd 100%);
+        color: #5e7484;
+      }
+
+      .pulse {
+        width: 80px;
+        height: 80px;
+        border-radius: 999px;
+        background: radial-gradient(circle, #d7e9f2 0%, #c5deeb 60%, #d7e9f2 100%);
+        box-shadow: 0 0 0 12px rgba(192, 218, 231, 0.35);
+        margin: 0 auto 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="artboard" id="datatable-01-default">
+      <h1 class="title">Data Table - Default</h1>
+      <p class="subtitle">Primary view with search, sorting, status pills, and pagination controls.</p>
+      <div class="table-card">
+        <div class="toolbar">
+          <div class="left">
+            <div class="search">Search teams, coach, city...</div>
+            <div class="chip">All Statuses</div>
+            <div class="chip">North Division</div>
+          </div>
+          <div class="right">
+            <button class="btn">Export CSV</button>
+            <button class="btn primary">+ Add Team</button>
+          </div>
+        </div>
+        <p class="summary">Showing 1-10 of 38 teams (Page 1 of 4)</p>
+        <div class="grid">
+          <div class="thead">
+            <div>Team Name</div>
+            <div>City</div>
+            <div>Coach</div>
+            <div>Status</div>
+            <div>Players</div>
+            <div>Actions</div>
+          </div>
+          <div class="trow">
+            <div class="team">Red Dragons</div>
+            <div>Raleigh</div>
+            <div>Mia Clark</div>
+            <div><span class="pill active">Active</span></div>
+            <div class="players">5/5</div>
+            <div class="actions"><button class="icon-btn"></button><button class="icon-btn"></button></div>
+          </div>
+          <div class="trow">
+            <div class="team">Blue Knights</div>
+            <div>Durham</div>
+            <div>Andre Holt</div>
+            <div><span class="pill draft">Draft</span></div>
+            <div class="players">4/5</div>
+            <div class="actions"><button class="icon-btn"></button><button class="icon-btn"></button></div>
+          </div>
+          <div class="trow">
+            <div class="team">Golden Yetis</div>
+            <div>Apex</div>
+            <div>Shawn Lee</div>
+            <div><span class="pill wait">Waitlist</span></div>
+            <div class="players">5/5</div>
+            <div class="actions"><button class="icon-btn"></button><button class="icon-btn"></button></div>
+          </div>
+          <div class="trow">
+            <div class="team">River Hawks</div>
+            <div>Cary</div>
+            <div>Iris Moore</div>
+            <div><span class="pill active">Active</span></div>
+            <div class="players">3/5</div>
+            <div class="actions"><button class="icon-btn"></button><button class="icon-btn"></button></div>
+          </div>
+          <div class="trow">
+            <div class="team">Silver Foxes</div>
+            <div>Chapel Hill</div>
+            <div>Noah Patel</div>
+            <div><span class="pill draft">Draft</span></div>
+            <div class="players">2/5</div>
+            <div class="actions"><button class="icon-btn"></button><button class="icon-btn"></button></div>
+          </div>
+        </div>
+        <div class="footer">
+          <div>Rows per page: 10</div>
+          <div class="pagination">
+            <div class="page">&lt;</div>
+            <div class="page active">1</div>
+            <div class="page">2</div>
+            <div class="page">3</div>
+            <div class="page">4</div>
+            <div class="page">&gt;</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="artboard" id="datatable-02-filtered">
+      <h1 class="title">Data Table - Filtered State</h1>
+      <p class="subtitle">Shows advanced filter panel and narrowed result set for a cleaner admin flow.</p>
+      <div class="layout-02">
+        <div class="table-card">
+          <div class="toolbar">
+            <div class="left">
+              <div class="search">Search: "drag"</div>
+              <div class="chip">Status: Active</div>
+              <div class="chip">Sort: Name A-Z</div>
+            </div>
+            <div class="right"><button class="btn">Clear</button></div>
+          </div>
+          <p class="summary">Showing 1-2 of 2 teams</p>
+          <div class="grid">
+            <div class="thead">
+              <div>Team Name</div>
+              <div>City</div>
+              <div>Coach</div>
+              <div>Status</div>
+              <div>Players</div>
+              <div>Actions</div>
+            </div>
+            <div class="trow">
+              <div class="team">Red Dragons</div>
+              <div>Raleigh</div>
+              <div>Mia Clark</div>
+              <div><span class="pill active">Active</span></div>
+              <div class="players">5/5</div>
+              <div class="actions"><button class="icon-btn"></button><button class="icon-btn"></button></div>
+            </div>
+            <div class="trow">
+              <div class="team">Green Dragons</div>
+              <div>Greensboro</div>
+              <div>Reina Hall</div>
+              <div><span class="pill active">Active</span></div>
+              <div class="players">4/5</div>
+              <div class="actions"><button class="icon-btn"></button><button class="icon-btn"></button></div>
+            </div>
+          </div>
+          <div class="footer">
+            <div>Rows per page: 10</div>
+            <div class="pagination"><div class="page active">1</div></div>
+          </div>
+        </div>
+
+        <aside class="filters-panel">
+          <h2 class="filters-title">Filters</h2>
+          <div class="row-filter">
+            <div class="label">Team Name</div>
+            <div class="input"></div>
+          </div>
+          <div class="row-filter">
+            <div class="label">Status</div>
+            <div class="input"></div>
+          </div>
+          <div class="row-filter">
+            <div class="label">City</div>
+            <div class="input"></div>
+          </div>
+          <div class="row-filter">
+            <div class="label">Roster Fill</div>
+            <div class="input"></div>
+          </div>
+          <div class="row-filter">
+            <div class="label">Created Date</div>
+            <div class="input"></div>
+          </div>
+          <button class="btn primary" style="width:100%;margin-top:8px;">Apply Filters</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="artboard" id="datatable-03-mobile-empty">
+      <h1 class="title">Data Table - Mobile + Empty</h1>
+      <p class="subtitle">Compact card list variant for small screens plus an empty state treatment.</p>
+      <div style="display:grid;grid-template-columns:560px 1fr;gap:16px;align-items:start;">
+        <div class="mobile-card">
+          <div class="toolbar" style="margin-bottom:10px;">
+            <div class="search" style="width:100%;">Search teams...</div>
+          </div>
+          <div class="mobile-row">
+            <div class="name">Red Dragons</div>
+            <div class="mobile-meta"><span>Raleigh</span><span class="pill active">Active</span></div>
+            <div class="mobile-meta" style="margin-top:8px;"><span>Coach: Mia Clark</span><strong class="players">5/5</strong></div>
+          </div>
+          <div class="mobile-row">
+            <div class="name">Blue Knights</div>
+            <div class="mobile-meta"><span>Durham</span><span class="pill draft">Draft</span></div>
+            <div class="mobile-meta" style="margin-top:8px;"><span>Coach: Andre Holt</span><strong class="players">4/5</strong></div>
+          </div>
+          <div class="mobile-row" style="margin-bottom:0;">
+            <div class="name">River Hawks</div>
+            <div class="mobile-meta"><span>Cary</span><span class="pill active">Active</span></div>
+            <div class="mobile-meta" style="margin-top:8px;"><span>Coach: Iris Moore</span><strong class="players">3/5</strong></div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="toolbar">
+            <div class="left"><div class="chip">Status: Archived</div></div>
+            <div class="right"><button class="btn">Reset</button></div>
+          </div>
+          <div class="empty">
+            <div style="text-align:center;">
+              <div class="pulse"></div>
+              <div style="font-family:Orbitron,sans-serif;font-size:24px;color:#3c5a6b;margin-bottom:6px;">No Teams Found</div>
+              <div>Try changing filters or create a new team to get started.</div>
+              <button class="btn primary" style="margin-top:12px;">+ Add Team</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
