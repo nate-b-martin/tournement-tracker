@@ -1,9 +1,34 @@
+import type { ReactNode } from "react";
+
 export interface ColumnDef<T> {
 	header: string;
 	field: string;
 	sortable?: boolean;
 	cell: (row: T) => React.ReactNode;
 	className?: string;
+}
+
+export interface DataTableToolbarChip {
+	label: string;
+	active?: boolean;
+	onClick?: () => void;
+}
+
+export interface DataTableToolbarAction {
+	label: string;
+	onClick?: () => void;
+	variant?: "default" | "outline" | "secondary" | "ghost";
+}
+
+export interface DataTableToolbarConfig {
+	search?: {
+		value: string;
+		placeholder?: string;
+		onChange: (value: string) => void;
+	};
+	filters?: DataTableToolbarChip[];
+	actions?: DataTableToolbarAction[];
+	extraContent?: ReactNode;
 }
 
 export interface DataTableProps<T> {
@@ -33,4 +58,5 @@ export interface DataTableProps<T> {
 		onEdit?: (item: T) => void;
 		onDelete?: (item: T) => void;
 	};
+	toolbar?: DataTableToolbarConfig;
 }

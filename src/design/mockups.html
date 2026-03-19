@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tournament Tracker Mockups</title>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4f7f9;
+        --bg-2: #e8eef2;
+        --ink: #162330;
+        --muted: #657482;
+        --surface: #ffffff;
+        --surface-2: #f7fafc;
+        --line: #d9e2e8;
+        --primary: #2c6f8f;
+        --primary-soft: #d8eaf2;
+        --accent: #5ea89b;
+        --accent-soft: #dcefe9;
+        --warn: #d39a5f;
+        --radius: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 8% 6%, #e1edf3 0%, transparent 30%),
+          radial-gradient(circle at 90% 14%, #ddebe6 0%, transparent 28%),
+          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+        padding: 32px;
+        display: grid;
+        gap: 36px;
+      }
+
+      .artboard {
+        width: 1560px;
+        height: 980px;
+        border-radius: 24px;
+        border: 1px solid #cfdbe2;
+        box-shadow:
+          0 24px 70px rgba(31, 59, 75, 0.16),
+          inset 0 1px 0 #ffffff;
+        overflow: hidden;
+        background: linear-gradient(180deg, #edf3f6 0%, #edf3f6 52%, #ecf2f5 100%);
+        position: relative;
+      }
+
+      .grain {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(20, 28, 36, 0.03) 0.5px, transparent 0.5px);
+        background-size: 3px 3px;
+        pointer-events: none;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 248px 1fr;
+        height: 100%;
+      }
+
+      .sidebar {
+        background: linear-gradient(180deg, #162733 0%, #122330 100%);
+        color: #e6f1f5;
+        padding: 22px 16px;
+        border-right: 1px solid rgba(232, 245, 249, 0.16);
+      }
+
+      .brand {
+        font-family: "Orbitron", sans-serif;
+        letter-spacing: 0.03em;
+        font-weight: 700;
+        font-size: 28px;
+        margin: 8px 12px 26px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        color: #bdd2db;
+        padding: 13px 14px;
+        border-radius: 12px;
+        margin-bottom: 6px;
+      }
+
+      .nav-item.active {
+        background: linear-gradient(90deg, #2f7a96 0%, #3e91a8 100%);
+        color: #f4fbff;
+        box-shadow: 0 10px 28px rgba(35, 100, 131, 0.38);
+      }
+
+      .main {
+        padding: 22px 26px;
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .search {
+        flex: 1;
+        height: 46px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.75);
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        font-size: 18px;
+      }
+
+      .btn {
+        border: 1px solid #bfd1dc;
+        background: var(--surface);
+        color: #254153;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .btn.primary {
+        background: linear-gradient(180deg, #3f7f9a 0%, #2f6f89 100%);
+        color: #ecf8fc;
+        border-color: #2a6279;
+      }
+
+      .tag {
+        color: #507486;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+
+      h1 {
+        font-family: "Orbitron", sans-serif;
+        margin: 0;
+        font-size: 56px;
+        letter-spacing: 0.01em;
+        color: #1d3442;
+      }
+
+      .stats {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, #ffffff 0%, #f7fbfc 100%);
+        padding: 18px;
+        box-shadow: 0 10px 30px rgba(58, 85, 101, 0.1);
+      }
+
+      .card .meta {
+        color: #4e6674;
+        font-size: 16px;
+        margin-top: 8px;
+      }
+
+      .card .value {
+        font-family: "Orbitron", sans-serif;
+        margin-top: 7px;
+        font-size: 44px;
+        color: #223b4d;
+      }
+
+      .trend {
+        margin-left: auto;
+        background: var(--accent-soft);
+        color: #2f7568;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 4px 10px;
+      }
+
+      .content {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: 2.15fr 1fr;
+        gap: 14px;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.87);
+        backdrop-filter: blur(5px);
+        padding: 18px;
+      }
+
+      .panel-title {
+        font-family: "Orbitron", sans-serif;
+        font-size: 31px;
+        margin-bottom: 16px;
+        color: #203848;
+      }
+
+      .row {
+        border: 1px solid #d6e0e6;
+        border-radius: 12px;
+        background: var(--surface);
+        padding: 15px 16px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .score {
+        font-family: "Orbitron", sans-serif;
+        font-size: 34px;
+        color: #244355;
+      }
+
+      .badge {
+        justify-self: center;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        border-radius: 999px;
+        padding: 4px 10px;
+        text-transform: uppercase;
+      }
+
+      .badge.live {
+        background: #f8dfe1;
+        color: #a14953;
+      }
+
+      .badge.done {
+        background: #dfeae4;
+        color: #326b5f;
+      }
+
+      .badge.next {
+        background: #e5edf2;
+        color: #58707f;
+      }
+
+      .performer {
+        display: grid;
+        grid-template-columns: 56px 1fr auto;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        border-radius: 12px;
+      }
+
+      .avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #c1dae4 0%, #9fc2d0 100%);
+        border: 1px solid #84aebb;
+      }
+
+      .name {
+        font-size: 24px;
+        color: #233f50;
+        font-weight: 600;
+      }
+
+      .sub {
+        color: #607583;
+        font-size: 14px;
+      }
+
+      .metric {
+        color: #2f7a6d;
+        font-family: "Orbitron", sans-serif;
+        font-size: 33px;
+      }
+
+      .team-main {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 14px;
+      }
+
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+
+      .tile {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, #ffffff 0%, #f7fbfc 100%);
+        padding: 16px;
+      }
+
+      .tile .label {
+        font-size: 14px;
+        color: #5e7280;
+      }
+
+      .tile .val {
+        margin-top: 8px;
+        font-family: "Orbitron", sans-serif;
+        font-size: 34px;
+      }
+
+      .table-wrap {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .table-head,
+      .table-row {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr 1fr 0.8fr;
+        align-items: center;
+      }
+
+      .table-head {
+        background: #f0f6f9;
+        color: #4f6575;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--line);
+        min-height: 50px;
+        padding: 0 18px;
+      }
+
+      .table-row {
+        min-height: 76px;
+        padding: 0 18px;
+        border-bottom: 1px solid #edf2f5;
+      }
+
+      .pill {
+        font-size: 13px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 6px 11px;
+      }
+
+      .pill.active {
+        background: #e1f0ea;
+        color: #2c7568;
+      }
+
+      .pill.draft {
+        background: #edf2f6;
+        color: #607485;
+      }
+
+      .pill.full {
+        background: #f4eadf;
+        color: #8e6641;
+      }
+
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .chips {
+        display: flex;
+        gap: 8px;
+      }
+
+      .chip {
+        border: 1px solid #ccdae3;
+        color: #496273;
+        padding: 7px 11px;
+        font-size: 13px;
+        border-radius: 999px;
+        background: #f8fbfd;
+      }
+
+      .stage-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+
+      .stage {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbfc 100%);
+        padding: 14px;
+      }
+
+      .stage-title {
+        font-family: "Orbitron", sans-serif;
+        font-size: 22px;
+        color: #254254;
+        margin-bottom: 8px;
+      }
+
+      .slot {
+        border: 1px solid #dae5eb;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 8px;
+        background: #fff;
+        color: #355160;
+      }
+
+      .schedule {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        padding: 14px;
+      }
+
+      .timeline-row {
+        display: grid;
+        grid-template-columns: 110px 1fr auto;
+        align-items: center;
+        gap: 12px;
+        min-height: 64px;
+        border-bottom: 1px solid #ebf1f4;
+      }
+
+      .timeline-time {
+        color: #5d7381;
+        font-weight: 600;
+      }
+
+      .timeline-match {
+        color: #264253;
+        font-size: 19px;
+      }
+
+      .action {
+        font-size: 12px;
+        border: 1px solid #cad9e2;
+        border-radius: 999px;
+        padding: 6px 10px;
+        color: #516a79;
+      }
+    </style>
+  </head>
+  <body>
+    <section class="artboard" id="design-01">
+      <div class="grain"></div>
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="brand">ARENA PRO</div>
+          <div class="nav-item active">Dashboard</div>
+          <div class="nav-item">Stat Engine</div>
+          <div class="nav-item">Tournaments</div>
+          <div class="nav-item">Teams</div>
+          <div class="nav-item">Players</div>
+        </aside>
+        <main class="main">
+          <div class="top">
+            <div class="search">Search players, teams, or events...</div>
+            <button class="btn">Last 30 Days</button>
+            <button class="btn primary">New Tournament</button>
+          </div>
+          <div class="tag">Overview</div>
+          <h1>Season Summary</h1>
+          <div class="stats">
+            <article class="card">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="font-size:21px;">🏀</div>
+                <div class="trend">+12%</div>
+              </div>
+              <div class="meta">Total Matches</div>
+              <div class="value">124</div>
+            </article>
+            <article class="card">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="font-size:21px;">👥</div>
+                <div class="trend">+4%</div>
+              </div>
+              <div class="meta">Avg Attendance</div>
+              <div class="value">8.4k</div>
+            </article>
+            <article class="card">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="font-size:21px;">🏅</div>
+                <div class="trend">+2%</div>
+              </div>
+              <div class="meta">Active Leagues</div>
+              <div class="value">12</div>
+            </article>
+            <article class="card">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="font-size:21px;">📈</div>
+                <div class="trend" style="background:#f3e4e4;color:#9d5560;">-8%</div>
+              </div>
+              <div class="meta">Player Growth</div>
+              <div class="value">42%</div>
+            </article>
+          </div>
+          <div class="content">
+            <section class="panel">
+              <div class="panel-title">Recent Matches</div>
+              <div class="row">
+                <div style="font-size:33px;color:#304d60;">Lions</div>
+                <div class="score">98&nbsp;&nbsp;·&nbsp;&nbsp;92</div>
+                <div style="justify-self:end;display:flex;gap:8px;align-items:center;">
+                  <div class="badge done">Finished</div>
+                  <div style="font-size:33px;color:#304d60;">Dragons</div>
+                </div>
+              </div>
+              <div class="row">
+                <div style="font-size:33px;color:#304d60;">Hawks</div>
+                <div class="score">45&nbsp;&nbsp;·&nbsp;&nbsp;48</div>
+                <div style="justify-self:end;display:flex;gap:8px;align-items:center;">
+                  <div class="badge live">Live</div>
+                  <div style="font-size:33px;color:#304d60;">Titans</div>
+                </div>
+              </div>
+              <div class="row">
+                <div style="font-size:33px;color:#304d60;">Wolves</div>
+                <div class="score">20:00</div>
+                <div style="justify-self:end;display:flex;gap:8px;align-items:center;">
+                  <div class="badge next">Scheduled</div>
+                  <div style="font-size:33px;color:#304d60;">Bears</div>
+                </div>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-title">Star Performers</div>
+              <div class="performer">
+                <div class="avatar"></div>
+                <div>
+                  <div class="name">Marcus Jordan</div>
+                  <div class="sub">Lions · Guard</div>
+                </div>
+                <div class="metric">24.5</div>
+              </div>
+              <div class="performer">
+                <div class="avatar"></div>
+                <div>
+                  <div class="name">Leila Chen</div>
+                  <div class="sub">Dragons · Forward</div>
+                </div>
+                <div class="metric">18.2</div>
+              </div>
+              <div class="performer">
+                <div class="avatar"></div>
+                <div>
+                  <div class="name">Sam Rivera</div>
+                  <div class="sub">Hawks · Center</div>
+                </div>
+                <div class="metric">15.0</div>
+              </div>
+              <button class="btn" style="width:100%;margin-top:10px;height:44px;">Full Analytics Report</button>
+            </section>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <section class="artboard" id="design-02">
+      <div class="grain"></div>
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="brand">ARENA PRO</div>
+          <div class="nav-item">Dashboard</div>
+          <div class="nav-item">Tournaments</div>
+          <div class="nav-item active">Teams</div>
+          <div class="nav-item">Players</div>
+          <div class="nav-item">Schedule</div>
+        </aside>
+        <main class="main team-main">
+          <div class="top" style="margin-bottom:0;">
+            <div class="search">Search by team name, city, coach...</div>
+            <button class="btn">Import CSV</button>
+            <button class="btn primary">+ Add Team</button>
+          </div>
+
+          <div class="tiles">
+            <article class="tile">
+              <div class="label">Registered Teams</div>
+              <div class="val">38</div>
+            </article>
+            <article class="tile">
+              <div class="label">Average Roster Fill</div>
+              <div class="val">4.6/5</div>
+            </article>
+            <article class="tile">
+              <div class="label">Invites Pending</div>
+              <div class="val">11</div>
+            </article>
+          </div>
+
+          <section class="panel" style="padding:16px;">
+            <div class="toolbar">
+              <div class="panel-title" style="font-size:28px;margin:0;">Teams Directory</div>
+              <div class="chips">
+                <div class="chip">All statuses</div>
+                <div class="chip">North Division</div>
+                <div class="chip">Open Registration</div>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <div class="table-head">
+                <div>Team</div>
+                <div>City</div>
+                <div>Coach</div>
+                <div>Status</div>
+                <div>Players</div>
+              </div>
+              <div class="table-row">
+                <div style="font-size:24px;color:#253f50;font-weight:600;">Red Dragons</div>
+                <div style="font-size:20px;color:#4f6675;">Raleigh</div>
+                <div style="font-size:20px;color:#4f6675;">Mia Clark</div>
+                <div><span class="pill active">Active</span></div>
+                <div style="font-family:Orbitron,sans-serif;font-size:24px;">5/5</div>
+              </div>
+              <div class="table-row">
+                <div style="font-size:24px;color:#253f50;font-weight:600;">Blue Knights</div>
+                <div style="font-size:20px;color:#4f6675;">Durham</div>
+                <div style="font-size:20px;color:#4f6675;">Andre Holt</div>
+                <div><span class="pill draft">Draft</span></div>
+                <div style="font-family:Orbitron,sans-serif;font-size:24px;">4/5</div>
+              </div>
+              <div class="table-row">
+                <div style="font-size:24px;color:#253f50;font-weight:600;">Golden Yetis</div>
+                <div style="font-size:20px;color:#4f6675;">Apex</div>
+                <div style="font-size:20px;color:#4f6675;">Shawn Lee</div>
+                <div><span class="pill full">Waitlist</span></div>
+                <div style="font-family:Orbitron,sans-serif;font-size:24px;">5/5</div>
+              </div>
+              <div class="table-row">
+                <div style="font-size:24px;color:#253f50;font-weight:600;">River Hawks</div>
+                <div style="font-size:20px;color:#4f6675;">Cary</div>
+                <div style="font-size:20px;color:#4f6675;">Iris Moore</div>
+                <div><span class="pill active">Active</span></div>
+                <div style="font-family:Orbitron,sans-serif;font-size:24px;">3/5</div>
+              </div>
+              <div class="table-row" style="border-bottom:0;">
+                <div style="font-size:24px;color:#253f50;font-weight:600;">Silver Foxes</div>
+                <div style="font-size:20px;color:#4f6675;">Chapel Hill</div>
+                <div style="font-size:20px;color:#4f6675;">Noah Patel</div>
+                <div><span class="pill draft">Draft</span></div>
+                <div style="font-family:Orbitron,sans-serif;font-size:24px;">2/5</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:#5f7382;font-size:14px;margin-top:12px;">
+              <div>Showing 1-5 of 38 teams</div>
+              <div>Previous · 1 · 2 · 3 · Next</div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </section>
+
+    <section class="artboard" id="design-03">
+      <div class="grain"></div>
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="brand">ARENA PRO</div>
+          <div class="nav-item">Dashboard</div>
+          <div class="nav-item active">Tournaments</div>
+          <div class="nav-item">Brackets</div>
+          <div class="nav-item">Venues</div>
+          <div class="nav-item">Teams</div>
+        </aside>
+        <main class="main">
+          <div class="top">
+            <div class="search">Search tournament, venue, division...</div>
+            <button class="btn">Filters</button>
+            <button class="btn primary">+ New Round</button>
+          </div>
+          <div class="tag">Tournament Ops</div>
+          <h1>Spring Invitational</h1>
+
+          <div class="stage-grid" style="margin-top:16px;">
+            <section class="stage">
+              <div class="stage-title">Group Stage</div>
+              <div class="slot">Pool A · 8 Teams · 16 Matches</div>
+              <div class="slot">Pool B · 8 Teams · 16 Matches</div>
+              <div class="slot">Pool C · 8 Teams · 16 Matches</div>
+            </section>
+            <section class="stage">
+              <div class="stage-title">Quarterfinals</div>
+              <div class="slot">Match 1 · Winner A vs Runner B</div>
+              <div class="slot">Match 2 · Winner B vs Runner C</div>
+              <div class="slot">Match 3 · Winner C vs Runner A</div>
+            </section>
+            <section class="stage">
+              <div class="stage-title">Semis / Finals</div>
+              <div class="slot">Semifinal A · Apr 21</div>
+              <div class="slot">Semifinal B · Apr 22</div>
+              <div class="slot">Championship · Apr 27</div>
+            </section>
+          </div>
+
+          <div class="content" style="grid-template-columns:1.5fr 1fr;margin-top:14px;">
+            <section class="schedule">
+              <div class="panel-title" style="font-size:28px;">Upcoming Matchday Schedule</div>
+              <div class="timeline-row">
+                <div class="timeline-time">09:00 AM</div>
+                <div class="timeline-match">Red Dragons vs Blue Knights · Court A</div>
+                <div class="action">Assign Referee</div>
+              </div>
+              <div class="timeline-row">
+                <div class="timeline-time">10:30 AM</div>
+                <div class="timeline-match">River Hawks vs Silver Foxes · Court B</div>
+                <div class="action">Live Scoring</div>
+              </div>
+              <div class="timeline-row">
+                <div class="timeline-time">12:00 PM</div>
+                <div class="timeline-match">Golden Yetis vs Coastal Owls · Court C</div>
+                <div class="action">Pre-Game Check</div>
+              </div>
+              <div class="timeline-row" style="border-bottom:0;">
+                <div class="timeline-time">01:30 PM</div>
+                <div class="timeline-match">Top Seed TBD vs Wild Card · Main Floor</div>
+                <div class="action">Notify Teams</div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title">Health Check</div>
+              <div class="card" style="margin-bottom:10px;padding:14px;">
+                <div class="meta">Venue Readiness</div>
+                <div class="value" style="font-size:38px;">96%</div>
+              </div>
+              <div class="card" style="margin-bottom:10px;padding:14px;">
+                <div class="meta">Officials Assigned</div>
+                <div class="value" style="font-size:38px;">28/30</div>
+              </div>
+              <div class="card" style="padding:14px;">
+                <div class="meta">Open Issues</div>
+                <div class="value" style="font-size:38px;">3</div>
+              </div>
+              <button class="btn" style="width:100%;margin-top:14px;">Open Control Center</button>
+            </section>
+          </div>
+        </main>
+      </div>
+    </section>
+  </body>
+</html>

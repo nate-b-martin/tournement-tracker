@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
 	Table,
 	TableBody,
@@ -8,6 +9,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { usePagination } from "@/hooks/usePagination";
+import { cn } from "@/lib/utils";
 import { PaginationControls } from "../PaginationControls";
 import { ActionsCell } from "./ActionsCell";
 import type { ColumnDef, DataTableProps } from "./types";
@@ -19,9 +21,15 @@ function SortIndicator({
 	field: string;
 	currentSort?: { field: string; direction: "asc" | "desc" };
 }) {
-	if (currentSort?.field !== field) return null;
+	const isActive = currentSort?.field === field;
+	if (!isActive) {
+		return <span className="ml-1 text-muted-foreground/40">↕</span>;
+	}
+
 	return (
-		<span className="ml-1">{currentSort.direction === "asc" ? "▲" : "▼"}</span>
+		<span className="ml-1 text-primary">
+			{currentSort.direction === "asc" ? "▲" : "▼"}
+		</span>
 	);
 }
 
@@ -38,6 +46,7 @@ export function DataTable<T extends { _id: string }>({
 	itemName,
 	debugInfo,
 	actions,
+	toolbar,
 }: DataTableProps<T>) {
 	const paginationState = usePagination(
 		totalCount,
@@ -51,12 +60,9 @@ export function DataTable<T extends { _id: string }>({
 	};
 
 	// Build actions column if actions are enabled
-	const actionsColumn: ColumnDef<T> | null = useMemo(() => {
-		if (!actions?.canEdit && !actions?.canDelete) {
-			return null;
-		}
-
-		return {
+	let actionsColumn: ColumnDef<T> | null = null;
+	if (actions?.canEdit || actions?.canDelete) {
+		actionsColumn = {
 			header: "Actions",
 			field: "actions",
 			sortable: false,
@@ -70,95 +76,167 @@ export function DataTable<T extends { _id: string }>({
 				/>
 			),
 		};
-	}, [actions]);
+	}
 
 	// Combine columns
-	const allColumns = useMemo(() => {
-		return actionsColumn ? [...columns, actionsColumn] : columns;
-	}, [columns, actionsColumn]);
+	const allColumns = actionsColumn ? [...columns, actionsColumn] : columns;
 	if (isLoading) {
-		return <div className="p-4">Loading {itemName}...</div>;
+		return (
+			<div className="mt-3 rounded-2xl border border-card-outline/70 bg-card/50 p-10 text-center text-muted-foreground">
+				Loading {itemName}...
+			</div>
+		);
 	}
+
 	return (
-		<div className="container grid space-y-4 mt-3 max-h-1/2">
-			{/* Summary */}
-			<div className="text-sm text-gray-600 mb-4">
-				<span>
-					Showing {paginationState.startIndex}—{paginationState.endIndex} of{" "}
-					{totalCount} {itemName}
-				</span>
-				{paginationState.totalPages > 1 && (
-					<span className="ml-4 text-gray-500">
-						(Page {paginationState.currentPage + 1} of{" "}
-						{paginationState.totalPages})
-					</span>
-				)}
-			</div>
-			{/* Table */}
-			<div className="rounded-md border max-h-full overflow-y-auto">
-				<Table className="text-table-default">
-					<TableHeader>
-						<TableRow>
-							{allColumns.map((column) => (
-								<TableHead
-									key={column.field}
-									className={`${column.sortable ? "cursor-pointer hover:bg-gray-700" : ""} ${column.className || ""}`}
-									onClick={() => handleHeaderClick(column)}
+		<div className="mt-4 space-y-4">
+			<div className="rounded-2xl border border-card-outline/70 bg-card/50 p-5 shadow-md">
+				{toolbar && (
+					<div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+						<div className="flex flex-1 flex-wrap items-center gap-2">
+							{toolbar.search && (
+								<div className="relative min-w-64 grow max-w-xl">
+									<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+									<input
+										type="text"
+										value={toolbar.search.value}
+										onChange={(e) => toolbar.search?.onChange(e.target.value)}
+										placeholder={toolbar.search.placeholder || "Search..."}
+										className="h-10 w-full rounded-full border border-card-outline/70 bg-background/80 px-10 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+									/>
+								</div>
+							)}
+							{toolbar.filters?.map((filter) => (
+								<button
+									key={filter.label}
+									type="button"
+									onClick={filter.onClick}
+									className={cn(
+										"rounded-full border px-3 py-2 text-xs font-semibold tracking-wide transition-colors",
+										filter.active
+											? "border-primary/50 bg-primary/15 text-primary"
+											: "border-card-outline/70 bg-background/70 text-muted-foreground hover:bg-muted/40 hover:text-foreground",
+									)}
 								>
-									<div className="flex items-center">
-										{column.header}
-										{column.sortable && (
-											<SortIndicator
-												field={column.field}
-												currentSort={sorting}
-											/>
-										)}
-									</div>
-								</TableHead>
+									{filter.label}
+								</button>
 							))}
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{data.map((item) => (
-							<TableRow key={item._id}>
-								{allColumns.map((column) => (
-									<TableCell
-										key={`${item._id}-${column.field}`}
-										className={column.className}
+							{toolbar.extraContent}
+						</div>
+
+						{toolbar.actions && toolbar.actions.length > 0 && (
+							<div className="flex items-center gap-2 self-start lg:self-auto">
+								{toolbar.actions.map((action) => (
+									<Button
+										key={action.label}
+										type="button"
+										variant={action.variant || "outline"}
+										size="sm"
+										onClick={action.onClick}
 									>
-										{column.cell(item)}
-									</TableCell>
+										{action.label}
+									</Button>
 								))}
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+							</div>
+						)}
+					</div>
+				)}
+
+				<div className="mb-3 text-sm text-muted-foreground">
+					<span>
+						Showing {paginationState.startIndex}—{paginationState.endIndex} of{" "}
+						{totalCount} {itemName || "items"}
+					</span>
+					{paginationState.totalPages > 1 && (
+						<span className="ml-2 font-medium">
+							(Page {paginationState.currentPage + 1} of{" "}
+							{paginationState.totalPages})
+						</span>
+					)}
+				</div>
+
+				<div className="overflow-hidden rounded-xl border border-card-outline/70 bg-background/40">
+					<div className="max-h-[60vh] overflow-y-auto">
+						<Table className="text-table-default">
+							<TableHeader className="bg-muted/40">
+								<TableRow>
+									{allColumns.map((column) => (
+										<TableHead
+											key={column.field}
+											className={cn(
+												"sticky top-0 z-10 h-12 bg-muted/70 px-4 text-xs uppercase tracking-wider text-muted-foreground backdrop-blur",
+												column.sortable && "cursor-pointer hover:bg-muted/60",
+												column.className,
+											)}
+											onClick={() => handleHeaderClick(column)}
+										>
+											<div className="flex items-center">
+												{column.header}
+												{column.sortable && (
+													<SortIndicator
+														field={column.field}
+														currentSort={sorting}
+													/>
+												)}
+											</div>
+										</TableHead>
+									))}
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{data.map((item) => (
+									<TableRow
+										key={item._id}
+										className="h-14 border-card-outline/30"
+									>
+										{allColumns.map((column) => (
+											<TableCell
+												key={`${item._id}-${column.field}`}
+												className={cn("px-4 py-3 text-sm", column.className)}
+											>
+												{column.cell(item)}
+											</TableCell>
+										))}
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</div>
+				</div>
+
+				<PaginationControls
+					currentPage={paginationState.currentPage}
+					totalPages={paginationState.totalPages}
+					pageSize={paginationState.pageSize}
+					totalCount={totalCount}
+					hasNextPage={paginationState.hasNextPage}
+					hasPreviousPage={paginationState.hasPreviousPage}
+					onPageChange={(page) =>
+						onPaginationChange({
+							pageIndex: page,
+							pageSize: paginationState.pageSize,
+						})
+					}
+					onPageSizeChange={(size) =>
+						onPaginationChange({ pageIndex: 0, pageSize: size })
+					}
+				/>
 			</div>
-			<PaginationControls
-				currentPage={paginationState.currentPage}
-				totalPages={paginationState.totalPages}
-				pageSize={paginationState.pageSize}
-				totalCount={totalCount}
-				hasNextPage={paginationState.hasNextPage}
-				hasPreviousPage={paginationState.hasPreviousPage}
-				onPageChange={(page) =>
-					onPaginationChange({
-						pageIndex: page,
-						pageSize: paginationState.pageSize,
-					})
-				}
-				onPageSizeChange={(size) =>
-					onPaginationChange({ pageIndex: 0, pageSize: size })
-				}
-			/>
+
 			{/* Empty state */}
 			{data.length === 0 && (
-				<div className="text-center py-8 text-gray-500">{emptyMessage}</div>
+				<div className="rounded-xl border border-dashed border-card-outline/80 bg-card/20 px-6 py-12 text-center text-muted-foreground">
+					<div className="mb-2 font-orbitron text-lg text-foreground/80">
+						No results
+					</div>
+					<div>{emptyMessage}</div>
+				</div>
 			)}
+
 			{/* Debug info */}
 			{debugInfo && (
-				<div className="text-xs text-gray-500 mt-4 p-2 bg-gray-50 rounded">
-					<div>Debug info:</div>
+				<div className="rounded-lg border border-card-outline/60 bg-muted/20 p-3 text-xs text-muted-foreground">
+					<div className="mb-1">Debug info:</div>
 					{Object.entries(debugInfo).map(([key, value]) => (
 						<div key={key}>
 							{key}:{" "}

@@ -7,11 +7,13 @@
  * @fileoverview Table component for displaying player data
  */
 
+import { useState } from "react";
 import {
 	type PlayerListOptions,
 	type PlayerWithTeam,
 	usePlayers,
 } from "@/hooks/usePlayers";
+import { cn } from "@/lib/utils";
 import { DataTable } from "./DataTable/DataTable";
 import type { ColumnDef } from "./DataTable/types";
 
@@ -49,7 +51,21 @@ const playerColumns: ColumnDef<PlayerWithTeam>[] = [
 		header: "Status",
 		field: "status",
 		sortable: true,
-		cell: (player) => <span className="capitalize">{player.status}</span>,
+		cell: (player) => (
+			<span
+				className={cn(
+					"inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize",
+					player.status === "active" &&
+						"border border-emerald-500/30 bg-emerald-500/15 text-emerald-300",
+					player.status === "inactive" &&
+						"border border-slate-500/30 bg-slate-500/15 text-slate-300",
+					player.status === "injured" &&
+						"border border-amber-500/30 bg-amber-500/15 text-amber-300",
+				)}
+			>
+				{player.status}
+			</span>
+		),
 	},
 	{
 		header: "Captain",
@@ -78,14 +94,71 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 		isLoading,
 		setPagination,
 		setSorting,
+		setFiltering,
 		currentOptions,
 	} = usePlayers(initialOptions);
+	const [searchQuery, setSearchQuery] = useState("");
+	const [statusFilter, setStatusFilter] = useState(
+		initialOptions?.filtering?.status?.[0] || "all",
+	);
+
+	// Client-side search filter function - filters players without API calls
+	const filterPlayersBySearch = (
+		playersList: PlayerWithTeam[],
+		query: string,
+	): PlayerWithTeam[] => {
+		const trimmedQuery = query.trim().toLowerCase();
+		if (!trimmedQuery) return playersList;
+
+		return playersList.filter(
+			(player) =>
+				player.firstName.toLowerCase().includes(trimmedQuery) ||
+				player.lastName.toLowerCase().includes(trimmedQuery) ||
+				player.email?.toLowerCase().includes(trimmedQuery) ||
+				player.phone?.includes(trimmedQuery),
+		);
+	};
+
+	// Build backend filtering - only includes status and teamId, NOT search
+	const buildFiltering = (status: string): PlayerListOptions["filtering"] => {
+		const nextFiltering: NonNullable<PlayerListOptions["filtering"]> = {};
+
+		if (status !== "all") {
+			nextFiltering.status = [status];
+		}
+
+		if (currentOptions?.filtering?.teamId) {
+			nextFiltering.teamId = currentOptions.filtering.teamId;
+		}
+
+		return Object.keys(nextFiltering).length > 0 ? nextFiltering : undefined;
+	};
+
+	const applyStatusFilter = (status: string) => {
+		setFiltering(buildFiltering(status));
+		setPagination({
+			pageIndex: 0,
+			pageSize: currentOptions?.pagination?.pageSize || 10,
+		});
+	};
+
+	const clearFilters = () => {
+		setSearchQuery("");
+		setStatusFilter("all");
+		setFiltering(undefined);
+		setPagination({
+			pageIndex: 0,
+			pageSize: currentOptions?.pagination?.pageSize || 10,
+		});
+	};
+
+	// Apply client-side search filter to players data
+	const filteredPlayers = filterPlayersBySearch(players, searchQuery);
 
 	const handleSort = (field: string) => {
-		if (!initialOptions?.sorting) return;
-		const currentSort = initialOptions.sorting;
+		const currentSort = currentOptions?.sorting;
 		const newDirection =
-			currentSort.field === field && currentSort.direction === "asc"
+			currentSort?.field === field && currentSort?.direction === "asc"
 				? "desc"
 				: "asc";
 		setSorting({ field, direction: newDirection });
@@ -106,18 +179,70 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 		console.log("Deleting player:", player);
 	};
 
+	const toolbarFilters = [
+		{
+			label: "All Statuses",
+			active: statusFilter === "all",
+			onClick: () => {
+				setStatusFilter("all");
+				applyStatusFilter("all");
+			},
+		},
+		{
+			label: "Active",
+			active: statusFilter === "active",
+			onClick: () => {
+				setStatusFilter("active");
+				applyStatusFilter("active");
+			},
+		},
+		{
+			label: "Inactive",
+			active: statusFilter === "inactive",
+			onClick: () => {
+				setStatusFilter("inactive");
+				applyStatusFilter("inactive");
+			},
+		},
+		{
+			label: "Injured",
+			active: statusFilter === "injured",
+			onClick: () => {
+				setStatusFilter("injured");
+				applyStatusFilter("injured");
+			},
+		},
+	];
+
 	return (
 		<DataTable
-			data={players}
+			data={filteredPlayers}
 			columns={playerColumns}
 			isLoading={isLoading}
 			totalCount={totalCount}
 			pagination={currentOptions?.pagination || { pageIndex: 0, pageSize: 10 }}
 			onPaginationChange={handlePaginationChange}
-			sorting={initialOptions?.sorting}
+			sorting={currentOptions?.sorting}
 			onSort={handleSort}
 			emptyMessage="No players found"
 			itemName="players"
+			toolbar={{
+				search: {
+					value: searchQuery,
+					placeholder: "Search players, email, phone...",
+					onChange: (value) => {
+						setSearchQuery(value);
+					},
+				},
+				filters: toolbarFilters,
+				actions: [
+					{
+						label: "Clear filters",
+						variant: "ghost",
+						onClick: clearFilters,
+					},
+				],
+			}}
 			actions={{
 				canEdit: isAdmin ?? false,
 				canDelete: isAdmin ?? false,
