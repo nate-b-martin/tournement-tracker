@@ -2,6 +2,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import Header from "../components/Header";
+import { AuthErrorBoundary } from "../components/AuthErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
 import ConvexClerkProvider from "../integrations/convex-clerk-provider";
 import appCss from "../styles.css?url";
@@ -39,21 +40,23 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <ConvexClerkProvider>
-          <Header />
+          <AuthErrorBoundary>
+            <Header />
 
-          <div className="container mx-auto px-4">{children}</div>
-          <Toaster />
-          <TanStackDevtools
-            config={{
-              position: "bottom-right",
-            }}
-            plugins={[
-              {
-                name: "Tanstack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
+            <div className="container mx-auto px-4">{children}</div>
+            <Toaster />
+            <TanStackDevtools
+              config={{
+                position: "bottom-right",
+              }}
+              plugins={[
+                {
+                  name: "Tanstack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
+          </AuthErrorBoundary>
         </ConvexClerkProvider>
         <Scripts />
       </body>

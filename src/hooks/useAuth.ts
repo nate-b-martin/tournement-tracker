@@ -1,6 +1,7 @@
 import { useUser } from "@clerk/clerk-react";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 
@@ -32,6 +33,7 @@ export function useAuth(): UseAuthResult {
 	const { isLoaded, isSignedIn, user } = useUser();
 	const [isCreatingProfile, setIsCreatingProfile] = useState(false);
 	const [error, setError] = useState<Error | null>(null);
+	const signInToastShown = useRef(false);
 
 	const profile = useQuery(
 		api.userProfiles.getCurrentUser,
@@ -62,10 +64,16 @@ export function useAuth(): UseAuthResult {
 				email: user.primaryEmailAddress?.emailAddress,
 				displayName: user.fullName || user.username || undefined,
 			})
+				.then(() => {
+					toast.success("Welcome! Your profile has been created.");
+				})
 				.catch((err) => {
+					const errorMsg =
+						err instanceof Error ? err.message : "Failed to create profile";
 					setError(
-						err instanceof Error ? err : new Error("Failed to create profile"),
+						err instanceof Error ? err : new Error(errorMsg),
 					);
+					toast.error(`Auth error: ${errorMsg}`);
 					console.error("Failed to create user profile:", err);
 				})
 				.finally(() => {
@@ -73,6 +81,14 @@ export function useAuth(): UseAuthResult {
 				});
 		}
 	}, [isLoaded, isSignedIn, user, profile, isCreatingProfile, createProfile]);
+
+	// Show sign-in toast only once when user first signs in
+	useEffect(() => {
+		if (!signInToastShown.current && isLoaded && isSignedIn && user && profile) {
+			signInToastShown.current = true;
+			toast.success(`Welcome back, ${user.firstName || "User"}!`);
+		}
+	}, [isLoaded, isSignedIn, user, profile]);
 
 	// If Clerk is not configured (e.g. in CI or local dev without keys),
 	// return a safe unauthenticated state so components still render instead of
