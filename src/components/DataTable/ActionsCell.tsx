@@ -17,14 +17,26 @@ export function ActionsCell<T>({
 	onDelete,
 }: ActionsCellProps<T>) {
 	return (
-		<div className="flex gap-2">
+		<div className="flex items-center gap-2">
 			{canEdit && (
-				<Button variant="outline" size="sm" onClick={() => onEdit?.(item)}>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					className="min-w-16 rounded-md"
+					onClick={() => onEdit?.(item)}
+				>
 					Edit
 				</Button>
 			)}
 			{canDelete && (
-				<Button variant="outline" size="sm" onClick={() => onDelete?.(item)}>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					className="min-w-16 rounded-md"
+					onClick={() => onDelete?.(item)}
+				>
 					Delete
 				</Button>
 			)}
