@@ -172,11 +172,15 @@ export function TeamsTable({ initialOptions, isAdmin }: TeamsTableProps) {
 	};
 
 	const handleEdit = (team: Team) => {
-		console.log("Editing team:", team);
+		if (import.meta.env.DEV) {
+			console.log("Editing team:", team);
+		}
 	};
 
 	const handleDelete = (team: Team) => {
-		console.log("Deleting team:", team);
+		if (import.meta.env.DEV) {
+			console.log("Deleting team:", team);
+		}
 	};
 
 	const toolbarFilters = [

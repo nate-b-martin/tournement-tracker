@@ -7,10 +7,14 @@ const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!CONVEX_URL) {
-	console.error("missing envar CONVEX_URL");
+	if (import.meta.env.DEV) {
+		console.error("missing envar CONVEX_URL");
+	}
 }
 if (!PUBLISHABLE_KEY) {
-	console.error("missing envar VITE_CLERK_PUBLISHABLE_KEY");
+	if (import.meta.env.DEV) {
+		console.error("missing envar VITE_CLERK_PUBLISHABLE_KEY");
+	}
 }
 
 // Only create Convex client if URL is provided, otherwise create a dummy client

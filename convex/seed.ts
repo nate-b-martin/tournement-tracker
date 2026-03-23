@@ -1,5 +1,32 @@
-import { mutation } from "./_generated/server"
-import { v } from "convex/values"
+import { mutation, type MutationCtx } from "./_generated/server"
+
+async function assertSeedOperationAuthorized(ctx: MutationCtx) {
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) {
+    throw new Error("Unauthorized: Must be logged in")
+  }
+
+  const adminProfile = await ctx.db
+    .query("userProfiles")
+    .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+    .unique()
+
+  if (!adminProfile || adminProfile.role !== "admin") {
+    throw new Error("Forbidden: Admin access required")
+  }
+
+  const runtimeEnv = (
+    process.env.CONVEX_DEPLOYMENT ??
+    process.env.APP_ENV ??
+    process.env.NODE_ENV ??
+    ""
+  ).toLowerCase()
+
+  const allowedEnvironments = ["", "development", "dev", "staging", "test"]
+  if (!allowedEnvironments.includes(runtimeEnv)) {
+    throw new Error("Seed operations are disabled in production")
+  }
+}
 
 /**
  * Seed function to populate the database with test data for MVP testing.
@@ -21,6 +48,8 @@ import { v } from "convex/values"
 export const seed = mutation({
   args: {},
   handler: async (ctx) => {
+    await assertSeedOperationAuthorized(ctx)
+
     // ============================================================
     // STEP 1: INSERT TOURNAMENT
     // ============================================================
@@ -460,6 +489,8 @@ export const seed = mutation({
 export const clearAllData = mutation({
   args: {},
   handler: async (ctx) => {
+    await assertSeedOperationAuthorized(ctx)
+
     // Query all tables and delete all records.
     // Note: This is destructive and should only be used in development.
     const tables = [

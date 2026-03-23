@@ -1,65 +1,67 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import Header from "../components/Header";
-import { AuthErrorBoundary } from "../components/AuthErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthErrorBoundary } from "../components/AuthErrorBoundary";
+import Header from "../components/Header";
 import ConvexClerkProvider from "../integrations/convex-clerk-provider";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      {
-        charSet: "utf-8",
-      },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
-      {
-        title: "TanStack Start Starter",
-      },
-    ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-  }),
+	head: () => ({
+		meta: [
+			{
+				charSet: "utf-8",
+			},
+			{
+				name: "viewport",
+				content: "width=device-width, initial-scale=1",
+			},
+			{
+				title: "TanStack Start Starter",
+			},
+		],
+		links: [
+			{
+				rel: "stylesheet",
+				href: appCss,
+			},
+		],
+	}),
 
-  shellComponent: RootDocument,
+	shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <ConvexClerkProvider>
-          <AuthErrorBoundary>
-            <Header />
+	return (
+		<html lang="en">
+			<head>
+				<HeadContent />
+			</head>
+			<body>
+				<ConvexClerkProvider>
+					<AuthErrorBoundary>
+						<Header />
 
-            <div className="container mx-auto px-4">{children}</div>
-            <Toaster />
-            <TanStackDevtools
-              config={{
-                position: "bottom-right",
-              }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-              ]}
-            />
-          </AuthErrorBoundary>
-        </ConvexClerkProvider>
-        <Scripts />
-      </body>
-    </html>
-  );
+						<div className="container mx-auto px-4">{children}</div>
+						<Toaster />
+						{import.meta.env.DEV && (
+							<TanStackDevtools
+								config={{
+									position: "bottom-right",
+								}}
+								plugins={[
+									{
+										name: "Tanstack Router",
+										render: <TanStackRouterDevtoolsPanel />,
+									},
+								]}
+							/>
+						)}
+					</AuthErrorBoundary>
+				</ConvexClerkProvider>
+				<Scripts />
+			</body>
+		</html>
+	);
 }
