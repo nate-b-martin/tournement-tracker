@@ -25,6 +25,21 @@ interface PlayersTableProps {
 }
 
 type PlayerTableView = "contact" | "stats";
+type PlayerFiltering = NonNullable<PlayerListOptions["filtering"]>;
+type FilterTeamId = PlayerFiltering["teamId"];
+type FilterStatus = "all" | "active" | "inactive" | "injured";
+
+const DEFAULT_PAGINATION = { pageIndex: 0, pageSize: 10 };
+const STATUS_FILTERS: Array<{ value: FilterStatus; label: string }> = [
+	{ value: "all", label: "All Statuses" },
+	{ value: "active", label: "Active" },
+	{ value: "inactive", label: "Inactive" },
+	{ value: "injured", label: "Injured" },
+];
+
+function isFilterStatus(value: string | undefined): value is FilterStatus {
+	return value === "all" || value === "active" || value === "inactive" || value === "injured";
+}
 
 //  Column definitions for the players table
 const playerColumns: ColumnDef<PlayerWithTeam>[] = [
@@ -184,8 +199,9 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 	} = usePlayerStats(initialOptions);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [tableView, setTableView] = useState<PlayerTableView>("contact");
-	const [statusFilter, setStatusFilter] = useState(
-		initialOptions?.filtering?.status?.[0] || "all",
+	const initialStatus = initialOptions?.filtering?.status?.[0];
+	const [statusFilter, setStatusFilter] = useState<FilterStatus>(
+		isFilterStatus(initialStatus) ? initialStatus : "all",
 	);
 
 	// Client-side search filter function - filters players without API calls
@@ -214,16 +230,10 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 
 	// Build backend filtering - only includes status and teamId, NOT search
 	const buildFiltering = (
-		status: string,
-		teamId?: PlayerListOptions["filtering"] extends
-			| undefined
-			| infer T
-			? T extends { teamId?: infer U }
-				? U
-				: never
-			: never,
+		status: FilterStatus,
+		teamId?: FilterTeamId,
 	): PlayerListOptions["filtering"] => {
-		const nextFiltering: NonNullable<PlayerListOptions["filtering"]> = {};
+		const nextFiltering: PlayerFiltering = {};
 
 		if (status !== "all") {
 			nextFiltering.status = [status];
@@ -236,19 +246,23 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 		return Object.keys(nextFiltering).length > 0 ? nextFiltering : undefined;
 	};
 
-	const applyStatusFilter = (status: string) => {
+	const resetPagination = () => {
+		setPagination({
+			pageIndex: DEFAULT_PAGINATION.pageIndex,
+			pageSize: currentOptions?.pagination?.pageSize || DEFAULT_PAGINATION.pageSize,
+		});
+		setStatsPagination({
+			pageIndex: DEFAULT_PAGINATION.pageIndex,
+			pageSize: statsCurrentOptions?.pagination?.pageSize || DEFAULT_PAGINATION.pageSize,
+		});
+	};
+
+	const applyStatusFilter = (status: FilterStatus) => {
 		setFiltering(buildFiltering(status, currentOptions?.filtering?.teamId));
 		setStatsFiltering(
 			buildFiltering(status, statsCurrentOptions?.filtering?.teamId),
 		);
-		setPagination({
-			pageIndex: 0,
-			pageSize: currentOptions?.pagination?.pageSize || 10,
-		});
-		setStatsPagination({
-			pageIndex: 0,
-			pageSize: statsCurrentOptions?.pagination?.pageSize || 10,
-		});
+		resetPagination();
 	};
 
 	const clearFilters = () => {
@@ -256,14 +270,7 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 		setStatusFilter("all");
 		setFiltering(undefined);
 		setStatsFiltering(undefined);
-		setPagination({
-			pageIndex: 0,
-			pageSize: currentOptions?.pagination?.pageSize || 10,
-		});
-		setStatsPagination({
-			pageIndex: 0,
-			pageSize: statsCurrentOptions?.pagination?.pageSize || 10,
-		});
+		resetPagination();
 	};
 
 	// Apply client-side search filter to players data
@@ -307,40 +314,14 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 		console.log("Deleting player:", player);
 	};
 
-	const toolbarFilters = [
-		{
-			label: "All Statuses",
-			active: statusFilter === "all",
-			onClick: () => {
-				setStatusFilter("all");
-				applyStatusFilter("all");
-			},
+	const toolbarFilters = STATUS_FILTERS.map((filter) => ({
+		label: filter.label,
+		active: statusFilter === filter.value,
+		onClick: () => {
+			setStatusFilter(filter.value);
+			applyStatusFilter(filter.value);
 		},
-		{
-			label: "Active",
-			active: statusFilter === "active",
-			onClick: () => {
-				setStatusFilter("active");
-				applyStatusFilter("active");
-			},
-		},
-		{
-			label: "Inactive",
-			active: statusFilter === "inactive",
-			onClick: () => {
-				setStatusFilter("inactive");
-				applyStatusFilter("inactive");
-			},
-		},
-		{
-			label: "Injured",
-			active: statusFilter === "injured",
-			onClick: () => {
-				setStatusFilter("injured");
-				applyStatusFilter("injured");
-			},
-		},
-	];
+	}));
 
 	const toggleContent = (
 		<div
@@ -386,9 +367,7 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 				columns={playerStatsColumns}
 				isLoading={statsIsLoading}
 				totalCount={statsTotalCount}
-				pagination={
-					statsCurrentOptions?.pagination || { pageIndex: 0, pageSize: 10 }
-				}
+				pagination={statsCurrentOptions?.pagination || DEFAULT_PAGINATION}
 				onPaginationChange={handlePaginationChange}
 				sorting={statsCurrentOptions?.sorting}
 				onSort={handleSort}
@@ -428,7 +407,7 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 			columns={playerColumns}
 			isLoading={isLoading}
 			totalCount={totalCount}
-			pagination={currentOptions?.pagination || { pageIndex: 0, pageSize: 10 }}
+			pagination={currentOptions?.pagination || DEFAULT_PAGINATION}
 			onPaginationChange={handlePaginationChange}
 			sorting={currentOptions?.sorting}
 			onSort={handleSort}
