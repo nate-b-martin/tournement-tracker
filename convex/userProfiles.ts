@@ -23,6 +23,15 @@ export const getCurrentUser = query({
   },
   returns: v.union(userProfileValidator, v.null()),
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    if (args.userId !== identity.subject) {
+      throw new Error("Forbidden: Cannot read profile for another user");
+    }
+
     const userProfile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
@@ -46,6 +55,15 @@ export const getUserRole = query({
     ctx,
     args,
   ): Promise<Role | null> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    if (args.userId !== identity.subject) {
+      throw new Error("Forbidden: Cannot read role for another user");
+    }
+
     const userProfile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
@@ -58,6 +76,11 @@ export const getIsFirstUser = query({
   args: {},
   returns: v.boolean(),
   handler: async (ctx): Promise<boolean> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
     const user = await ctx.db.query("userProfiles").first();
     return user === null;
   },

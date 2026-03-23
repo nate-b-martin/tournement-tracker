@@ -307,11 +307,15 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 	};
 
 	const handleEdit = (player: PlayerWithTeam) => {
-		console.log("Editing player:", player);
+		if (import.meta.env.DEV) {
+			console.log("Editing player:", player);
+		}
 	};
 
 	const handleDelete = (player: PlayerWithTeam) => {
-		console.log("Deleting player:", player);
+		if (import.meta.env.DEV) {
+			console.log("Deleting player:", player);
+		}
 	};
 
 	const toolbarFilters = STATUS_FILTERS.map((filter) => ({
