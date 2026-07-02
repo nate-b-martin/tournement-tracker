@@ -141,15 +141,15 @@ export function useMockPlayerList(
 				(player) =>
 					player.firstName.toLowerCase().includes(searchTerm) ||
 					player.lastName.toLowerCase().includes(searchTerm) ||
-					(player.email && player.email.toLowerCase().includes(searchTerm)) ||
-					(player.phone && player.phone.includes(searchTerm)),
+					player.email?.toLowerCase().includes(searchTerm) ||
+					player.phone?.includes(searchTerm),
 			);
 		}
 
 		// Apply status filter
 		if (filtering?.status && filtering.status.length > 0) {
 			players = players.filter((player) =>
-				filtering.status!.includes(player.status),
+				filtering.status?.includes(player.status),
 			);
 		}
 
@@ -157,8 +157,8 @@ export function useMockPlayerList(
 		if (sorting) {
 			players.sort((a, b) => {
 				const { field, direction } = sorting;
-				let aValue: any = a[field as keyof typeof a];
-				let bValue: any = b[field as keyof typeof b];
+				let aValue: unknown = a[field as keyof typeof a];
+				let bValue: unknown = b[field as keyof typeof b];
 
 				// Handle special cases
 				if (field === "fullName") {
@@ -171,8 +171,10 @@ export function useMockPlayerList(
 				if (aValue === undefined) return direction === "asc" ? 1 : -1;
 				if (bValue === undefined) return direction === "asc" ? -1 : 1;
 
-				if (aValue < bValue) return direction === "asc" ? -1 : 1;
-				if (aValue > bValue) return direction === "asc" ? 1 : -1;
+				if ((aValue as string | number) < (bValue as string | number))
+					return direction === "asc" ? -1 : 1;
+				if ((aValue as string | number) > (bValue as string | number))
+					return direction === "asc" ? 1 : -1;
 				return 0;
 			});
 		}

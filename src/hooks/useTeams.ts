@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react";
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -32,27 +32,36 @@ export function useTeams(initialOptions?: TeamListOptions) {
 	const totalCount = result?.totalCount || 0;
 	const isLoading = result === undefined;
 
-	const setPagination = useCallback((pagination: { pageIndex: number; pageSize: number }) => {
-		setCurrentOptions((prev) => ({
-			...prev,
-			pagination,
-		}));
-	}, []);
+	const setPagination = useCallback(
+		(pagination: { pageIndex: number; pageSize: number }) => {
+			setCurrentOptions((prev) => ({
+				...prev,
+				pagination,
+			}));
+		},
+		[],
+	);
 
-	const setSorting = useCallback((sorting: { field: string; direction: "asc" | "desc" }) => {
-		setCurrentOptions((prev) => ({
-			...prev,
-			sorting,
-		}));
-	}, []);
+	const setSorting = useCallback(
+		(sorting: { field: string; direction: "asc" | "desc" }) => {
+			setCurrentOptions((prev) => ({
+				...prev,
+				sorting,
+			}));
+		},
+		[],
+	);
 
-	const setFiltering = useCallback((filtering?: TeamListOptions["filtering"]) => {
-		setCurrentOptions((prev) => ({
-			...prev,
-			filtering,
-			pagination: { pageIndex: 0, pageSize: prev.pagination?.pageSize || 10 },
-		}));
-	}, []);
+	const setFiltering = useCallback(
+		(filtering?: TeamListOptions["filtering"]) => {
+			setCurrentOptions((prev) => ({
+				...prev,
+				filtering,
+				pagination: { pageIndex: 0, pageSize: prev.pagination?.pageSize || 10 },
+			}));
+		},
+		[],
+	);
 
 	return {
 		teams,

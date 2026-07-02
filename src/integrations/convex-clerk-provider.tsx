@@ -15,7 +15,9 @@ if (!PUBLISHABLE_KEY) {
 
 // Only create Convex client if URL is provided, otherwise create a dummy client
 // that won't work but also won't break initialization
-const convex = CONVEX_URL ? new ConvexReactClient(CONVEX_URL) : new ConvexReactClient("");
+const convex = CONVEX_URL
+	? new ConvexReactClient(CONVEX_URL)
+	: new ConvexReactClient("");
 
 function ClientProviders({ children }: { children: React.ReactNode }) {
 	const [mounted, setMounted] = useState(false);

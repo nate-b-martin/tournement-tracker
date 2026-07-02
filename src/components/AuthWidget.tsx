@@ -1,10 +1,9 @@
-import { useAuth } from "@/hooks/useAuth";
-import { useClerk } from "@clerk/clerk-react";
-import { SignInButton, UserButton } from "@clerk/clerk-react";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { LogOut, Shield, Eye } from "lucide-react";
+import { SignInButton, UserButton, useClerk } from "@clerk/clerk-react";
+import { Eye, LogOut, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 
 export function AuthWidget() {
 	const { isLoaded, isSignedIn, isAdmin, user, profile } = useAuth();

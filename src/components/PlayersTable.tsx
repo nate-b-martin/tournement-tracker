@@ -9,11 +9,14 @@
 
 import { useState } from "react";
 import {
+	type PlayerStatsWithTeam,
+	usePlayerStats,
+} from "@/hooks/usePlayerStats";
+import {
 	type PlayerListOptions,
 	type PlayerWithTeam,
 	usePlayers,
 } from "@/hooks/usePlayers";
-import { type PlayerStatsWithTeam, usePlayerStats } from "@/hooks/usePlayerStats";
 import { cn } from "@/lib/utils";
 import { DataTable } from "./DataTable/DataTable";
 import type { ColumnDef } from "./DataTable/types";
@@ -38,7 +41,12 @@ const STATUS_FILTERS: Array<{ value: FilterStatus; label: string }> = [
 ];
 
 function isFilterStatus(value: string | undefined): value is FilterStatus {
-	return value === "all" || value === "active" || value === "inactive" || value === "injured";
+	return (
+		value === "all" ||
+		value === "active" ||
+		value === "inactive" ||
+		value === "injured"
+	);
 }
 
 //  Column definitions for the players table
@@ -249,11 +257,14 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 	const resetPagination = () => {
 		setPagination({
 			pageIndex: DEFAULT_PAGINATION.pageIndex,
-			pageSize: currentOptions?.pagination?.pageSize || DEFAULT_PAGINATION.pageSize,
+			pageSize:
+				currentOptions?.pagination?.pageSize || DEFAULT_PAGINATION.pageSize,
 		});
 		setStatsPagination({
 			pageIndex: DEFAULT_PAGINATION.pageIndex,
-			pageSize: statsCurrentOptions?.pagination?.pageSize || DEFAULT_PAGINATION.pageSize,
+			pageSize:
+				statsCurrentOptions?.pagination?.pageSize ||
+				DEFAULT_PAGINATION.pageSize,
 		});
 	};
 
@@ -306,12 +317,12 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 		setStatsPagination(pagination);
 	};
 
-	const handleEdit = (player: PlayerWithTeam) => {
-		console.log("Editing player:", player);
+	const handleEdit = (_player: PlayerWithTeam) => {
+		// TODO: Implement edit player flow
 	};
 
-	const handleDelete = (player: PlayerWithTeam) => {
-		console.log("Deleting player:", player);
+	const handleDelete = (_player: PlayerWithTeam) => {
+		// TODO: Implement delete player flow
 	};
 
 	const toolbarFilters = STATUS_FILTERS.map((filter) => ({

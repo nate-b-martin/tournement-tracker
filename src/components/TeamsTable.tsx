@@ -105,10 +105,7 @@ export function TeamsTable({ initialOptions, isAdmin }: TeamsTableProps) {
 		initialOptions?.filtering?.status?.[0] || "all",
 	);
 
-	const filterTeamsBySearch = (
-		teamsList: Team[],
-		query: string,
-	): Team[] => {
+	const filterTeamsBySearch = (teamsList: Team[], query: string): Team[] => {
 		const trimmedQuery = query.trim().toLowerCase();
 		if (!trimmedQuery) return teamsList;
 
@@ -171,12 +168,12 @@ export function TeamsTable({ initialOptions, isAdmin }: TeamsTableProps) {
 		setPagination(pagination);
 	};
 
-	const handleEdit = (team: Team) => {
-		console.log("Editing team:", team);
+	const handleEdit = (_team: Team) => {
+		// TODO: Implement edit team flow
 	};
 
-	const handleDelete = (team: Team) => {
-		console.log("Deleting team:", team);
+	const handleDelete = (_team: Team) => {
+		// TODO: Implement delete team flow
 	};
 
 	const toolbarFilters = [

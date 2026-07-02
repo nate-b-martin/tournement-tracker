@@ -473,6 +473,7 @@ export const clearAllData = mutation({
     ]
 
     for (const table of tables) {
+      // biome-ignore lint/suspicious/noExplicitAny: Dynamic table name
       const documents = await ctx.db.query(table as any).collect()
       for (const doc of documents) {
         await ctx.db.delete(doc._id)

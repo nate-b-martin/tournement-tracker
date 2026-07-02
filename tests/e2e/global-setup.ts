@@ -67,7 +67,7 @@ setup("authenticate user and save auth state", async ({ page, context }) => {
 		await clerk.loaded({ page });
 		await page.waitForFunction(
 			() => {
-				const clerk = (window as any).Clerk;
+				const clerk = (window as unknown as { Clerk: Record<string, unknown> }).Clerk;
 				return Boolean(clerk?.loaded && (clerk?.session || clerk?.user));
 			},
 			undefined,
