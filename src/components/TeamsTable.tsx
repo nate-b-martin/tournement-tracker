@@ -7,29 +7,21 @@
  * @fileoverview Table component for displaying team data
  */
 
-import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { type TeamListOptions, useTeams } from "@/hooks/useTeams";
 import { cn } from "@/lib/utils";
+import { api } from "../../convex/_generated/api";
+import type { Doc, Id } from "../../convex/_generated/dataModel";
+import { ConfirmDelete } from "./ConfirmDelete";
 import { DataTable } from "./DataTable/DataTable";
 import type { ColumnDef } from "./DataTable/types";
+import { TeamDialog } from "./TeamDialog";
+import { TeamRosterDialog } from "./TeamRosterDialog";
 
-interface Team {
-	_id: string;
-	tournamentId: string;
-	name: string;
-	description?: string;
-	coachName: string;
-	coachEmail: string;
-	coachPhone: string;
-	city?: string;
-	homeField?: string;
-	organization?: string;
-	teamAgeGroup?: string;
-	status: "active" | "inactive" | "suspended";
-	captainPlayerId?: string;
-	createdAt: number;
-	updatedAt: number;
-}
+type Team = Doc<"teams"> & { playerCount?: number };
 
 interface TeamsTableProps {
 	initialOptions?: TeamListOptions;
@@ -42,6 +34,12 @@ const teamColumns: ColumnDef<Team>[] = [
 		field: "name",
 		sortable: true,
 		cell: (team) => <span className="font-medium">{team.name}</span>,
+	},
+	{
+		header: "Players",
+		field: "playerCount",
+		sortable: false,
+		cell: (team) => <span>{team.playerCount ?? 0}</span>,
 	},
 	{
 		header: "Coach",
@@ -99,6 +97,46 @@ export function TeamsTable({ initialOptions, isAdmin }: TeamsTableProps) {
 		setFiltering,
 		currentOptions,
 	} = useTeams(initialOptions);
+	const tournamentsResult = useQuery(api.tournaments.list, {});
+	const allTournaments = tournamentsResult?.data || [];
+	const deleteTeam = useMutation(api.teams.remove);
+
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editingTeam, setEditingTeam] = useState<Team | undefined>();
+	const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+	const [deletingTeam, setDeletingTeam] = useState<Team | undefined>();
+	const [isDeleting, setIsDeleting] = useState(false);
+
+	const [rosterTeam, setRosterTeam] = useState<Team | null>(null);
+	const [rosterOpen, setRosterOpen] = useState(false);
+
+	const handleViewRoster = useCallback((team: Team) => {
+		setRosterTeam(team);
+		setRosterOpen(true);
+	}, []);
+
+	const columns = useMemo<ColumnDef<Team>[]>(
+		() => [
+			...teamColumns,
+			{
+				header: "",
+				field: "roster",
+				sortable: false,
+				cell: (team) => (
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onClick={() => handleViewRoster(team)}
+					>
+						View Players
+					</Button>
+				),
+			},
+		],
+		[handleViewRoster],
+	);
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState(
@@ -168,12 +206,36 @@ export function TeamsTable({ initialOptions, isAdmin }: TeamsTableProps) {
 		setPagination(pagination);
 	};
 
-	const handleEdit = (_team: Team) => {
-		// TODO: Implement edit team flow
+	const handleEdit = (team: Team) => {
+		setEditingTeam(team);
+		setDialogMode("edit");
+		setDialogOpen(true);
 	};
 
-	const handleDelete = (_team: Team) => {
-		// TODO: Implement delete team flow
+	const handleDelete = (team: Team) => {
+		setDeletingTeam(team);
+		setDeleteConfirmOpen(true);
+	};
+
+	const confirmDelete = async () => {
+		if (!deletingTeam) return;
+		setIsDeleting(true);
+		try {
+			await deleteTeam({ id: deletingTeam._id as Id<"teams"> });
+			toast.success("Team deleted");
+			setDeleteConfirmOpen(false);
+			setDeletingTeam(undefined);
+		} catch {
+			toast.error("Failed to delete team");
+		} finally {
+			setIsDeleting(false);
+		}
+	};
+
+	const handleAddTeam = () => {
+		setEditingTeam(undefined);
+		setDialogMode("create");
+		setDialogOpen(true);
 	};
 
 	const toolbarFilters = [
@@ -212,40 +274,85 @@ export function TeamsTable({ initialOptions, isAdmin }: TeamsTableProps) {
 	];
 
 	return (
-		<DataTable
-			data={filteredTeams}
-			columns={teamColumns}
-			isLoading={isLoading}
-			totalCount={totalCount}
-			pagination={currentOptions?.pagination || { pageIndex: 0, pageSize: 10 }}
-			onPaginationChange={handlePaginationChange}
-			sorting={currentOptions?.sorting}
-			onSort={handleSort}
-			emptyMessage="No teams found"
-			itemName="teams"
-			toolbar={{
-				search: {
-					value: searchQuery,
-					placeholder: "Search teams, coach name, organization...",
-					onChange: (value) => {
-						setSearchQuery(value);
+		<>
+			<DataTable
+				data={filteredTeams}
+				columns={columns}
+				isLoading={isLoading}
+				totalCount={totalCount}
+				pagination={
+					currentOptions?.pagination || { pageIndex: 0, pageSize: 10 }
+				}
+				onPaginationChange={handlePaginationChange}
+				sorting={currentOptions?.sorting}
+				onSort={handleSort}
+				emptyMessage="No teams found"
+				itemName="teams"
+				toolbar={{
+					search: {
+						value: searchQuery,
+						placeholder: "Search teams, coach name, organization...",
+						onChange: (value) => {
+							setSearchQuery(value);
+						},
 					},
-				},
-				filters: toolbarFilters,
-				actions: [
-					{
-						label: "Clear filters",
-						variant: "ghost",
-						onClick: clearFilters,
-					},
-				],
-			}}
-			actions={{
-				canEdit: isAdmin ?? false,
-				canDelete: isAdmin ?? false,
-				onEdit: handleEdit,
-				onDelete: handleDelete,
-			}}
-		/>
+					filters: toolbarFilters,
+					actions: [
+						...(isAdmin
+							? [
+									{
+										label: "Add Team",
+										variant: "default" as const,
+										onClick: handleAddTeam,
+									},
+								]
+							: []),
+						{
+							label: "Clear filters",
+							variant: "ghost" as const,
+							onClick: clearFilters,
+						},
+					],
+				}}
+				actions={{
+					canEdit: isAdmin ?? false,
+					canDelete: isAdmin ?? false,
+					onEdit: handleEdit,
+					onDelete: handleDelete,
+				}}
+			/>
+			<TeamDialog
+				mode={dialogMode}
+				team={editingTeam}
+				tournamentId={currentOptions?.filtering?.tournamentId}
+				tournaments={allTournaments.map((t) => ({
+					_id: t._id as Id<"tournaments">,
+					name: t.name,
+				}))}
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				onSuccess={() => {
+					setEditingTeam(undefined);
+				}}
+			/>
+			<ConfirmDelete
+				open={deleteConfirmOpen}
+				onOpenChange={(val) => {
+					setDeleteConfirmOpen(val);
+					if (!val) setDeletingTeam(undefined);
+				}}
+				itemName={deletingTeam ? `${deletingTeam.name}` : "this team"}
+				onConfirm={confirmDelete}
+				isLoading={isDeleting}
+			/>
+			<TeamRosterDialog
+				team={rosterTeam}
+				open={rosterOpen}
+				onOpenChange={(val) => {
+					setRosterOpen(val);
+					if (!val) setRosterTeam(null);
+				}}
+			/>
+		</>
 	);
 }

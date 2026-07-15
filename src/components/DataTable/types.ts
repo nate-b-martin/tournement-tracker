@@ -55,8 +55,10 @@ export interface DataTableProps<T> {
 	actions?: {
 		canEdit: boolean;
 		canDelete: boolean;
+		canCreate?: boolean;
 		onEdit?: (item: T) => void;
 		onDelete?: (item: T) => void;
+		onCreate?: () => void;
 	};
 	toolbar?: DataTableToolbarConfig;
 }

@@ -14,7 +14,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TournamentspageIndexRouteImport } from './routes/tournamentspage/index'
 import { Route as TeamspageIndexRouteImport } from './routes/teamspage/index'
 import { Route as PlayerspageIndexRouteImport } from './routes/playerspage/index'
+import { Route as GamespageIndexRouteImport } from './routes/gamespage/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as TournamentsIdIndexRouteImport } from './routes/tournaments/$id/index'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
@@ -41,9 +43,19 @@ const PlayerspageIndexRoute = PlayerspageIndexRouteImport.update({
   path: '/playerspage/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamespageIndexRoute = GamespageIndexRouteImport.update({
+  id: '/gamespage/',
+  path: '/gamespage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentsIdIndexRoute = TournamentsIdIndexRouteImport.update({
+  id: '/tournaments/$id/',
+  path: '/tournaments/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -51,26 +63,32 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/gamespage': typeof GamespageIndexRoute
   '/playerspage': typeof PlayerspageIndexRoute
   '/teamspage': typeof TeamspageIndexRoute
   '/tournamentspage': typeof TournamentspageIndexRoute
+  '/tournaments/$id': typeof TournamentsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/gamespage': typeof GamespageIndexRoute
   '/playerspage': typeof PlayerspageIndexRoute
   '/teamspage': typeof TeamspageIndexRoute
   '/tournamentspage': typeof TournamentspageIndexRoute
+  '/tournaments/$id': typeof TournamentsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/gamespage/': typeof GamespageIndexRoute
   '/playerspage/': typeof PlayerspageIndexRoute
   '/teamspage/': typeof TeamspageIndexRoute
   '/tournamentspage/': typeof TournamentspageIndexRoute
+  '/tournaments/$id/': typeof TournamentsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -78,34 +96,42 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/dashboard'
+    | '/gamespage'
     | '/playerspage'
     | '/teamspage'
     | '/tournamentspage'
+    | '/tournaments/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/mcp'
     | '/dashboard'
+    | '/gamespage'
     | '/playerspage'
     | '/teamspage'
     | '/tournamentspage'
+    | '/tournaments/$id'
   id:
     | '__root__'
     | '/'
     | '/mcp'
     | '/dashboard/'
+    | '/gamespage/'
     | '/playerspage/'
     | '/teamspage/'
     | '/tournamentspage/'
+    | '/tournaments/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   McpRoute: typeof McpRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  GamespageIndexRoute: typeof GamespageIndexRoute
   PlayerspageIndexRoute: typeof PlayerspageIndexRoute
   TeamspageIndexRoute: typeof TeamspageIndexRoute
   TournamentspageIndexRoute: typeof TournamentspageIndexRoute
+  TournamentsIdIndexRoute: typeof TournamentsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,11 +171,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayerspageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gamespage/': {
+      id: '/gamespage/'
+      path: '/gamespage'
+      fullPath: '/gamespage'
+      preLoaderRoute: typeof GamespageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/$id/': {
+      id: '/tournaments/$id/'
+      path: '/tournaments/$id'
+      fullPath: '/tournaments/$id'
+      preLoaderRoute: typeof TournamentsIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -159,9 +199,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   McpRoute: McpRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  GamespageIndexRoute: GamespageIndexRoute,
   PlayerspageIndexRoute: PlayerspageIndexRoute,
   TeamspageIndexRoute: TeamspageIndexRoute,
   TournamentspageIndexRoute: TournamentspageIndexRoute,
+  TournamentsIdIndexRoute: TournamentsIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

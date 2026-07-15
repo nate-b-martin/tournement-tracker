@@ -1,4 +1,4 @@
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 // Type definitions for our query arguments
@@ -102,7 +102,7 @@ export const list = query({
     // Fetch team information for each player
     const playersWithTeams = await Promise.all(
       players.map(async (player) => {
-        const team = await ctx.db.get(player.teamId);
+        const team = player.teamId ? await ctx.db.get(player.teamId) : null;
         return {
           ...player,
           team,
@@ -131,7 +131,7 @@ export const getById = query({
     }
 
     // Fetch team information
-    const team = await ctx.db.get(player.teamId);
+    const team = player.teamId ? await ctx.db.get(player.teamId) : null;
 
     return {
       ...player,
@@ -156,7 +156,7 @@ export const search = query({
     // Fetch team information for search results
     const playersWithTeams = await Promise.all(
       filteredPlayers.map(async (player) => {
-        const team = await ctx.db.get(player.teamId);
+        const team = player.teamId ? await ctx.db.get(player.teamId) : null;
         return {
           ...player,
           team,
@@ -165,5 +165,110 @@ export const search = query({
     );
 
     return playersWithTeams;
+  },
+});
+
+export const countByTeam = query({
+	args: { teamId: v.id("teams") },
+	handler: async (ctx, args) => {
+		const players = await ctx.db.query("players").collect();
+		return players.filter((p) => p.teamId === args.teamId).length;
+	},
+});
+
+export const create = mutation({
+  args: {
+    teamId: v.optional(v.id("teams")),
+    firstName: v.string(),
+    lastName: v.string(),
+    jerseyNumber: v.optional(v.number()),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    birthDate: v.optional(v.number()),
+    isCaptain: v.optional(v.boolean()),
+    status: v.optional(
+      v.union(v.literal("active"), v.literal("inactive"), v.literal("injured")),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    return await ctx.db.insert("players", {
+      ...args,
+      userId: identity.subject,
+      isCaptain: args.isCaptain ?? false,
+      status: args.status ?? "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.id("players"),
+    teamId: v.optional(v.id("teams")),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    jerseyNumber: v.optional(v.number()),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    birthDate: v.optional(v.number()),
+    isCaptain: v.optional(v.boolean()),
+    status: v.optional(
+      v.union(v.literal("active"), v.literal("inactive"), v.literal("injured")),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const { id, ...fields } = args;
+    await ctx.db.patch(id, {
+      ...fields,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.id("players") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const removeFromTeam = mutation({
+  args: { id: v.id("players") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    await ctx.db.patch(args.id, {
+      teamId: undefined,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const bulkAssignToTeam = mutation({
+  args: {
+    playerIds: v.array(v.id("players")),
+    teamId: v.id("teams"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    for (const playerId of args.playerIds) {
+      await ctx.db.patch(playerId, {
+        teamId: args.teamId,
+        updatedAt: Date.now(),
+      });
+    }
   },
 });

@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Loader2, ShieldAlert } from "lucide-react";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +17,23 @@ export function ProtectedRoute({
 	fallback,
 }: ProtectedRouteProps) {
 	const { isLoading, isSignedIn, isAdmin } = useAuth();
+
+	useEffect(() => {
+		if (!isLoading && !isSignedIn) {
+			toast.error("Sign In Required", {
+				description: "Please sign in to access this page.",
+			});
+		}
+	}, [isLoading, isSignedIn]);
+
+	useEffect(() => {
+		if (!isLoading && isSignedIn && !isAdmin && requireAdmin) {
+			toast.error("Admin Access Required", {
+				description: "You need admin privileges to access this page.",
+			});
+		}
+	}, [isLoading, isSignedIn, isAdmin, requireAdmin]);
+
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center min-h-[400px]">

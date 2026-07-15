@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PlayersTable } from "@/components/PlayersTable";
+import { ViewOnlyAlert } from "@/components/ViewOnlyAlert";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/playerspage/")({
@@ -7,16 +8,15 @@ export const Route = createFileRoute("/playerspage/")({
 });
 
 function PlayersPageComponent() {
-	const { isAdmin } = useAuth();
+	const { isAdmin, isSignedIn } = useAuth();
 
 	return (
 		<div className="container mx-auto p-6">
 			<h1 className="text-2xl font-bold mb-6">Players</h1>
-			{/*TODO: Add ability to PlayerTable to add css properties*/}
+			{isSignedIn && !isAdmin && <ViewOnlyAlert resourceName="players" />}
 			<PlayersTable
 				isAdmin={isAdmin}
 				initialOptions={{
-					// pagination: { pageIndex: 0, pageSize },
 					sorting: { field: "lastName", direction: "asc" },
 				}}
 			/>

@@ -40,13 +40,56 @@ export default defineSchema({
 
     // Admin
     organizerId: v.string(), // Clerk user ID
+    seasonId: v.optional(v.id("seasons")),
     seedingType: v.union(
       v.literal("random"),
       v.literal("manual"),
       v.literal("ranking"),
     ),
     gameFormatRules: v.optional(v.any()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   }),
+
+  seasons: defineTable({
+    name: v.string(),
+    sport: v.string(),
+    description: v.optional(v.string()),
+    startDate: v.number(),
+    endDate: v.number(),
+    status: v.union(
+      v.literal("planning"),
+      v.literal("active"),
+      v.literal("complete"),
+    ),
+    organizerId: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_organizerId", ["organizerId"]),
+
+  seasonTeams: defineTable({
+    seasonId: v.id("seasons"),
+    teamId: v.id("teams"),
+    createdAt: v.number(),
+  })
+    .index("by_seasonId", ["seasonId"])
+    .index("by_teamId", ["teamId"]),
+
+  seasonGames: defineTable({
+    seasonId: v.id("seasons"),
+    homeTeamId: v.id("teams"),
+    awayTeamId: v.id("teams"),
+    scheduledDate: v.number(),
+    homeScore: v.optional(v.number()),
+    awayScore: v.optional(v.number()),
+    status: v.union(
+      v.literal("scheduled"),
+      v.literal("completed"),
+    ),
+    location: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_seasonId", ["seasonId"]),
 
   teams: defineTable({
     tournamentId: v.id("tournaments"),
@@ -71,7 +114,7 @@ export default defineSchema({
 
   players: defineTable({
     userId: v.optional(v.string()), //clerk user ID if they have an account
-    teamId: v.id("teams"),
+    teamId: v.optional(v.id("teams")),
     firstName: v.string(),
     lastName: v.string(),
     jerseyNumber: v.optional(v.number()),

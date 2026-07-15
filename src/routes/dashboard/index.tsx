@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { PlayersTable } from "@/components/PlayersTable";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { TournamentTable } from "@/components/TournamentTable";
 import {
 	Card,
 	CardDescription,
@@ -71,6 +72,14 @@ function DashboardPageComponent() {
 						initialOptions={{
 							pagination: { pageIndex: 0, pageSize: 10 },
 							sorting: { field: "lastName", direction: "asc" },
+						}}
+					/>
+
+					<TournamentTable
+						isAdmin={isAdmin}
+						initialOptions={{
+							pagination: { pageIndex: 0, pageSize: 5 },
+							sorting: { field: "name", direction: "asc" },
 						}}
 					/>
 				</div>

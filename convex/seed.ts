@@ -62,6 +62,8 @@ export const seed = mutation({
         timeLimit: 60,
         extraInnings: "California",
       },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     })
 
     // ============================================================
