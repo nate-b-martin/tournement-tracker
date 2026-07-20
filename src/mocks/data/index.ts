@@ -13,3 +13,4 @@ export {
 	searchMockPlayers,
 } from "./mockPlayers";
 export { getActiveMockTeams, getMockTeamById, mockTeams } from "./mockTeams";
+export { mockTournaments } from "./mockTournaments";

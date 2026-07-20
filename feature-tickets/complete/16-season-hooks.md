@@ -1,10 +1,10 @@
-# Feature 16: Season Hooks — useSeasons, useSeasonTeams
+# Feature 16: Season Hooks — useSeasons, useSeasonTeams ✅ Complete
 
 ## Overview
 Create React hooks for consuming season data on the frontend. Follows the established patterns in `useTournaments.ts` and `useTeams.ts` with pagination, sorting, filtering via `useQuery`.
 
 ## Prerequisites
-- [ ] Ticket 15 — Convex functions for seasons and seasonTeams must be deployed
+- [x] Ticket 15 — Convex functions for seasons and seasonTeams must be deployed
 
 ## Implementation Steps
 
@@ -54,14 +54,14 @@ export function useSeasonTeams(seasonId: string | undefined) {
 ```
 
 ## Acceptance Criteria
-- [ ] `src/hooks/useSeasons.ts` created with useSeasons, useSeasonById, useSeasonCount
-- [ ] `src/hooks/useSeasonTeams.ts` created with useSeasonTeams
-- [ ] useSeasons manages pagination, sorting, filtering state with useCallback
-- [ ] useSeasons dispatches changes to filters resets page index to 0
-- [ ] useSeasonTeams uses `"skip"` pattern for undefined seasonId
-- [ ] All hooks use proper TypeScript types from `../../convex/_generated/dataModel`
-- [ ] isLoading correctly checks for undefined query results
-- [ ] Hooks return sensible defaults when data is undefined (empty arrays, 0 count)
+- [x] `src/hooks/useSeasons.ts` created with useSeasons, useSeasonById, useSeasonCount
+- [x] `src/hooks/useSeasonTeams.ts` created with useSeasonTeams
+- [x] useSeasons manages pagination, sorting, filtering state with useCallback
+- [x] useSeasons dispatches changes to filters resets page index to 0
+- [x] useSeasonTeams uses `"skip"` pattern for undefined seasonId
+- [x] All hooks use proper TypeScript types from `../../convex/_generated/dataModel`
+- [x] isLoading correctly checks for undefined query results
+- [x] Hooks return sensible defaults when data is undefined (empty arrays, 0 count)
 
 ## Related Files
 - `src/hooks/useSeasons.ts` — NEW

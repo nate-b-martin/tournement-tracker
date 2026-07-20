@@ -97,6 +97,14 @@ export const getById = query({
   },
 });
 
+export const getBySeasonId = query({
+  args: { seasonId: v.id("seasons") },
+  handler: async (ctx, args) => {
+    const tournaments = await ctx.db.query("tournaments").collect();
+    return tournaments.find((t) => t.seasonId === args.seasonId) || null;
+  },
+});
+
 export const create = mutation({
   args: {
     name: v.string(),

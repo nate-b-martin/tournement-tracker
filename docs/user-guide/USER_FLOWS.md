@@ -8,18 +8,28 @@ The TanStack Tournament Tracker serves four user roles. Each role has a distinct
 
 ## Admin Flow
 
-### 1. First-Time Setup
+### 1. First-Time Setup (Using the Setup Wizard)
 ```
 Sign In (auto-promoted to Admin)
   → Dashboard (/dashboard) — see overview stats
-  → Tournaments (/tournamentspage) — create first tournament
+  → Click "Setup Season" to launch the Setup Wizard
+    Step 1 — Select Teams: Search existing teams or create new ones (min 2)
+    Step 2 — Manage Rosters: Add players to each selected team
+    Step 3 — Create Season: Set name, sport, date range
+    Step 4 — Configure Tournament: Auto-filled from season, set bracket/fields/duration
+    Step 5 — Review & Create: Summary of all entities, click "Create All"
+      → Teams, players, season, tournament created sequentially
+      → Season appears at /seasons/<id>
+      → Bracket generation happens later
 ```
 
 ### 2. Full Tournament Lifecycle
 ```
 Dashboard → View stats for teams, players, tournaments
-  → Tournaments → Create Tournament
-    → Set name, sport, location, dates, bracket type, fields
+  → Use Setup Wizard for complete season setup (recommended)
+    → Or create entities individually:
+      → Tournaments → Create Tournament
+        → Set name, sport, location, dates, bracket type, fields
     → Tournament appears in list with "draft" status
     → Open Tournament Detail (/tournaments/<id>)
       → Teams tab → Add Team → Fill in coach + team info

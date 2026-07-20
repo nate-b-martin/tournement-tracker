@@ -1,6 +1,9 @@
 import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
+import { Wand2 } from "lucide-react";
+import { useState } from "react";
+import { SetupWizard } from "@/components/SetupWizard";
 import { api } from "../../convex/_generated/api";
 import { Button } from "../components/ui/button";
 import {
@@ -15,6 +18,7 @@ export const Route = createFileRoute("/")({ component: App });
 
 function App() {
 	const { isAdmin, isSignedIn } = useAuth();
+	const [wizardOpen, setWizardOpen] = useState(false);
 	const teamCount = useQuery(api.teams.count);
 	const playerCount = useQuery(api.players.count);
 	const tournamentCount = useQuery(api.tournaments.count);
@@ -57,9 +61,15 @@ function App() {
 						<Button variant="outline" asChild>
 							<Link to="/playerspage">Manage Players</Link>
 						</Button>
+						<Button type="button" onClick={() => setWizardOpen(true)}>
+							<Wand2 className="mr-2 h-4 w-4" />
+							Setup Wizard
+						</Button>
 					</div>
 				</div>
 			)}
+
+			<SetupWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 
 			{!isSignedIn && (
 				<div className="mt-8 p-6 bg-gray-800 rounded-lg text-center">

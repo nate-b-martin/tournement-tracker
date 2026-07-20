@@ -143,6 +143,7 @@ Each entity has a create/edit dialog following the same pattern:
 | `FieldDialog` | `src/components/FieldDialog.tsx` | name, location, status |
 | `GameStatsSheet` | `src/components/GameStatsSheet.tsx` | Per-player stat inputs (gamesPlayed, atBats, hits, etc.) |
 | `PlayerGameStatsDialog` | `src/components/PlayerGameStatsDialog.tsx` | Historical stats for a player across games |
+| `SetupWizard` | `src/components/SetupWizard/SetupWizard.tsx` | Multi-step season setup (5 steps: teams, rosters, season, tournament, review) |
 | `ConfirmDelete` | `src/components/ConfirmDelete.tsx` | Generic delete confirmation with item name |
 
 ### Bracket Components (`src/components/Bracket/`)
@@ -197,6 +198,14 @@ ui/
 | `AuthErrorBoundary` | Catches auth init errors | class-based error boundary |
 | `FeatureSection` | (Unused — homepage placeholder) | none |
 | `ConfirmDelete` | Reusable delete confirmation dialog | alert-dialog |
+| `SetupWizard` | Multi-step setup dialog (5 steps) | `useReducer`, `useMutation` (teams, players, seasons, tournament, seasonTeams) |
+| `SetupWizardProvider` | Reducer-based state management for wizard | `SetupWizardContext`, `WizardStep` |
+| `WizardStepper` | Horizontal 5-step progress indicator | `WizardStep` |
+| `StepSelectTeams` | Search, multi-select existing teams, create new teams inline | `useQuery(api.teams.list)` |
+| `StepManageRosters` | Add/remove players per team with team switcher | wizard state |
+| `StepCreateSeason` | Season name, sport, date range, description | wizard state |
+| `StepConfigureTournament` | Tournament settings (name, bracket, fields, duration) | wizard state (auto-fills from season) |
+| `StepReview` | Summary cards for all entities, "Create All" button | wizard state |
 
 ## Data Flow
 

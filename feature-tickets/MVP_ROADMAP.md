@@ -18,40 +18,23 @@ Fields                 ███████████████████
 Brackets               ████████████████████████████████ 100%
 Game Stats             ████████████████████████████████ 100%
 Player-Team Assignment ████████████████████████████████ 100%
+Seasons                ████████████████████████████████ 100% (full lifecycle)
+Setup Wizard           ████████████████████████████████ 100% (5-step dialog)
 Unit Tests             ██████████████████████░░░░░░░░░  65% (core components tested)
 E2E Tests              ██████████░░░░░░░░░░░░░░░░░░░░░  25% (auth + navigation scaffold)
-Seasons                ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% (new)
-Setup Wizard           ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░   0% (new)
 ```
 
 ## Remaining Work
 
 | Priority | Ticket               | Effort  | Description |
 |----------|----------------------|---------|-------------|
-| 🔴 P1    | `14-schema-season-foundation.md` | Medium  | Seasons, seasonTeams, seasonGames schema + seasonId on tournaments |
-| 🔴 P1    | `15-season-convex-functions.md`  | Large   | CRUD Convex functions for seasons, seasonTeams, seasonGames |
-| 🔴 P1    | `16-season-hooks.md`             | Small   | useSeasons, useSeasonTeams React hooks |
-| 🔴 P1    | `17-setup-wizard-dialog.md`      | X-Large | 5-step multi-season dialog (teams → rosters → season → tournament → review) |
-| 🔴 P1    | `18-dashboard-wizard-integration.md` | Small | Wizard launch buttons on Dashboard + Homepage, Seasons nav link |
-| 🔴 P1    | `19-season-detail-page.md`       | Medium  | /seasons/$id route with season info + teams list + edit dialog |
-| 🔴 P1    | Backlog tickets (3)              | Low     | Memoization, callback stabilization, auth toast notifications |
-
-### Dependency Graph
-
-```
-14 (Schema Foundation)
-  └─► 15 (Convex Functions)
-        ├─► 16 (React Hooks)
-        │     └─► 19 (Season Detail Page)
-        └─► 17 (Setup Wizard Dialog)
-              └─► 18 (Dashboard Integration)
-```
+| 🟡 P2    | Backlog tickets (3)  | Low     | Memoization, callback stabilization, auth toast notifications |
 
 ## Notes
 
-- Tickets 14–19 are the new Season + Setup Wizard feature set
-- All previous MVP feature tickets are in `complete/`, `complete/auth/`, `complete/backlog/`
+- Tickets 14–19 (Seasons + Setup Wizard feature set) are all complete
+- All feature tickets are in `complete/`, `complete/auth/`, `complete/backlog/`
 - `vite.config.ts` excludes `tanstackStart()` plugin during Vitest runs (`process.env.VITEST`) to fix React hooks CJS/ESM interop issue
 - Seasons use `planning` → `active` → `complete` status lifecycle
 - Setup Wizard uses multi-step dialog (not full-page route)
-- Post-wizard redirects to `/seasons/$id` (Ticket 19)
+- Post-wizard redirects to `/seasons/$id`

@@ -1,10 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
+import { Wand2 } from "lucide-react";
+import { useState } from "react";
 import { PlayersTable } from "@/components/PlayersTable";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SetupWizard } from "@/components/SetupWizard";
 import { TournamentTable } from "@/components/TournamentTable";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
+	CardContent,
 	CardDescription,
 	CardHeader,
 	CardTitle,
@@ -18,6 +23,7 @@ export const Route = createFileRoute("/dashboard/")({
 
 function DashboardPageComponent() {
 	const { isAdmin } = useAuth();
+	const [wizardOpen, setWizardOpen] = useState(false);
 	const teamCount = useQuery(api.teams.count);
 	const playerCount = useQuery(api.players.count);
 	const tournamentCount = useQuery(api.tournaments.count);
@@ -65,6 +71,28 @@ function DashboardPageComponent() {
 					</div>
 				</div>
 
+				{isAdmin && (
+					<Card className="col-span-full my-6">
+						<CardHeader>
+							<CardTitle>Quick Setup Wizard</CardTitle>
+							<CardDescription>
+								Create a complete season with teams, players, and tournament in
+								one guided flow.
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<Button
+								type="button"
+								onClick={() => setWizardOpen(true)}
+								size="lg"
+							>
+								<Wand2 className="mr-2 h-5 w-5" />
+								Launch Setup Wizard
+							</Button>
+						</CardContent>
+					</Card>
+				)}
+
 				<div className="container grid" aria-description="tables">
 					{/*I want to show data tables for Teams, players, tournaments.*/}
 					<PlayersTable
@@ -84,6 +112,7 @@ function DashboardPageComponent() {
 					/>
 				</div>
 			</div>
+			<SetupWizard open={wizardOpen} onOpenChange={setWizardOpen} />
 		</ProtectedRoute>
 	);
 }
