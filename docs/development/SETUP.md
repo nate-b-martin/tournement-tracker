@@ -147,7 +147,14 @@ npm run test:e2e:ui           # UI debug mode
 npm run test:e2e:headed       # Visible browser
 ```
 
-E2E tests require the dev server running. They use Clerk test credentials via `auth.ts` fixture.
+E2E tests require the dev server running. They use Clerk test credentials from `.env.local`:
+
+```
+CLERK_TEST_EMAIL=test-user@example.com
+CLERK_TEST_PASSWORD=password
+```
+
+> Note: The global setup (`tests/e2e/global-setup.ts`) reads `CLERK_TEST_EMAIL` and `CLERK_TEST_PASSWORD`, not `CLERK_EMAIL` or `ADMIN_CLERK_EMAIL`. Missing these will cause all E2E tests to skip at the global setup step.
 
 ## Need Help?
 

@@ -122,17 +122,31 @@ vi.mock("@/hooks/useAuth", () => ({
 E2E tests live in `tests/e2e/`:
 ```
 tests/e2e/
-  auth.spec.ts        # Auth flow tests
-  navigation.spec.ts  # Navigation tests
-  page-objects/       # Page object models
+  auth.spec.ts                 # Auth flow tests
+  navigation.spec.ts           # Navigation tests
+  seasons.spec.ts              # Season list/CRUD tests
+  schedule-autogeneration.spec.ts  # Schedule generation E2E
+  pages/                       # Page object models
     AuthPage.ts
     ClerkLogin.ts
     Navigation.ts
     ProtectedPage.ts
-  fixtures/           # Test fixtures
-    auth.ts
-  global-setup.ts     # Clerk auth + storage state persistence
+    SeasonsPage.ts
+    SeasonDetailPage.ts
+    SetupWizardPage.ts
+  fixtures/
+    auth.ts                    # Re-exports test/expect from @playwright/test
+  global-setup.ts              # Clerk auth + storage state persistence
 ```
+
+### E2E Env Requirements
+The global setup (`tests/e2e/global-setup.ts`) requires these env vars:
+- `CLERK_TEST_EMAIL` — Clerk test user email (NOT `CLERK_EMAIL` or `ADMIN_CLERK_EMAIL`)
+- `CLERK_TEST_PASSWORD` — Clerk test user password
+- `VITE_CLERK_PUBLISHABLE_KEY` — Clerk publishable key (starts with `pk_test_`)
+- `CLERK_SECRET_KEY` — Clerk secret key (starts with `sk_test_`)
+
+Without `CLERK_TEST_EMAIL`/`CLERK_TEST_PASSWORD`, all E2E tests fail at the global setup step.
 
 ### Page Object Pattern
 ```typescript
@@ -170,8 +184,68 @@ test.describe("Authentication", () => {
 });
 ```
 
-### Global Setup Pattern (from `tests/e2e/global-setup.ts`)
-The global setup file handles Clerk authentication and saves storage state for reuse across tests.
+### Resilient Skip Pattern (Missing Preconditions)
+
+When testing features that depend on seed data (seasons, teams, tournaments), use `test.skip()` instead of failing:
+
+```typescript
+test("generates schedule for existing season", async ({ page }) => {
+  await page.goto("/seasonspage");
+  await page.waitForLoadState("networkidle");
+
+  const seasonLink = page.getByRole("link").filter({ has: page.locator("text=") });
+  const linkCount = await seasonLink.count().catch(() => 0);
+  test.skip(linkCount === 0, "No seasons available");
+
+  // Continue with test...
+  const adminBtn = await page.getByRole("button", { name: /generate/i })
+    .isVisible().catch(() => false);
+  if (!adminBtn) {
+    test.skip(true, "Admin-only button not visible");
+  }
+});
+```
+
+This avoids CI noise from missing seed data. Always use `.catch(() => false)` on `.isVisible()` to avoid unhandled rejections.
+
+### Tab Navigation Page Object Pattern
+
+```typescript
+export class SeasonDetailPage {
+  constructor(private page: Page) {}
+
+  get scheduleTab() { return this.page.getByRole("tab", { name: /schedule/i }); }
+  get standingsTab() { return this.page.getByRole("tab", { name: /standings/i }); }
+
+  async clickScheduleTab() { await this.scheduleTab.click(); }
+  async waitForScheduleTab() {
+    await this.scheduleTab.waitFor({ state: "visible", timeout: 10000 });
+  }
+}
+```
+
+### Dialog + Form Fill Page Object Pattern
+
+```typescript
+export class SeasonDetailPage {
+  get dialogTitle() {
+    return this.page.getByRole("heading", { name: /generate season schedule/i });
+  }
+  get weeksInput() { return this.page.getByLabel(/regular season weeks/i); }
+  get generateButtonInDialog() {
+    return this.page.getByRole("button", { name: /^generate schedule$/i });
+  }
+
+  async selectScheduleType(type: string) {
+    await this.page.getByRole("combobox", { name: /schedule type/i }).click();
+    await this.page.getByRole("option", { name: new RegExp(type, "i") }).click();
+  }
+
+  async submitGenerateSchedule() {
+    await this.generateButtonInDialog.click();
+  }
+}
+```
 
 ## Key Files to Reference
 - `tests/unit/components/DataTable.test.tsx` — 637 lines of DataTable test patterns

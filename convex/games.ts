@@ -1,6 +1,12 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+function nextPowerOf2(n: number): number {
+	let p = 1;
+	while (p < n) p *= 2;
+	return p;
+}
+
 const ListArgs = {
 	pagination: v.optional(
 		v.object({
@@ -76,8 +82,8 @@ export const list = query({
 		const gamesWithTeams = await Promise.all(
 			games.map(async (game) => {
 				const [team1, team2, winner] = await Promise.all([
-					ctx.db.get(game.team1Id),
-					ctx.db.get(game.team2Id),
+					game.team1Id ? ctx.db.get(game.team1Id) : null,
+					game.team2Id ? ctx.db.get(game.team2Id) : null,
 					game.winnerId ? ctx.db.get(game.winnerId) : null,
 				]);
 				return { ...game, team1, team2, winner };
@@ -111,8 +117,8 @@ export const getByTournament = query({
 		return await Promise.all(
 			tournamentGames.map(async (game) => {
 				const [team1, team2, winner] = await Promise.all([
-					ctx.db.get(game.team1Id),
-					ctx.db.get(game.team2Id),
+					game.team1Id ? ctx.db.get(game.team1Id) : null,
+					game.team2Id ? ctx.db.get(game.team2Id) : null,
 					game.winnerId ? ctx.db.get(game.winnerId) : null,
 				]);
 				return { ...game, team1, team2, winner };
@@ -195,5 +201,241 @@ export const remove = mutation({
 		}
 
 		await ctx.db.delete(args.id);
+	},
+});
+
+function getBracketPositions(n: number): number[] {
+	if (n === 2) return [1, 2];
+	const half = n / 2;
+	const left = getBracketPositions(half);
+	const right = getBracketPositions(half);
+	const result: number[] = [];
+	for (let i = 0; i < half; i++) {
+		result.push(left[i]);
+		result.push(n + 1 - right[i]);
+	}
+	return result;
+}
+
+export const generateBracket = mutation({
+	args: {
+		tournamentId: v.id("tournaments"),
+		seasonId: v.id("seasons"),
+		playoffTeamsCount: v.number(),
+	},
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) throw new Error("Unauthorized");
+
+		const profile = await ctx.db
+			.query("userProfiles")
+			.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+			.first();
+		if (
+			!profile ||
+			(profile.role !== "admin" && profile.role !== "organizer")
+		) {
+			throw new Error("Admin or organizer access required");
+		}
+
+		const tournament = await ctx.db.get(args.tournamentId);
+		if (!tournament) throw new Error("Tournament not found");
+
+		if (tournament.seasonId !== args.seasonId) {
+			throw new Error("Tournament is not linked to this season");
+		}
+
+		const season = await ctx.db.get(args.seasonId);
+		if (!season) throw new Error("Season not found");
+
+		const existingTournamentGames = await ctx.db
+			.query("games")
+			.collect();
+		const gamesToDelete = existingTournamentGames.filter(
+			(g) => g.tournamentId === args.tournamentId,
+		);
+		const hasCompletedTournamentGames = gamesToDelete.some(
+			(g) => g.status === "completed",
+		);
+		if (hasCompletedTournamentGames) {
+			throw new Error(
+				"Cannot regenerate bracket: tournament already has completed games.",
+			);
+		}
+
+		const seasonGames = await ctx.db
+			.query("seasonGames")
+			.withIndex("by_seasonId", (q) => q.eq("seasonId", args.seasonId))
+			.collect();
+
+		const completedGames = seasonGames.filter(
+			(g) => g.status === "completed",
+		);
+		if (completedGames.length === 0) {
+			throw new Error(
+				"No completed games yet. Standings cannot be determined.",
+			);
+		}
+
+		const seasonTeamsEntries = await ctx.db
+			.query("seasonTeams")
+			.withIndex("by_seasonId", (q) => q.eq("seasonId", args.seasonId))
+			.collect();
+
+		if (seasonTeamsEntries.length < 2) {
+			throw new Error("Season must have at least 2 teams");
+		}
+
+		const teamMap = new Map<
+			string,
+			{ name: string; wins: number; gamesPlayed: number; pointsFor: number }
+		>();
+
+		for (const entry of seasonTeamsEntries) {
+			const team = await ctx.db.get(entry.teamId);
+			if (team) {
+				teamMap.set(entry.teamId, {
+					name: team.name,
+					wins: 0,
+					gamesPlayed: 0,
+					pointsFor: 0,
+				});
+			}
+		}
+
+		for (const game of completedGames) {
+			const homeId = game.homeTeamId;
+			const awayId = game.awayTeamId;
+			const homeScore = game.homeScore ?? 0;
+			const awayScore = game.awayScore ?? 0;
+
+			const home = teamMap.get(homeId);
+			const away = teamMap.get(awayId);
+			if (home && away) {
+				home.gamesPlayed++;
+				away.gamesPlayed++;
+				home.pointsFor += homeScore;
+				away.pointsFor += awayScore;
+				if (homeScore > awayScore) home.wins++;
+				else if (awayScore > homeScore) away.wins++;
+			}
+		}
+
+		const sortedTeams = [...teamMap.entries()]
+			.map(([id, stats]) => ({
+				teamId: id,
+				...stats,
+				winPct: stats.gamesPlayed > 0 ? stats.wins / stats.gamesPlayed : 0,
+			}))
+			.sort((a, b) => {
+				if (b.winPct !== a.winPct) return b.winPct - a.winPct;
+				return b.pointsFor - a.pointsFor;
+			});
+
+		let playoffCount = Math.min(
+			args.playoffTeamsCount,
+			sortedTeams.length,
+		);
+		if (playoffCount < 2) {
+			throw new Error("At least 2 teams needed for playoffs");
+		}
+
+		const bracketSlots = nextPowerOf2(playoffCount);
+		const byes = bracketSlots - playoffCount;
+		const playoffTeams = sortedTeams.slice(0, playoffCount);
+
+		for (const game of gamesToDelete) {
+			const stats = await ctx.db.query("gameStats").collect();
+			const gameStats = stats.filter((s) => s.gameId === game._id);
+			for (const stat of gameStats) {
+				await ctx.db.delete(stat._id);
+			}
+			await ctx.db.delete(game._id);
+		}
+
+		const MS_PER_DAY = 86400000;
+		const seasonGameDays = season.gameDays?.length
+			? season.gameDays
+			: [1, 3];
+		const startDayOfWeek = new Date(season.startDate).getDay();
+		const playoffDates: number[] = [];
+		const seasonEndDate = season.endDate;
+		for (let w = 0; w < 2; w++) {
+			const weekStart = seasonEndDate + w * 7 * MS_PER_DAY;
+			for (const dayOfWeek of seasonGameDays) {
+				let diff = dayOfWeek - startDayOfWeek;
+				if (diff < 0) diff += 7;
+				playoffDates.push(weekStart + diff * MS_PER_DAY);
+			}
+		}
+
+		const totalRounds = Math.ceil(Math.log2(bracketSlots));
+		const positions = getBracketPositions(bracketSlots);
+		let gameNumber = 0;
+		let dateIndex = 0;
+
+		const rounds = totalRounds;
+		const gamesPerRound: number[] = [];
+		for (let r = 0; r < rounds; r++) {
+			gamesPerRound.push(Math.pow(2, rounds - r - 1));
+		}
+
+		for (let round = 0; round < rounds; round++) {
+			const gamesInRound = gamesPerRound[round];
+			const roundNum = round + 1;
+
+			for (let g = 0; g < gamesInRound; g++) {
+				const posInRound = g;
+				if (round === 0) {
+					const idx1 = posInRound * 2;
+					const idx2 = posInRound * 2 + 1;
+					const seed1 = positions[idx1];
+					const seed2 = positions[idx2];
+
+					if (seed1 <= playoffTeams.length && seed2 <= playoffTeams.length) {
+						const team1 = playoffTeams[seed1 - 1];
+						const team2 = playoffTeams[seed2 - 1];
+						await ctx.db.insert("games", {
+							tournamentId: args.tournamentId,
+							round: roundNum,
+							gameNumber: gameNumber++,
+							team1Id: team1.teamId as any,
+							team2Id: team2.teamId as any,
+							scheduledTime:
+								playoffDates[dateIndex % playoffDates.length],
+							status: "scheduled",
+						});
+						dateIndex++;
+					} else if (seed1 <= playoffTeams.length) {
+						// seed2 is a bye, seed1 auto-advances (no game)
+					} else if (seed2 <= playoffTeams.length) {
+						// seed1 is a bye, seed2 auto-advances (no game)
+					}
+				} else {
+					await ctx.db.insert("games", {
+						tournamentId: args.tournamentId,
+						round: roundNum,
+						gameNumber: gameNumber++,
+						scheduledTime:
+							playoffDates[dateIndex % playoffDates.length],
+						status: "scheduled",
+					});
+					dateIndex++;
+				}
+			}
+		}
+
+		await ctx.db.patch(args.seasonId, {
+			regularSeasonComplete: true,
+			playoffTeamsCount: playoffCount,
+			updatedAt: Date.now(),
+		});
+
+		return {
+			gamesCreated: gameNumber,
+			playoffTeams: playoffCount,
+			bracketSlots,
+			rounds: totalRounds,
+		};
 	},
 });

@@ -77,6 +77,7 @@ Every entity hook returns this shape:
 | `usePlayerStats` | `src/hooks/usePlayerStats.ts` | `api.playerStats.list` | Computed `battingAverage` per player |
 | `useFields` | `src/hooks/useFields.ts` | `api.fields.list` | Field-specific filtering |
 | `useGameStats` | `src/hooks/useGameStats.ts` | `api.gameStats.getByGame` | Per-game stat lookup |
+| `useSeasonGames` | `src/hooks/useSeasonGames.ts` | `api.seasonGames.listBySeason` | Returns games with homeTeam/awayTeam populated |
 
 ### Pagination, Sorting, Filtering Options
 

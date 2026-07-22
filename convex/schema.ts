@@ -63,6 +63,17 @@ export default defineSchema({
       v.literal("complete"),
     ),
     organizerId: v.string(),
+    regularSeasonWeeks: v.optional(v.number()),
+    gamesPerWeek: v.optional(v.number()),
+    gameDays: v.optional(v.array(v.number())),
+    scheduleType: v.optional(
+      v.union(
+        v.literal("single_round_robin"),
+        v.literal("double_round_robin"),
+      ),
+    ),
+    regularSeasonComplete: v.optional(v.boolean()),
+    playoffTeamsCount: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_organizerId", ["organizerId"]),
@@ -133,10 +144,10 @@ export default defineSchema({
 
   games: defineTable({
     tournamentId: v.id("tournaments"),
-    round: v.number(), // 1 = quarterfinals, 2 = semis, 3 = finals, etc.
-    gameNumber: v.number(), // position in bracket
-    team1Id: v.id("teams"),
-    team2Id: v.id("teams"),
+    round: v.number(),
+    gameNumber: v.number(),
+    team1Id: v.optional(v.id("teams")),
+    team2Id: v.optional(v.id("teams")),
     winnerId: v.optional(v.id("teams")),
     scheduledTime: v.optional(v.number()),
     actualStartTime: v.optional(v.number()),
@@ -151,7 +162,7 @@ export default defineSchema({
       v.literal("postponed"),
       v.literal("cancelled"),
     ),
-  }),
+  }).index("by_tournamentId", ["tournamentId"]),
 
   fields: defineTable({
     tournamentId: v.id("tournaments"),

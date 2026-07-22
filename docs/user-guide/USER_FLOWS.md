@@ -42,7 +42,28 @@ Dashboard → View stats for teams, players, tournaments
     → Mark tournament "complete" when finished
 ```
 
-### 3. User Management
+### 3. Season Management (Schedule & Standings)
+```
+Create season via Setup Wizard or manually
+  → Open Season Detail (/seasons/<id>)
+    → Overview tab — view season info and team cards
+    → Schedule tab — view/manage regular season games
+      → (Admin) Click "Add Game" → SeasonGameDialog
+        → Select home/away teams (must differ)
+        → Set date, location, status
+        → Game appears in table with Date, Home, Away, Score, Location, Status
+      → Edit: click pencil icon → update scores, status, date
+      → Delete: click trash icon → confirm deletion
+      → Filter by All/Scheduled/Completed
+      → Search by team name
+    → Standings tab — view computed W/L/T records
+      → Columns: #, Team, GP, W, L, T, Win %, PF, PA, +/-
+      → Top 2 rows highlighted green
+      → Only completed games contribute
+      → Win % = "-" for teams with 0 games
+```
+
+### 4. User Management
 ```
 Navigate to any page
   → Non-admin users see yellow spectator banner
@@ -105,6 +126,11 @@ No sign-in required for public pages:
   → Home (/) — see total counts for teams, players, tournaments
   → Players (/playerspage) — browse all players
   → Teams (/teamspage) — browse all teams
+  → Seasons (/seasonspage) — browse all seasons
+  → Season Detail (/seasons/<id>) — view season info, schedule, standings
+    → Overview tab — view season details and team cards
+    → Schedule tab — view regular season games (read-only)
+    → Standings tab — view computed standings
   → Tournaments (/tournamentspage) — browse tournaments
   → Games (/gamespage) — browse scheduled games
   → Tournament Detail (/tournaments/<id>) — view full tournament info
@@ -124,13 +150,19 @@ Sign In (if you have an account):
 ## Entity Relationship Flow
 
 ```
-Tournament
-  ├── Teams (registered via tournament)
-  │   └── Players (rostered on teams)
-  ├── Games (scheduled within tournament)
-  │   └── GameStats (per-player stats per game)
-  ├── Fields (assigned to tournament)
-  └── Bracket (derived from games and bracketType)
+Season
+  ├── SeasonTeams (teams participating in season)
+  │   └── Teams → Players
+  ├── SeasonGames (regular season games)
+  │   ├── Home Team (Doc<"teams"> joined)
+  │   └── Away Team (Doc<"teams"> joined)
+  └── Tournament (linked via seasonId FK)
+      ├── Teams (registered via tournament)
+      │   └── Players (rostered on teams)
+      ├── Games (scheduled within tournament)
+      │   └── GameStats (per-player stats per game)
+      ├── Fields (assigned to tournament)
+      └── Bracket (derived from games and bracketType)
 ```
 
 ---

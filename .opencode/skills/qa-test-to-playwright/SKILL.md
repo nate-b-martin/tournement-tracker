@@ -245,6 +245,51 @@ test.describe("Team Creation - Permission", () => {
 });
 ```
 
+### Resilient Skip Pattern for Seed Data Dependencies
+
+When a Gherkin scenario depends on seed data (existing seasons, teams, etc.), use `test.skip()` to handle missing preconditions gracefully:
+
+```typescript
+test("generates schedule for existing season", async ({ page }) => {
+  const detailPage = new SeasonDetailPage(page);
+
+  await page.goto("/seasonspage");
+  await page.waitForLoadState("networkidle");
+
+  // Find a season link to navigate to
+  const seasonLink = page.getByRole("link").filter({ has: page.locator("text=") });
+  const linkCount = await seasonLink.count().catch(() => 0);
+  test.skip(linkCount === 0, "No seasons available for testing");
+
+  await seasonLink.first().click();
+  await page.waitForURL(/\/seasons\//);
+  await detailPage.waitForScheduleTab();
+  await detailPage.clickScheduleTab();
+  await page.waitForTimeout(500);
+
+  // Check admin-only action button
+  const btnVisible = await detailPage.generateScheduleButton
+    .isVisible()
+    .catch(() => false);
+  if (!btnVisible) {
+    test.skip(true, "Generate Schedule not visible — not admin or no teams");
+  }
+
+  // Happy path: fill dialog, submit, verify toast
+  await detailPage.clickGenerateSchedule();
+  await detailPage.waitForGenerateDialog();
+  await detailPage.selectScheduleType("Double Round-Robin");
+  await detailPage.fillWeeks("8");
+  await detailPage.submitGenerateSchedule();
+  await expect(page.getByText(/schedule generated/i)).toBeVisible({ timeout: 10000 });
+});
+```
+
+Key patterns:
+- `await locator.count().catch(() => 0)` — safe count check
+- `await locator.isVisible().catch(() => false)` — safe visibility check
+- `test.skip(condition, reason)` — skip instead of fail when data isn't available
+
 ### 3e: Default Test Code Templates
 
 **Basic page visit + assertion:**
@@ -468,6 +513,9 @@ Use these existing locator patterns from the project to stay consistent:
 | `Navigation` | `tests/e2e/pages/Navigation.ts` | Menu open/close, sign-in button visibility |
 | `ProtectedPage` | `tests/e2e/pages/ProtectedPage.ts` | Access denied title, wait methods |
 | `ClerkLogin` | `tests/e2e/pages/ClerkLogin.ts` | Clerk-specific login flow |
+| `SeasonsPage` | `tests/e2e/pages/SeasonsPage.ts` | `heading`, `createSeasonButton`, `table`, `searchInput`, `statusFilterChips`, `clearFiltersButton` |
+| `SeasonDetailPage` | `tests/e2e/pages/SeasonDetailPage.ts` | Tabs (Overview/Schedule/Standings), Generate Schedule dialog, bracket generation |
+| `SetupWizardPage` | `tests/e2e/pages/SetupWizardPage.ts` | First-run setup wizard elements |
 
 ## Related Skills
 - `qa-test-ticket-creation` — Source skill that produces the Gherkin tickets consumed here

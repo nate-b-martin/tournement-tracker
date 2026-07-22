@@ -194,18 +194,23 @@ The trace viewer shows DOM snapshots, console logs, network requests, and timing
 
 ```
 tests/e2e/
-  auth.spec.ts              # Authentication flow tests
-  navigation.spec.ts        # Navigation/sidebar tests
-  teams/                    # (future) Team CRUD tests
-  tournaments/              # (future) Tournament management tests
-  pages/                    # Page Object Models
+  auth.spec.ts                 # Authentication flow tests
+  navigation.spec.ts           # Navigation/sidebar tests
+  seasons.spec.ts              # Season list/CRUD tests
+  schedule-autogeneration.spec.ts  # Schedule auto-generation tests
+  teams/                       # (future) Team CRUD tests
+  tournaments/                 # (future) Tournament management tests
+  pages/                       # Page Object Models
     AuthPage.ts
     ProtectedPage.ts
     Navigation.ts
     ClerkLogin.ts
+    SeasonsPage.ts             # Season list page (search, filter, create)
+    SeasonDetailPage.ts         # Season detail page (tabs: Overview/Schedule/Standings)
+    SetupWizardPage.ts         # First-run setup wizard
   fixtures/
-    auth.ts                 # Custom test fixtures
-  global-setup.ts           # Clerk auth setup
+    auth.ts                    # Re-exports test/expect from @playwright/test
+  global-setup.ts              # Clerk auth setup + storage state persistence
 ```
 
 ## CLI Command Reference
@@ -227,6 +232,8 @@ Before running tests, verify:
 # Check env vars are set
 echo $VITE_CLERK_PUBLISHABLE_KEY  # Should start with pk_test_
 echo $CLERK_SECRET_KEY             # Should start with sk_test_
+echo $CLERK_TEST_EMAIL             # Required by global-setup.ts (NOT CLERK_EMAIL)
+echo $CLERK_TEST_PASSWORD          # Required by global-setup.ts
 
 # Check auth state file exists (after global-setup)
 ls -la playwright/.clerk/user.json
@@ -236,8 +243,122 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
 # Should return 200
 ```
 
+### Known Issues
+
+- **Orphaned Vite dev server**: Playwright's `webServer` config runs `npm run dev` and can leave the Vite dev server running after tests complete, spiking CPU. Kill it with `pkill -f "vite"` if it gets orphaned.
+- **Missing CLERK_TEST_EMAIL**: The global setup (`tests/e2e/global-setup.ts:40`) requires `CLERK_TEST_EMAIL` and `CLERK_TEST_PASSWORD` in `.env.local`. The existing env vars `CLERK_EMAIL` and `ADMIN_CLERK_EMAIL` are NOT used by the global setup — add a `CLERK_TEST_EMAIL` entry explicitly.
+
+## Resilient Test Pattern (Missing Preconditions)
+
+Use `test.skip()` for E2E tests that need seed data (existing seasons, teams, etc.):
+
+```typescript
+test("happy path: generate round-robin schedule", async ({ page }) => {
+  const detailPage = new SeasonDetailPage(page);
+  await page.goto("/seasonspage");
+  await page.waitForLoadState("networkidle");
+
+  // Find a season link to navigate to
+  const seasonLink = page.getByRole("link").filter({ has: page.locator("text=") });
+  const linkCount = await seasonLink.count().catch(() => 0);
+  test.skip(linkCount === 0, "No seasons available for testing");
+
+  await seasonLink.first().click();
+  await page.waitForURL(/\/seasons\//);
+  await detailPage.waitForScheduleTab();
+  await detailPage.clickScheduleTab();
+  await page.waitForTimeout(500);
+
+  // Check if the action button is visible (admin-only or data-dependent)
+  const btnVisible = await detailPage.generateScheduleButton
+    .isVisible()
+    .catch(() => false);
+  if (!btnVisible) {
+    test.skip(true, "Generate Schedule not visible — not admin or no teams");
+  }
+
+  // Now run the happy path...
+  await detailPage.clickGenerateSchedule();
+  await detailPage.waitForGenerateDialog();
+  // ... continue with assertions
+});
+```
+
+This avoids test failures from missing seed data by gracefully skipping when preconditions aren't met.
+
+## Page Object: Tab Navigation Pattern
+
+For pages with tab navigation (like Season Detail with Overview/Schedule/Standings):
+
+```typescript
+export class SeasonDetailPage {
+  constructor(private page: Page) {}
+
+  get scheduleTab() {
+    return this.page.getByRole("tab", { name: /schedule/i });
+  }
+  get standingsTab() {
+    return this.page.getByRole("tab", { name: /standings/i });
+  }
+  get overviewTab() {
+    return this.page.getByRole("tab", { name: /overview/i });
+  }
+
+  async clickScheduleTab() {
+    await this.scheduleTab.click();
+  }
+
+  async waitForScheduleTab() {
+    await this.scheduleTab.waitFor({ state: "visible", timeout: 10000 });
+  }
+}
+```
+
+## Page Object: Dialog with Form Fields Pattern
+
+For dialogs with forms (like Generate Schedule):
+
+```typescript
+export class SeasonDetailPage {
+  // Dialog-level locators
+  get dialogTitle() {
+    return this.page.getByRole("heading", { name: /generate season schedule/i });
+  }
+  get generateButtonInDialog() {
+    return this.page.getByRole("button", { name: /^generate schedule$/i });
+  }
+  get cancelButton() {
+    return this.page.getByRole("button", { name: /cancel/i });
+  }
+
+  // Form field locators (use getByLabel for form inputs)
+  get scheduleTypeSelect() {
+    return this.page.getByLabel(/schedule type/i);
+  }
+  get weeksInput() {
+    return this.page.getByLabel(/regular season weeks/i);
+  }
+
+  // Dropdown selection helper (combobox pattern)
+  async selectScheduleType(type: string) {
+    const typeSelect = this.page.getByRole("combobox", { name: /schedule type/i });
+    await typeSelect.click();
+    await this.page.getByRole("option", { name: new RegExp(type, "i") }).click();
+  }
+
+  // Dialog interaction methods
+  async waitForGenerateDialog() {
+    await this.dialogTitle.waitFor({ state: "visible", timeout: 10000 });
+  }
+  async submitGenerateSchedule() {
+    await this.generateButtonInDialog.click();
+  }
+}
+```
+
 ## Related Skills
 - `qa-edge-case-analysis` — Use to generate test cases before writing E2E tests
 - `qa-test-ticket-creation` — Convert scenarios into structured tickets
+- `qa-test-to-playwright` — Convert Gherkin tickets into spec files + page objects
 - `testing-patterns` — Unit test patterns for parallel coverage
 - `ui-enhancements` — Test dark mode, responsive, and visual features

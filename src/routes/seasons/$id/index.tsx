@@ -7,12 +7,15 @@ import { useQuery } from "convex/react";
 import { ArrowLeft, Edit, Trophy, Users } from "lucide-react";
 import { useState } from "react";
 import { SeasonDialog } from "@/components/SeasonDialog";
+import { SeasonScheduleView } from "@/components/SeasonScheduleView";
+import { SeasonStandingsView } from "@/components/SeasonStandingsView";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useSeasonGames } from "@/hooks/useSeasonGames";
 import { useSeasonById } from "@/hooks/useSeasons";
 import { useSeasonTeams } from "@/hooks/useSeasonTeams";
 import { api } from "../../../../convex/_generated/api";
@@ -46,6 +49,8 @@ function SeasonDetailPage() {
 	const { isAdmin } = useAuth();
 	const season = useSeasonById(id);
 	const { teams, isLoading: teamsLoading } = useSeasonTeams(id);
+	const { games: seasonGames, isLoading: seasonGamesLoading } =
+		useSeasonGames(id);
 	const linkedTournament = useQuery(
 		api.tournaments.getBySeasonId,
 		id ? { seasonId: id as Id<"seasons"> } : "skip",
@@ -226,12 +231,10 @@ function SeasonDetailPage() {
 			<Tabs defaultValue="overview">
 				<TabsList>
 					<TabsTrigger value="overview">Overview ({teams.length})</TabsTrigger>
-					<TabsTrigger value="schedule" disabled>
-						Schedule
+					<TabsTrigger value="schedule">
+						Schedule ({seasonGames.length})
 					</TabsTrigger>
-					<TabsTrigger value="standings" disabled>
-						Standings
-					</TabsTrigger>
+					<TabsTrigger value="standings">Standings</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="overview" className="mt-4">
@@ -274,15 +277,50 @@ function SeasonDetailPage() {
 				</TabsContent>
 
 				<TabsContent value="schedule" className="mt-4">
-					<div className="text-center py-12 text-muted-foreground">
-						Schedule will appear once regular season games are configured.
-					</div>
+					<SeasonScheduleView
+						seasonId={id as Id<"seasons">}
+						teams={teams}
+						isAdmin={isAdmin}
+						seasonStartDate={season.startDate}
+						scheduleConfig={
+							season.regularSeasonWeeks
+								? {
+										regularSeasonWeeks: season.regularSeasonWeeks,
+										gamesPerWeek: season.gamesPerWeek ?? 2,
+										gameDays: season.gameDays ?? [1, 3],
+										scheduleType: season.scheduleType ?? "single_round_robin",
+										regularSeasonComplete: season.regularSeasonComplete,
+									}
+								: undefined
+						}
+					/>
 				</TabsContent>
 
 				<TabsContent value="standings" className="mt-4">
-					<div className="text-center py-12 text-muted-foreground">
-						Standings will appear once games have been played.
-					</div>
+					{seasonGamesLoading ? (
+						<Skeleton className="h-64 w-full" />
+					) : seasonGames.length > 0 && teams.length > 0 ? (
+						<SeasonStandingsView
+							games={seasonGames}
+							teams={teams}
+							isAdmin={isAdmin}
+							seasonId={id as Id<"seasons">}
+							linkedTournament={
+								linkedTournament
+									? {
+											_id: linkedTournament._id,
+											name: linkedTournament.name,
+											bracketType: linkedTournament.bracketType,
+										}
+									: null
+							}
+							regularSeasonComplete={season.regularSeasonComplete}
+						/>
+					) : (
+						<div className="text-center py-12 text-muted-foreground">
+							Standings will appear once games have been played.
+						</div>
+					)}
 				</TabsContent>
 			</Tabs>
 

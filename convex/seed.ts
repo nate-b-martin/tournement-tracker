@@ -283,7 +283,73 @@ export const seed = mutation({
     }
 
     // ============================================================
-    // STEP 5: INSERT GAMES
+    // STEP 5: INSERT SEASONS
+    // ============================================================
+    const season1Id = await ctx.db.insert("seasons", {
+      name: "Spring 2026",
+      sport: "softball",
+      description: "Annual spring softball season",
+      startDate: new Date("2026-03-01T00:00:00Z").getTime(),
+      endDate: new Date("2026-06-30T23:59:59Z").getTime(),
+      status: "active",
+      organizerId: "user_clerk_test_001",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    const season2Id = await ctx.db.insert("seasons", {
+      name: "Fall 2025",
+      sport: "softball",
+      description: "Previous fall season",
+      startDate: new Date("2025-09-01T00:00:00Z").getTime(),
+      endDate: new Date("2025-12-31T23:59:59Z").getTime(),
+      status: "complete",
+      organizerId: "user_clerk_test_001",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    const season3Id = await ctx.db.insert("seasons", {
+      name: "Summer 2026",
+      sport: "baseball",
+      startDate: new Date("2026-07-01T00:00:00Z").getTime(),
+      endDate: new Date("2026-09-30T23:59:59Z").getTime(),
+      status: "planning",
+      organizerId: "user_clerk_test_001",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // Link teams to seasons
+    await ctx.db.insert("seasonTeams", {
+      seasonId: season1Id,
+      teamId: team1Id,
+      createdAt: Date.now(),
+    })
+    await ctx.db.insert("seasonTeams", {
+      seasonId: season1Id,
+      teamId: team2Id,
+      createdAt: Date.now(),
+    })
+    await ctx.db.insert("seasonTeams", {
+      seasonId: season2Id,
+      teamId: team3Id,
+      createdAt: Date.now(),
+    })
+    await ctx.db.insert("seasonTeams", {
+      seasonId: season2Id,
+      teamId: team4Id,
+      createdAt: Date.now(),
+    })
+
+    // Link tournament to first season
+    await ctx.db.patch(tournamentId, {
+      seasonId: season1Id,
+      updatedAt: Date.now(),
+    })
+
+    // ============================================================
+    // STEP 6: INSERT GAMES
     // ============================================================
     // Create games that reference the tournament and teams.
     // Game 1: COMPLETED - Team 1 vs Team 2 (Team 1 won 8-3)
@@ -322,7 +388,7 @@ export const seed = mutation({
     })
 
     // ============================================================
-    // STEP 6: INSERT GAME STATS
+    // STEP 7: INSERT GAME STATS
     // ============================================================
     // Add batting statistics for players in the completed game.
     // This tests the gameStats table for stats retrieval.
@@ -446,7 +512,8 @@ export const seed = mutation({
       teamIds: [team1Id, team2Id, team3Id, team4Id],
       gameIds: [game1Id, game2Id],
       playerCount: 32,
-      message: "Seed data inserted successfully. 1 tournament, 2 fields, 4 teams (8 players each), 2 games, and 7 player stat records for the completed game.",
+      seasonIds: [season1Id, season2Id, season3Id],
+      message: "Seed data inserted successfully. 1 tournament, 2 fields, 4 teams (8 players each), 2 games, 7 player stat records, and 3 seasons with season-team links.",
     }
   },
 })
@@ -465,6 +532,9 @@ export const clearAllData = mutation({
     // Query all tables and delete all records.
     // Note: This is destructive and should only be used in development.
     const tables = [
+      "seasonGames",
+      "seasonTeams",
+      "seasons",
       "gameStats",
       "games",
       "players",
@@ -482,6 +552,9 @@ export const clearAllData = mutation({
       }
     }
 
+    // Note: seasonGames, seasonTeams, and seasons are now included.
+    // Clearing by table means tournament.seasonId references may be orphaned,
+    // which is acceptable for development seed/clear cycles.
     return { message: `Cleared ${tables.length} tables` }
   },
 })

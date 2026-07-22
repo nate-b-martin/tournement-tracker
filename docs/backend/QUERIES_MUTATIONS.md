@@ -152,6 +152,61 @@ All Convex functions live in `convex/*.ts` and are auto-deployed by `npx convex 
 
 ---
 
+## File: `convex/seasons.ts`
+
+### Queries
+
+| Function | Args | Return Type | Auth | Notes |
+|----------|------|-------------|------|-------|
+| `count` | `{}` | `number` | None | Total season count |
+| `list` | `pagination?`, `sorting?`, `filtering?` (search, status, sport) | `{ data, totalCount }` | None | Paginated list with search, status/sport filter |
+| `getById` | `id: Id<"seasons">` | `(Doc & { teamCount }) \| null` | None | Single season with computed teamCount |
+
+### Mutations
+
+| Function | Key Args | Auth | Notes |
+|----------|----------|------|-------|
+| `create` | name, sport, startDate, endDate, description?, status? | Required (`identity.subject` stored as organizerId) | Default status `planning` |
+| `update` | `id`, partial fields | Required | Patches only provided fields |
+| `remove` | `id` | Required | Cascades: deletes all seasonTeams and seasonGames for this season, unlinks tournaments |
+
+---
+
+## File: `convex/seasonTeams.ts`
+
+### Queries
+
+| Function | Args | Return Type | Auth | Notes |
+|----------|------|-------------|------|-------|
+| `listBySeason` | `seasonId` | `Doc<"teams">[]` | None | All teams belonging to a season, filtered by `by_seasonId` index |
+
+### Mutations
+
+| Function | Key Args | Auth | Notes |
+|----------|----------|------|-------|
+| `addTeams` | `seasonId`, `teamIds: Id<"teams">[]` | Required | Skips teams already added (duplicate-safe) |
+| `removeTeam` | `seasonId`, `teamId` | Required | Removes a single team from the season |
+
+---
+
+## File: `convex/seasonGames.ts`
+
+### Queries
+
+| Function | Args | Return Type | Auth | Notes |
+|----------|------|-------------|------|-------|
+| `listBySeason` | `seasonId` | `(Doc<"seasonGames"> & { homeTeam, awayTeam })[]` | None | All games for a season with homeTeam/awayTeam objects joined (not raw IDs) |
+
+### Mutations
+
+| Function | Key Args | Auth | Notes |
+|----------|----------|------|-------|
+| `create` | `seasonId`, `homeTeamId`, `awayTeamId`, `scheduledDate`, `location?` | Required | Default status `scheduled`, auto timestamps |
+| `update` | `id`, `homeScore?`, `awayScore?`, `status?`, `scheduledDate?`, `location?` | Required | Patches provided fields, updates `updatedAt` |
+| `remove` | `id` | Required | Deletes the season game document |
+
+---
+
 ## File: `convex/userProfiles.ts`
 
 ### Queries

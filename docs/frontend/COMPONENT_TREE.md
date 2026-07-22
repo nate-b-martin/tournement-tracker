@@ -100,6 +100,33 @@ TournamentDetailPage
 │           └── ConfirmDelete
 ```
 
+### Seasons Page (`/seasonspage` — `src/routes/seasonspage/index.tsx`)
+```
+SeasonsPage
+├── Heading "Seasons" + "New Season" button (admin)
+└── DataTable (with search, status/sport filters, pagination)
+│   ├── SeasonDialog (create/edit)
+│   └── ConfirmDelete
+```
+
+### Season Detail (`/seasons/$id` — `src/routes/seasons/$id/index.tsx`)
+```
+SeasonDetailPage
+├── Header (name, status badge, sport badge, edit button)
+├── Detail Cards (Details, Teams, Tournament)
+├── Tabs
+│   ├── Overview Tab
+│   │   └── TeamCard[] (team name + city + status)
+│   ├── Schedule Tab
+│   │   └── SeasonScheduleView
+│   │       ├── DataTable (Date, Home Team, Away Team, Score, Location, Status)
+│   │       ├── SeasonGameDialog (create/edit)
+│   │       └── ConfirmDelete
+│   └── Standings Tab
+│       └── SeasonStandingsView (computed W/L/T from completed seasonGames)
+│           └── Table (#, Team, GP, W, L, T, Win %, PF, PA, +/-)
+```
+
 ### Games Page (`/gamespage` — `src/routes/gamespage/index.tsx`)
 ```
 GamesPageComponent
@@ -144,6 +171,7 @@ Each entity has a create/edit dialog following the same pattern:
 | `GameStatsSheet` | `src/components/GameStatsSheet.tsx` | Per-player stat inputs (gamesPlayed, atBats, hits, etc.) |
 | `PlayerGameStatsDialog` | `src/components/PlayerGameStatsDialog.tsx` | Historical stats for a player across games |
 | `SetupWizard` | `src/components/SetupWizard/SetupWizard.tsx` | Multi-step season setup (5 steps: teams, rosters, season, tournament, review) |
+| `SeasonGameDialog` | `src/components/SeasonGameDialog.tsx` | Create/edit season game with home/away teams, date, score, status |
 | `ConfirmDelete` | `src/components/ConfirmDelete.tsx` | Generic delete confirmation with item name |
 
 ### Bracket Components (`src/components/Bracket/`)
@@ -190,7 +218,9 @@ ui/
 | `TeamsTable` | Teams data | `useTeams`, `DataTable` |
 | `GamesTable` | Games data | `useGames`, `DataTable` |
 | `TournamentTable` | Tournament data | `useTournaments`, `DataTable` |
-| `StandingsView` | Team standings computed from games | game + team data |
+| `SeasonScheduleView` | Season games table with search, status filter, CRUD | `useSeasonGames`, `DataTable` |
+| `SeasonStandingsView` | Season standings computed from seasonGames | season games + team data |
+| `StandingsView` | Tournament standings computed from games | game + team data |
 | `BracketView` | Bracket visualization dispatcher | games + bracketType |
 | `TeamCard` | Individual team display card | team data |
 | `FieldsList` | Field cards list | `useFields` |

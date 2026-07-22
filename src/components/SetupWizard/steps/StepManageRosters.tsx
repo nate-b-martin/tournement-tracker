@@ -1,7 +1,9 @@
+import { useQuery } from "convex/react";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api } from "../../../../convex/_generated/api";
 import { useWizard } from "../SetupWizardContext";
 import type { PlayerEntry, WizardAction } from "../types";
 
@@ -88,6 +90,34 @@ function RosterEditor({
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
 	const [jerseyNumber, setJerseyNumber] = useState("");
+
+	const [showSearch, setShowSearch] = useState(false);
+	const [searchQuery, setSearchQuery] = useState("");
+	const searchActive = searchQuery.trim().length >= 2;
+	const searchResults = useQuery(
+		api.players.search,
+		searchActive ? { query: searchQuery.trim() } : "skip",
+	);
+
+	const existingPlayerIdsInRoster = new Set(
+		players.filter((p) => p.existingPlayerId).map((p) => p.existingPlayerId),
+	);
+
+	const availableSearchResults =
+		searchResults?.filter((r) => !existingPlayerIdsInRoster.has(r._id)) || [];
+
+	const handleAddExistingPlayer = (player: (typeof searchResults)[number]) => {
+		dispatch({
+			type: "ADD_PLAYER",
+			teamKey,
+			player: {
+				firstName: player.firstName,
+				lastName: player.lastName,
+				jerseyNumber: player.jerseyNumber ?? undefined,
+				existingPlayerId: player._id,
+			},
+		});
+	};
 
 	const handleAddPlayer = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -193,6 +223,80 @@ function RosterEditor({
 					Add Player
 				</Button>
 			</form>
+
+			<div className="border-t border-slate-700/50 pt-4">
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					onClick={() => setShowSearch(!showSearch)}
+				>
+					{showSearch ? "Hide" : "Browse"} Existing Players
+				</Button>
+
+				{showSearch && (
+					<div className="mt-3 space-y-3">
+						<div className="space-y-1">
+							<Label htmlFor={`${formId}-search`}>Search players</Label>
+							<Input
+								id={`${formId}-search`}
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								placeholder="Search by name..."
+							/>
+						</div>
+
+						<div className="max-h-48 min-h-[3rem] space-y-1 overflow-y-auto rounded-lg border border-slate-700/50 p-3">
+							{searchQuery.trim().length < 2 ? (
+								<p className="text-sm text-muted-foreground">
+									Type at least 2 characters to search.
+								</p>
+							) : searchResults === undefined ? (
+								<p className="text-sm text-muted-foreground">Searching...</p>
+							) : availableSearchResults.length === 0 ? (
+								<p className="text-sm text-muted-foreground">
+									{searchResults.length > 0
+										? "All matching players are already in this roster."
+										: "No players match your search."}
+								</p>
+							) : (
+								<div className="space-y-1">
+									{availableSearchResults.map((player) => (
+										<div
+											key={player._id}
+											className="flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-slate-700/50"
+										>
+											<div className="flex items-center gap-2">
+												<span className="font-medium">
+													{player.firstName} {player.lastName}
+												</span>
+												{player.jerseyNumber != null && (
+													<span className="text-xs text-muted-foreground">
+														#{player.jerseyNumber}
+													</span>
+												)}
+												{player.team && (
+													<span className="rounded-full bg-slate-700/50 px-2 py-0.5 text-xs text-slate-400">
+														{player.team.name}
+													</span>
+												)}
+											</div>
+											<Button
+												type="button"
+												variant="ghost"
+												size="sm"
+												onClick={() => handleAddExistingPlayer(player)}
+											>
+												Add to Roster
+											</Button>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

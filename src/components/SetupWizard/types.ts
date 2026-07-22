@@ -23,6 +23,7 @@ export interface PlayerEntry {
 	firstName: string;
 	lastName: string;
 	jerseyNumber?: number;
+	existingPlayerId?: Id<"players">;
 }
 
 export interface SeasonEntry {

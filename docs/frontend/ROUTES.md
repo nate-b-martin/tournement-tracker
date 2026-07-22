@@ -10,6 +10,8 @@
 | `/teamspage` | `src/routes/teamspage/index.tsx` | `TeamsPageComponent` | No | No | `useAuth()` |
 | `/tournamentspage` | `src/routes/tournamentspage/index.tsx` | `TournamentsPage` | No | No | `useAuth()`, mutations for CRUD |
 | `/tournaments/$id` | `src/routes/tournaments/$id/index.tsx` | `TournamentDetailPage` | No | No | `tournaments.getById`, `teams.list`, `games.getByTournament`, `fields.listByTournament` |
+| `/seasonspage` | `src/routes/seasonspage/index.tsx` | `SeasonsPage` | No | No | `useAuth()`, `seasons.list` |
+| `/seasons/$id` | `src/routes/seasons/$id/index.tsx` | `SeasonDetailPage` | No | No | `seasons.getById`, `seasonTeams.listBySeason`, `seasonGames.listBySeason`, `tournaments.getBySeasonId` |
 | `/gamespage` | `src/routes/gamespage/index.tsx` | `GamesPageComponent` | No | No | `useAuth()` |
 | `/mcp` | `src/routes/mcp.ts` | MCP server handler | No | No | (server-side endpoint) |
 
@@ -33,6 +35,7 @@ Slide-out sidebar with links:
 - Dashboard (`/dashboard`)
 - Players (`/playerspage`)
 - Teams (`/teamspage`)
+- Seasons (`/seasonspage`)
 - Tournaments (`/tournamentspage`)
 - Games (`/gamespage`)
 

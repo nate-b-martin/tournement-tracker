@@ -23,7 +23,8 @@ CLERK_JWT_ISSUER_DOMAIN=https://your-domain.clerk.accounts.com
 ```env
 # Same as above, plus:
 CLERK_SECRET_KEY=sk_test_...     # Clerk secret key (sensitive — never commit)
-CLERK_TEST_EMAIL=user@test.com   # Test user for Playwright auth
+CLERK_TEST_EMAIL=user@test.com   # Test user for Playwright auth (NOT CLERK_EMAIL)
+CLERK_TEST_PASSWORD=password     # Test user password for Playwright auth
 ```
 
 ### Production (Netlify Dashboard)
@@ -87,7 +88,8 @@ When adding a new environment variable:
 | `VITE_CLERK_PUBLISHABLE_KEY` | All | Yes (frontend-safe) | `src/integrations/convex-clerk-provider.tsx` | Clerk auth initialization |
 | `CLERK_JWT_ISSUER_DOMAIN` | Build + Convex | No | `convex/auth.config.ts` | JWT verification by Convex |
 | `CLERK_SECRET_KEY` | CI only | No | `tests/e2e/global-setup.ts` | Clerk test auth (never in frontend) |
-| `CLERK_TEST_EMAIL` | CI only | No | `tests/e2e/global-setup.ts` | E2E test user email |
+| `CLERK_TEST_EMAIL` | CI only | No | `tests/e2e/global-setup.ts` | E2E test user email (not `CLERK_EMAIL`) |
+| `CLERK_TEST_PASSWORD` | CI only | No | `tests/e2e/global-setup.ts` | E2E test user password |
 
 ## Runtime Checks
 

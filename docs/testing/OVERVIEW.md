@@ -99,6 +99,8 @@ See [`tests/E2E_TESTS.md`](../tests/E2E_TESTS.md) for full details. Summary:
 |------|---------------|
 | [`tests/e2e/auth.spec.ts`](../tests/e2e/auth.spec.ts) | Unauthenticated redirect, sign-in, access denied for protected routes |
 | [`tests/e2e/navigation.spec.ts`](../tests/e2e/navigation.spec.ts) | Menu open/close, sign-in visibility, sidebar links |
+| [`tests/e2e/seasons.spec.ts`](../tests/e2e/seasons.spec.ts) | Season list page rendering, search, filter, empty state |
+| [`tests/e2e/schedule-autogeneration.spec.ts`](../tests/e2e/schedule-autogeneration.spec.ts) | Schedule generation dialog, bracket generation, unauthenticated redirect |
 
 ### Page Objects
 
@@ -108,6 +110,9 @@ See [`tests/E2E_TESTS.md`](../tests/E2E_TESTS.md) for full details. Summary:
 | `tests/e2e/pages/ClerkLogin.ts` | Clerk sign-in form helpers |
 | `tests/e2e/pages/Navigation.ts` | Sidebar navigation interactions |
 | `tests/e2e/pages/ProtectedPage.ts` | Protected route assertions |
+| `tests/e2e/pages/SeasonsPage.ts` | Season list page (search, filter, create, status chips) |
+| `tests/e2e/pages/SeasonDetailPage.ts` | Season detail tabs (Overview/Schedule/Standings), generate schedule dialog |
+| `tests/e2e/pages/SetupWizardPage.ts` | First-run setup wizard interactions |
 
 ### Test Fixtures
 
@@ -123,7 +128,10 @@ Required in `.env.local`:
 VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 CLERK_TEST_EMAIL=test-user@example.com
+CLERK_TEST_PASSWORD=password
 ```
+
+The global-setup reads `CLERK_TEST_EMAIL` and `CLERK_TEST_PASSWORD` (not `CLERK_EMAIL` or `ADMIN_CLERK_EMAIL`).
 
 ### Regenerating Auth State
 

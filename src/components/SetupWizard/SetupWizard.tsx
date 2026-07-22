@@ -23,6 +23,7 @@ import { StepCreateSeason } from "./steps/StepCreateSeason";
 import { StepManageRosters } from "./steps/StepManageRosters";
 import { StepReview } from "./steps/StepReview";
 import { StepSelectTeams } from "./steps/StepSelectTeams";
+import type { PlayerEntry } from "./types";
 import { WizardStep } from "./types";
 import { WizardStepper } from "./WizardStepper";
 
@@ -55,6 +56,7 @@ function WizardContent({
 	const createSeason = useMutation(api.seasons.create);
 	const addSeasonTeams = useMutation(api.seasonTeams.addTeams);
 	const createTournament = useMutation(api.tournaments.create);
+	const assignPlayersToTeam = useMutation(api.players.bulkAssignToTeam);
 
 	const handleSubmit = async () => {
 		dispatch({ type: "SET_SUBMITTING", isSubmitting: true });
@@ -114,18 +116,31 @@ function WizardContent({
 				}
 			}
 
-			// 4. Create players for each team
+			// 4. Create/assign players for each team
 			dispatch({ type: "SET_SUBMIT_PHASE", phase: "Creating players..." });
 			for (const [teamKey, players] of Object.entries(state.rosters)) {
 				const teamId = teamIdMap.get(teamKey);
 				if (!teamId || players.length === 0) continue;
-				for (const player of players) {
+
+				const newPlayers = players.filter((p) => !p.existingPlayerId);
+				const existingIds = players
+					.filter(
+						(p): p is PlayerEntry & { existingPlayerId: Id<"players"> } =>
+							!!p.existingPlayerId,
+					)
+					.map((p) => p.existingPlayerId);
+
+				for (const player of newPlayers) {
 					await createPlayer({
 						teamId,
 						firstName: player.firstName.trim(),
 						lastName: player.lastName.trim(),
 						jerseyNumber: player.jerseyNumber,
 					});
+				}
+
+				if (existingIds.length > 0) {
+					await assignPlayersToTeam({ playerIds: existingIds, teamId });
 				}
 			}
 

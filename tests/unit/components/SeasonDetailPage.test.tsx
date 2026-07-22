@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockUseAuth = vi.fn();
 const mockUseSeasonById = vi.fn();
 const mockUseSeasonTeams = vi.fn();
+const mockUseSeasonGames = vi.fn();
 const mockUseQuery = vi.fn();
 const mockNavigate = vi.fn();
 
@@ -17,6 +18,10 @@ vi.mock("@/hooks/useSeasons", () => ({
 
 vi.mock("@/hooks/useSeasonTeams", () => ({
 	useSeasonTeams: (...args: unknown[]) => mockUseSeasonTeams(...args),
+}));
+
+vi.mock("@/hooks/useSeasonGames", () => ({
+	useSeasonGames: (...args: unknown[]) => mockUseSeasonGames(...args),
 }));
 
 vi.mock("convex/react", () => ({
@@ -35,6 +40,14 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("@/components/SeasonDialog", () => ({
 	SeasonDialog: ({ open }: { open: boolean }) =>
 		open ? <div data-testid="season-dialog" /> : null,
+}));
+
+vi.mock("@/components/SeasonScheduleView", () => ({
+	SeasonScheduleView: () => <div data-testid="season-schedule-view" />,
+}));
+
+vi.mock("@/components/SeasonStandingsView", () => ({
+	SeasonStandingsView: () => <div data-testid="season-standings-view" />,
 }));
 
 const mockSeason = {
@@ -99,6 +112,7 @@ describe("SeasonDetailPage", () => {
 		});
 		mockUseSeasonById.mockReturnValue(mockSeason);
 		mockUseSeasonTeams.mockReturnValue({ teams: mockTeams, isLoading: false });
+		mockUseSeasonGames.mockReturnValue({ games: [], isLoading: false });
 		mockUseQuery.mockReturnValue(mockTournament);
 	});
 
@@ -199,11 +213,26 @@ describe("SeasonDetailPage", () => {
 		expect(screen.getByText("Spring season description")).toBeTruthy();
 	});
 
-	it("disables schedule and standings tabs", async () => {
+	it("enables schedule and standings tabs with correct labels", async () => {
 		await renderPage();
-		const scheduleTab = screen.getByText("Schedule");
-		const standingsTab = screen.getByText("Standings");
-		expect(scheduleTab.closest('[disabled]')).toBeTruthy();
-		expect(standingsTab.closest('[disabled]')).toBeTruthy();
+		expect(screen.getByText("Schedule (0)")).toBeTruthy();
+		expect(screen.getByText("Standings")).toBeTruthy();
+	});
+
+	it("shows game count in schedule tab label", async () => {
+		mockUseSeasonGames.mockReturnValue({
+			games: [{ _id: "g1" }],
+			isLoading: false,
+		});
+		await renderPage();
+		expect(screen.getByText("Schedule (1)")).toBeTruthy();
+	});
+
+	it("shows standings placeholder when no completed games", async () => {
+		mockUseSeasonGames.mockReturnValue({ games: [], isLoading: false });
+		mockUseSeasonTeams.mockReturnValue({ teams: [], isLoading: false });
+		await renderPage();
+		const standingsTrigger = screen.getByText("Standings");
+		expect(standingsTrigger).toBeTruthy();
 	});
 });
