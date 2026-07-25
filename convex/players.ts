@@ -1,5 +1,54 @@
-import { query } from "./_generated/server";
+import { query, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
+
+const MAX_PAGE_SIZE = 100;
+const MAX_SEARCH_LENGTH = 100;
+
+async function isViewerAdmin(ctx: QueryCtx): Promise<boolean> {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) return false;
+
+  const viewerProfile = await ctx.db
+    .query("userProfiles")
+    .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+    .unique();
+
+  return viewerProfile?.role === "admin";
+}
+
+function sanitizeSearchTerm(search?: string): string {
+  return (search ?? "").trim().toLowerCase().slice(0, MAX_SEARCH_LENGTH);
+}
+
+function clampPagination(
+  pagination?: { pageIndex: number; pageSize: number },
+): { pageIndex: number; pageSize: number } | undefined {
+  if (!pagination) return undefined;
+
+  return {
+    pageIndex: Math.max(0, pagination.pageIndex),
+    pageSize: Math.min(Math.max(1, pagination.pageSize), MAX_PAGE_SIZE),
+  };
+}
+
+function redactPlayer<T extends {
+  userId?: string;
+  email?: string;
+  phone?: string;
+  birthDate?: number;
+}>(player: T, adminView: boolean): T {
+  if (adminView) {
+    return player;
+  }
+
+  return {
+    ...player,
+    userId: undefined,
+    email: undefined,
+    phone: undefined,
+    birthDate: undefined,
+  };
+}
 
 // Type definitions for our query arguments
 const ListArgs = {
@@ -36,6 +85,8 @@ export const count = query({
 export const list = query({
   args: ListArgs,
   handler: async (ctx, args) => {
+    const adminView = await isViewerAdmin(ctx);
+
     // Get all players first (since we don't have indexes on teamId)
     let players = await ctx.db.query("players").collect();
 
@@ -48,13 +99,18 @@ export const list = query({
 
     // Apply text search filter
     if (args.filtering?.search) {
-      const searchTerm = args.filtering.search.toLowerCase();
+      const searchTerm = sanitizeSearchTerm(args.filtering.search);
+      if (!searchTerm) {
+        players = [];
+      }
+
       players = players.filter(
         (player) =>
           player.firstName.toLowerCase().includes(searchTerm) ||
           player.lastName.toLowerCase().includes(searchTerm) ||
-          (player.email && player.email.toLowerCase().includes(searchTerm)) ||
-          (player.phone && player.phone.includes(searchTerm)),
+          (adminView &&
+            ((player.email && player.email.toLowerCase().includes(searchTerm)) ||
+              (player.phone && player.phone.includes(searchTerm)))),
       );
     }
 
@@ -93,8 +149,9 @@ export const list = query({
     const totalCount = players.length;
 
     // Apply pagination
-    if (args.pagination) {
-      const { pageIndex, pageSize } = args.pagination;
+    const normalizedPagination = clampPagination(args.pagination);
+    if (normalizedPagination) {
+      const { pageIndex, pageSize } = normalizedPagination;
       const startIndex = pageIndex * pageSize;
       players = players.slice(startIndex, startIndex + pageSize);
     }
@@ -104,7 +161,7 @@ export const list = query({
       players.map(async (player) => {
         const team = await ctx.db.get(player.teamId);
         return {
-          ...player,
+          ...redactPlayer(player, adminView),
           team,
         };
       }),
@@ -114,8 +171,8 @@ export const list = query({
     return {
       data: playersWithTeams,
       totalCount,
-      hasMore: args.pagination
-        ? (args.pagination.pageIndex + 1) * args.pagination.pageSize <
+      hasMore: normalizedPagination
+        ? (normalizedPagination.pageIndex + 1) * normalizedPagination.pageSize <
           totalCount
         : false,
     };
@@ -125,6 +182,8 @@ export const list = query({
 export const getById = query({
   args: { id: v.id("players") },
   handler: async (ctx, args) => {
+    const adminView = await isViewerAdmin(ctx);
+
     const player = await ctx.db.get(args.id);
     if (!player) {
       return null;
@@ -134,7 +193,7 @@ export const getById = query({
     const team = await ctx.db.get(player.teamId);
 
     return {
-      ...player,
+      ...redactPlayer(player, adminView),
       team,
     };
   },
@@ -143,14 +202,19 @@ export const getById = query({
 export const search = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
-    const searchTerm = args.query.toLowerCase();
+    const adminView = await isViewerAdmin(ctx);
+    const searchTerm = sanitizeSearchTerm(args.query);
+    if (!searchTerm) {
+      return [];
+    }
+
     const players = await ctx.db.query("players").collect();
 
     const filteredPlayers = players.filter(
       (player) =>
         player.firstName.toLowerCase().includes(searchTerm) ||
         player.lastName.toLowerCase().includes(searchTerm) ||
-        (player.email && player.email.toLowerCase().includes(searchTerm)),
+        (adminView && player.email && player.email.toLowerCase().includes(searchTerm)),
     );
 
     // Fetch team information for search results
@@ -158,12 +222,12 @@ export const search = query({
       filteredPlayers.map(async (player) => {
         const team = await ctx.db.get(player.teamId);
         return {
-          ...player,
+          ...redactPlayer(player, adminView),
           team,
         };
       }),
     );
 
-    return playersWithTeams;
+    return playersWithTeams.slice(0, 50);
   },
 });

@@ -25,7 +25,9 @@ export class AuthErrorBoundary extends Component<Props, State> {
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		console.error("Auth error:", error, errorInfo);
+		if (import.meta.env.DEV) {
+			console.error("Auth error:", error, errorInfo);
+		}
 	}
 
 	handleRetry = () => {
@@ -42,8 +44,7 @@ export class AuthErrorBoundary extends Component<Props, State> {
 							<AlertCircle className="h-4 w-4" />
 							<AlertTitle>Authentication Error</AlertTitle>
 							<AlertDescription>
-								{this.state.error?.message ||
-									"Failed to initialize authentication"}
+								An authentication issue occurred. Please try again.
 							</AlertDescription>
 						</Alert>
 						<Button onClick={this.handleRetry} className="mt-4">
