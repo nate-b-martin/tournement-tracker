@@ -33,7 +33,6 @@ import { ConfirmDelete } from "./ConfirmDelete";
 import { DataTable } from "./DataTable/DataTable";
 import type { ColumnDef } from "./DataTable/types";
 import { PlayerDialog } from "./PlayerDialog";
-import { PlayerGameStatsDialog } from "./PlayerGameStatsDialog";
 
 interface PlayersTableProps {
 	/** Optional initial options for the players query */
@@ -70,9 +69,15 @@ const playerColumns: ColumnDef<PlayerWithTeam>[] = [
 		field: "lastName",
 		sortable: true,
 		cell: (player) => (
-			<span className="font-medium">
+			<button
+				type="button"
+				className="cursor-pointer font-medium hover:underline"
+				onClick={() => {
+					window.location.href = `/players/${player._id}`;
+				}}
+			>
 				{player.firstName} {player.lastName}
-			</span>
+			</button>
 		),
 	},
 	{
@@ -133,9 +138,15 @@ const playerStatsColumns: ColumnDef<PlayerStatsWithTeam>[] = [
 		field: "lastName",
 		sortable: true,
 		cell: (player) => (
-			<span className="font-medium">
+			<button
+				type="button"
+				className="cursor-pointer text-left font-medium hover:underline"
+				onClick={() => {
+					window.location.href = `/players/${player._id}`;
+				}}
+			>
 				{player.firstName} {player.lastName}
-			</span>
+			</button>
 		),
 	},
 	{
@@ -233,9 +244,6 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 		PlayerWithTeam | undefined
 	>();
 	const [isDeleting, setIsDeleting] = useState(false);
-	const [statsDetailPlayer, setStatsDetailPlayer] = useState<
-		PlayerStatsWithTeam | undefined
-	>();
 
 	const [searchQuery, setSearchQuery] = useState("");
 	const [tableView, setTableView] = useState<PlayerTableView>("contact");
@@ -466,72 +474,43 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 	);
 
 	if (tableView === "stats") {
-		const statsColumns: ColumnDef<PlayerStatsWithTeam>[] =
-			playerStatsColumns.map((col) => {
-				if (col.field === "lastName") {
-					return {
-						...col,
-						cell: (player) => (
-							<button
-								type="button"
-								className="cursor-pointer font-medium hover:underline"
-								onClick={() => setStatsDetailPlayer(player)}
-							>
-								{player.firstName} {player.lastName}
-							</button>
-						),
-					};
-				}
-				return col;
-			});
 		return (
-			<>
-				<DataTable
-					data={filteredStats}
-					columns={statsColumns}
-					isLoading={statsIsLoading}
-					totalCount={statsTotalCount}
-					pagination={statsCurrentOptions?.pagination || DEFAULT_PAGINATION}
-					onPaginationChange={handlePaginationChange}
-					sorting={statsCurrentOptions?.sorting}
-					onSort={handleSort}
-					emptyMessage="No player stats found"
-					itemName="players"
-					toolbar={{
-						search: {
-							value: searchQuery,
-							placeholder: "Search players...",
-							onChange: (value) => {
-								setSearchQuery(value);
-							},
+			<DataTable
+				data={filteredStats}
+				columns={playerStatsColumns}
+				isLoading={statsIsLoading}
+				totalCount={statsTotalCount}
+				pagination={statsCurrentOptions?.pagination || DEFAULT_PAGINATION}
+				onPaginationChange={handlePaginationChange}
+				sorting={statsCurrentOptions?.sorting}
+				onSort={handleSort}
+				emptyMessage="No player stats found"
+				itemName="players"
+				toolbar={{
+					search: {
+						value: searchQuery,
+						placeholder: "Search players...",
+						onChange: (value) => {
+							setSearchQuery(value);
 						},
-						filters: toolbarFilters,
-						extraContent: toggleContent,
-						actions: [
-							{
-								label: "Clear filters",
-								variant: "ghost",
-								onClick: clearFilters,
-							},
-						],
-					}}
-					actions={{
-						canEdit: false,
-						canDelete: false,
-						onEdit: undefined,
-						onDelete: undefined,
-					}}
-				/>
-				{statsDetailPlayer && (
-					<PlayerGameStatsDialog
-						player={statsDetailPlayer}
-						open={!!statsDetailPlayer}
-						onOpenChange={(val) => {
-							if (!val) setStatsDetailPlayer(undefined);
-						}}
-					/>
-				)}
-			</>
+					},
+					filters: toolbarFilters,
+					extraContent: toggleContent,
+					actions: [
+						{
+							label: "Clear filters",
+							variant: "ghost",
+							onClick: clearFilters,
+						},
+					],
+				}}
+				actions={{
+					canEdit: false,
+					canDelete: false,
+					onEdit: undefined,
+					onDelete: undefined,
+				}}
+			/>
 		);
 	}
 

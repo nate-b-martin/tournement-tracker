@@ -118,10 +118,7 @@ export function usePlayerCount() {
  * return <div>{player.firstName} {player.team?.name}</div>;
  * ```
  */
-export function usePlayerById(id: Id<"players"> | undefined) {
-	// Use "skip" to prevent unnecessary queries when ID is undefined
-	return useQuery(api.players.getById, id ? { id } : "skip");
-}
+export { usePlayerById } from "./usePlayerById";
 
 /**
  * Hook to search players by text query

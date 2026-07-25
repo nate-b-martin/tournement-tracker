@@ -1,59 +1,99 @@
 import { mutation } from "./_generated/server"
-import { v } from "convex/values"
+import { type Id } from "./_generated/dataModel"
 
 /**
- * Seed function to populate the database with test data for MVP testing.
- *
- * This function inserts minimal test data including:
- * - 1 active tournament
- * - 2 fields
- * - 4 teams with 8 players each, 2 games (1 completed, 1 scheduled)
- * - Player stats for the completed game
+ * Seed function to populate the database with comprehensive test data for MVP testing.
  *
  * DATA INSERTION ORDER (critical for foreign key constraints):
- * 1. Tournament (no dependencies)
- * 2. Fields (depend on tournament)
- * 3. Teams (depend on tournament)
- * 4. Players (depend on teams)
- * 5. Games (depend on tournament and teams)
- * 6. GameStats (depend on games and players)
+ *  1. userProfiles       — no dependencies
+ *  2. seasons            — no FK dependencies
+ *  3. tournaments        — seasonId is optional, insert without it first
+ *  4. fields             — tournaments
+ *  5. teams              — tournaments
+ *  6. players            — teams
+ *  7. seasonTeams        — seasons, teams
+ *  8. seasonGames        — seasons, teams
+ *  9. games              — tournaments, teams, fields
+ * 10. gameStats          — games, players
+ * 11. Patch tournaments  — link tournament.seasonId after seasons exist
  */
 export const seed = mutation({
   args: {},
   handler: async (ctx) => {
     // ============================================================
-    // STEP 1: INSERT TOURNAMENT
+    // STEP 1: INSERT USER PROFILE
     // ============================================================
-    // Create a single active tournament that all other entities will reference.
-    // The tournament is set to "active" status so we can test game management.
+    await ctx.db.insert("userProfiles", {
+      userId: "user_clerk_test_001",
+      role: "admin",
+      email: "admin@tournament-tracker.test",
+      displayName: "Test Admin",
+    })
+
+    // ============================================================
+    // STEP 2: INSERT SEASONS (3 records)
+    // ============================================================
+    const season1Id = await ctx.db.insert("seasons", {
+      name: "Spring 2026",
+      sport: "softball",
+      description: "Annual spring softball season",
+      startDate: new Date("2026-03-01T00:00:00Z").getTime(),
+      endDate: new Date("2026-06-30T23:59:59Z").getTime(),
+      status: "active",
+      organizerId: "user_clerk_test_001",
+      regularSeasonWeeks: 8,
+      gamesPerWeek: 2,
+      gameDays: [1, 3],
+      scheduleType: "single_round_robin",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    const season2Id = await ctx.db.insert("seasons", {
+      name: "Fall 2025",
+      sport: "softball",
+      description: "Previous fall season",
+      startDate: new Date("2025-09-01T00:00:00Z").getTime(),
+      endDate: new Date("2025-12-31T23:59:59Z").getTime(),
+      status: "complete",
+      organizerId: "user_clerk_test_001",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    const season3Id = await ctx.db.insert("seasons", {
+      name: "Summer 2026",
+      sport: "baseball",
+      description: "Summer baseball season — planning phase, no teams yet",
+      startDate: new Date("2026-07-01T00:00:00Z").getTime(),
+      endDate: new Date("2026-09-30T23:59:59Z").getTime(),
+      status: "planning",
+      organizerId: "user_clerk_test_001",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // ============================================================
+    // STEP 3: INSERT TOURNAMENTS (3 records)
+    // ============================================================
+    // 1 — Summer Softball Classic 2026 (existing, keep as-is)
     const tournamentId = await ctx.db.insert("tournaments", {
       name: "Summer Softball Classic 2026",
       description: "Annual summer softball tournament for recreational teams",
       sport: "softball",
       location: "Central Park Sports Complex",
-
-      // Timing configuration
-      // Using Unix timestamps (milliseconds since epoch)
       startDate: new Date("2026-07-15T08:00:00Z").getTime(),
       endDate: new Date("2026-07-17T18:00:00Z").getTime(),
       registrationDeadline: new Date("2026-07-01T23:59:59Z").getTime(),
-
-      // Format and team limits
       maxTeams: 32,
       minTeams: 4,
       currentTeamCount: 4,
       bracketType: "single_elimination",
-
-      // Field and game scheduling configuration
       fieldsAvailable: 4,
-      gameDuration: 60, // Each game is 60 minutes
-      breakBetweenGames: 15, // 15 minute break between games
-
-      // Tournament status - "active" means games are being played
+      gameDuration: 60,
+      breakBetweenGames: 15,
       status: "active",
-
-      // Admin configuration
-      organizerId: "user_clerk_test_001", // Mock Clerk user ID
+      organizerId: "user_clerk_test_001",
       seedingType: "random",
       gameFormatRules: {
         innings: 7,
@@ -66,11 +106,56 @@ export const seed = mutation({
       updatedAt: Date.now(),
     })
 
+    // 2 — Winter Indoor Tournament 2026 (new, draft, basketball)
+    const winterTournamentId = await ctx.db.insert("tournaments", {
+      name: "Winter Indoor Tournament 2026",
+      description: "Indoor basketball tournament for recreational teams",
+      sport: "basketball",
+      location: "Sports Dome Indoor Center",
+      startDate: new Date("2026-01-10T08:00:00Z").getTime(),
+      endDate: new Date("2026-01-12T18:00:00Z").getTime(),
+      registrationDeadline: new Date("2025-12-20T23:59:59Z").getTime(),
+      maxTeams: 16,
+      minTeams: 2,
+      currentTeamCount: 2,
+      bracketType: "double_elimination",
+      fieldsAvailable: 2,
+      gameDuration: 45,
+      breakBetweenGames: 10,
+      status: "draft",
+      organizerId: "user_clerk_test_001",
+      seedingType: "random",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // 3 — Fall Championship Series 2026 (new, registration_open, baseball)
+    const fallTournamentId = await ctx.db.insert("tournaments", {
+      name: "Fall Championship Series 2026",
+      description: "Fall baseball championship tournament",
+      sport: "baseball",
+      location: "Riverfield Sports Park",
+      startDate: new Date("2026-10-01T08:00:00Z").getTime(),
+      endDate: new Date("2026-10-04T18:00:00Z").getTime(),
+      registrationDeadline: new Date("2026-09-15T23:59:59Z").getTime(),
+      maxTeams: 8,
+      minTeams: 4,
+      currentTeamCount: 0,
+      bracketType: "round_robin",
+      fieldsAvailable: 3,
+      gameDuration: 90,
+      breakBetweenGames: 20,
+      status: "registration_open",
+      organizerId: "user_clerk_test_001",
+      seedingType: "manual",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
     // ============================================================
-    // STEP 2: INSERT FIELDS
+    // STEP 4: INSERT FIELDS (6 records — 2 existing, 4 new)
     // ============================================================
-    // Create fields that belong to the tournament.
-    // These will be referenced by games for field assignments.
+    // Summer Softball Classic fields (existing)
     const field1Id = await ctx.db.insert("fields", {
       tournamentId,
       name: "Field A - Main Diamond",
@@ -85,12 +170,40 @@ export const seed = mutation({
       status: "available",
     })
 
+    // Winter Indoor Tournament fields (new)
+    await ctx.db.insert("fields", {
+      tournamentId: winterTournamentId,
+      name: "Court 1 — Main Arena",
+      location: "Sports Dome, Center Court",
+      status: "available",
+    })
+
+    await ctx.db.insert("fields", {
+      tournamentId: winterTournamentId,
+      name: "Court 2 — Practice Court",
+      location: "Sports Dome, East Wing",
+      status: "maintenance",
+    })
+
+    // Fall Championship Series fields (new)
+    await ctx.db.insert("fields", {
+      tournamentId: fallTournamentId,
+      name: "Diamond 1 — Championship Field",
+      location: "Riverfield Sports Park, Main Entrance",
+      status: "available",
+    })
+
+    await ctx.db.insert("fields", {
+      tournamentId: fallTournamentId,
+      name: "Diamond 2 — Practice Field",
+      location: "Riverfield Sports Park, Back Lot",
+      status: "unavailable",
+    })
+
     // ============================================================
-    // STEP 3: INSERT TEAMS
+    // STEP 5: INSERT TEAMS (8 records — 4 existing, 4 new)
     // ============================================================
-    // Create 4 teams that will participate in the tournament.
-    // Each team references the tournament via tournamentId.
-    // We'll store team IDs in variables to use when creating players and games.
+    // Existing teams (Summer Softball Classic)
     const team1Id = await ctx.db.insert("teams", {
       tournamentId,
       name: "Diamond Divas",
@@ -155,15 +268,78 @@ export const seed = mutation({
       updatedAt: Date.now(),
     })
 
-    // ============================================================
-    // STEP 4: INSERT PLAYERS
-    // ============================================================
-    // Create 8 players for each team (32 total).
-    // Each player references their team via teamId.
-    // We'll store player IDs to use when creating game stats.
+    // New teams — Winter Indoor Tournament (basketball)
+    const team5Id = await ctx.db.insert("teams", {
+      tournamentId: winterTournamentId,
+      name: "Hoops Heroes",
+      description: "Community basketball team",
+      coachName: "Marcus Williams",
+      coachEmail: "marcus.williams@email.com",
+      coachPhone: "555-0105",
+      city: "Northville",
+      homeField: "Northville Community Center",
+      organization: "Northville Basketball League",
+      teamAgeGroup: "Adult",
+      status: "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
 
-    // Team 1 Players (Diamond Divas)
-    const team1PlayerIds = []
+    const team6Id = await ctx.db.insert("teams", {
+      tournamentId: winterTournamentId,
+      name: "Net Navigators",
+      description: "Travel basketball team",
+      coachName: "David Thompson",
+      coachEmail: "david.thompson@email.com",
+      coachPhone: "555-0106",
+      city: "Eastwood",
+      homeField: "Eastwood High Gym",
+      organization: "Eastwood Athletic Association",
+      teamAgeGroup: "Adult",
+      status: "inactive",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // New teams — Fall Championship Series (baseball)
+    const team7Id = await ctx.db.insert("teams", {
+      tournamentId: fallTournamentId,
+      name: "Slugger Squad",
+      description: "Competitive baseball team from the local league",
+      coachName: "Roberto Martinez",
+      coachEmail: "roberto.martinez@email.com",
+      coachPhone: "555-0107",
+      city: "Westfield",
+      homeField: "Westfield Stadium",
+      organization: "Westfield Baseball Club",
+      teamAgeGroup: "Adult",
+      status: "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    const team8Id = await ctx.db.insert("teams", {
+      tournamentId: fallTournamentId,
+      name: "Basepath Bandits",
+      description: "Newly formed baseball team",
+      coachName: "Chris Anderson",
+      coachEmail: "chris.anderson@email.com",
+      coachPhone: "555-0108",
+      city: "Southpark",
+      homeField: "Southpark Recreation Field",
+      organization: "Southpark Youth Sports",
+      teamAgeGroup: "Adult",
+      status: "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // ============================================================
+    // STEP 6: INSERT PLAYERS (48 records — 32 existing, 16 new)
+    // ============================================================
+
+    // Team 1 Players (Diamond Divas) — 8 existing
+    const team1PlayerIds: Id<"players">[] = []
     const team1PlayerNames = [
       { firstName: "Emma", lastName: "Wilson" },
       { firstName: "Olivia", lastName: "Brown" },
@@ -184,7 +360,7 @@ export const seed = mutation({
         email: `${team1PlayerNames[i].firstName.toLowerCase()}.${team1PlayerNames[i].lastName.toLowerCase()}@email.com`,
         phone: `555-100${i + 1}`,
         birthDate: new Date(`1990-${(i + 1).toString().padStart(2, "0")}-15`).getTime(),
-        isCaptain: i === 0, // First player is captain
+        isCaptain: i === 0,
         status: "active",
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -192,8 +368,8 @@ export const seed = mutation({
       team1PlayerIds.push(id)
     }
 
-    // Team 2 Players (Swing Sisters)
-    const team2PlayerIds = []
+    // Team 2 Players (Swing Sisters) — 8 existing
+    const team2PlayerIds: Id<"players">[] = []
     const team2PlayerNames = [
       { firstName: "Harper", lastName: "Jackson" },
       { firstName: "Evelyn", lastName: "White" },
@@ -222,8 +398,8 @@ export const seed = mutation({
       team2PlayerIds.push(id)
     }
 
-    // Team 3 Players (Ball Busters)
-    const team3PlayerIds = []
+    // Team 3 Players (Ball Busters) — 8 existing
+    const team3PlayerIds: Id<"players">[] = []
     const team3PlayerNames = [
       { firstName: "Scarlett", lastName: "Lewis" },
       { firstName: "Victoria", lastName: "Walker" },
@@ -252,8 +428,8 @@ export const seed = mutation({
       team3PlayerIds.push(id)
     }
 
-    // Team 4 Players (Pitch Please)
-    const team4PlayerIds = []
+    // Team 4 Players (Pitch Please) — 8 existing
+    const team4PlayerIds: Id<"players">[] = []
     const team4PlayerNames = [
       { firstName: "Zoe", lastName: "Hill" },
       { firstName: "Stella", lastName: "Scott" },
@@ -282,86 +458,288 @@ export const seed = mutation({
       team4PlayerIds.push(id)
     }
 
+    // New Team 5 Players (Hoops Heroes — basketball, Winter tournament)
+    const team5PlayerIds: Id<"players">[] = []
+    const team5PlayerData = [
+      { firstName: "Jaylen", lastName: "Carter", jersey: 0, isCaptain: true, status: "active" as const },
+      { firstName: "Andre", lastName: "Foster", jersey: 1, isCaptain: false, status: "active" as const },
+      { firstName: "Malik", lastName: "Simmons", jersey: 2, isCaptain: false, status: "active" as const },
+      { firstName: "Darius", lastName: "Reynolds", jersey: 3, isCaptain: false, status: "active" as const },
+      { firstName: "Tyrone", lastName: "Crawford", jersey: 4, isCaptain: false, status: "active" as const },
+      { firstName: "Kobe", lastName: "Jennings", jersey: 5, isCaptain: false, status: "injured" as const },
+      { firstName: "Jamal", lastName: "Gibson", jersey: 6, isCaptain: false, status: "active" as const },
+      { firstName: "Corey", lastName: "Blake", jersey: 7, isCaptain: false, status: "inactive" as const },
+    ]
+    for (let i = 0; i < team5PlayerData.length; i++) {
+      const id = await ctx.db.insert("players", {
+        userId: `user_clerk_team5_p${i + 1}`,
+        teamId: team5Id,
+        firstName: team5PlayerData[i].firstName,
+        lastName: team5PlayerData[i].lastName,
+        jerseyNumber: team5PlayerData[i].jersey,
+        email: `${team5PlayerData[i].firstName.toLowerCase()}.${team5PlayerData[i].lastName.toLowerCase()}@email.com`,
+        phone: `555-500${i + 1}`,
+        birthDate: new Date(`1991-${(i + 1).toString().padStart(2, "0")}-10`).getTime(),
+        isCaptain: team5PlayerData[i].isCaptain,
+        status: team5PlayerData[i].status,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      })
+      team5PlayerIds.push(id)
+    }
+
+    // New Team 6 Players (Net Navigators — basketball, Winter tournament)
+    const team6PlayerIds: Id<"players">[] = []
+    const team6PlayerData = [
+      { firstName: "Brandon", lastName: "Knight", jersey: 10, isCaptain: true, status: "active" as const },
+      { firstName: "Isaiah", lastName: "Ford", jersey: 11, isCaptain: false, status: "active" as const },
+      { firstName: "Cameron", lastName: "Wells", jersey: 12, isCaptain: false, status: "active" as const },
+      { firstName: "Devin", lastName: "Hunt", jersey: 13, isCaptain: false, status: "active" as const },
+      { firstName: "Elijah", lastName: "Pierce", jersey: 14, isCaptain: false, status: "active" as const },
+      { firstName: "Jaden", lastName: "Cole", jersey: 15, isCaptain: false, status: "active" as const },
+      { firstName: "Xander", lastName: "Brooks", jersey: 16, isCaptain: false, status: "active" as const },
+      { firstName: "Tristan", lastName: "Hayes", jersey: 17, isCaptain: false, status: "active" as const },
+    ]
+    for (let i = 0; i < team6PlayerData.length; i++) {
+      const id = await ctx.db.insert("players", {
+        userId: `user_clerk_team6_p${i + 1}`,
+        teamId: team6Id,
+        firstName: team6PlayerData[i].firstName,
+        lastName: team6PlayerData[i].lastName,
+        jerseyNumber: team6PlayerData[i].jersey,
+        email: `${team6PlayerData[i].firstName.toLowerCase()}.${team6PlayerData[i].lastName.toLowerCase()}@email.com`,
+        phone: `555-600${i + 1}`,
+        birthDate: new Date(`1993-${(i + 1).toString().padStart(2, "0")}-05`).getTime(),
+        isCaptain: team6PlayerData[i].isCaptain,
+        status: team6PlayerData[i].status,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      })
+      team6PlayerIds.push(id)
+    }
+
+    // New Team 7 Players (Slugger Squad — baseball, Fall tournament)
+    const team7PlayerIds: Id<"players">[] = []
+    const team7PlayerData = [
+      { firstName: "Antonio", lastName: "Ramirez", jersey: 40, isCaptain: true, status: "active" as const },
+      { firstName: "Carlos", lastName: "Ortiz", jersey: 41, isCaptain: false, status: "active" as const },
+      { firstName: "Miguel", lastName: "Sanchez", jersey: 42, isCaptain: false, status: "active" as const },
+      { firstName: "Javier", lastName: "Torres", jersey: 43, isCaptain: false, status: "active" as const },
+      { firstName: "Diego", lastName: "Flores", jersey: 44, isCaptain: false, status: "active" as const },
+      { firstName: "Luis", lastName: "Castillo", jersey: 45, isCaptain: false, status: "active" as const },
+      { firstName: "Santiago", lastName: "Reyes", jersey: 46, isCaptain: false, status: "active" as const },
+      { firstName: "Hector", lastName: "Vargas", jersey: 47, isCaptain: false, status: "active" as const },
+    ]
+    for (let i = 0; i < team7PlayerData.length; i++) {
+      const id = await ctx.db.insert("players", {
+        userId: `user_clerk_team7_p${i + 1}`,
+        teamId: team7Id,
+        firstName: team7PlayerData[i].firstName,
+        lastName: team7PlayerData[i].lastName,
+        jerseyNumber: team7PlayerData[i].jersey,
+        email: `${team7PlayerData[i].firstName.toLowerCase()}.${team7PlayerData[i].lastName.toLowerCase()}@email.com`,
+        phone: `555-700${i + 1}`,
+        birthDate: new Date(`1989-${(i + 1).toString().padStart(2, "0")}-15`).getTime(),
+        isCaptain: team7PlayerData[i].isCaptain,
+        status: team7PlayerData[i].status,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      })
+      team7PlayerIds.push(id)
+    }
+
+    // New Team 8 Players (Basepath Bandits — baseball, Fall tournament)
+    const team8PlayerIds: Id<"players">[] = []
+    const team8PlayerData = [
+      { firstName: "Ethan", lastName: "Walker", jersey: 50, isCaptain: true, status: "active" as const },
+      { firstName: "Liam", lastName: "Parker", jersey: 51, isCaptain: false, status: "active" as const },
+      { firstName: "Noah", lastName: "Bennett", jersey: 52, isCaptain: false, status: "active" as const },
+      { firstName: "Oliver", lastName: "Collins", jersey: 53, isCaptain: false, status: "active" as const },
+      { firstName: "William", lastName: "Stewart", jersey: 54, isCaptain: false, status: "active" as const },
+      { firstName: "James", lastName: "Morgan", jersey: 55, isCaptain: false, status: "injured" as const },
+      { firstName: "Benjamin", lastName: "Cooper", jersey: 56, isCaptain: false, status: "active" as const },
+      { firstName: "Lucas", lastName: "Peterson", jersey: 57, isCaptain: false, status: "active" as const },
+    ]
+    for (let i = 0; i < team8PlayerData.length; i++) {
+      const id = await ctx.db.insert("players", {
+        userId: `user_clerk_team8_p${i + 1}`,
+        teamId: team8Id,
+        firstName: team8PlayerData[i].firstName,
+        lastName: team8PlayerData[i].lastName,
+        jerseyNumber: team8PlayerData[i].jersey,
+        email: `${team8PlayerData[i].firstName.toLowerCase()}.${team8PlayerData[i].lastName.toLowerCase()}@email.com`,
+        phone: `555-800${i + 1}`,
+        birthDate: new Date(`1994-${(i + 1).toString().padStart(2, "0")}-20`).getTime(),
+        isCaptain: team8PlayerData[i].isCaptain,
+        status: team8PlayerData[i].status,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      })
+      team8PlayerIds.push(id)
+    }
+
     // ============================================================
-    // STEP 5: INSERT SEASONS
+    // STEP 7: INSERT SEASON TEAMS (6 records — 4 existing, 2 new)
     // ============================================================
-    const season1Id = await ctx.db.insert("seasons", {
-      name: "Spring 2026",
-      sport: "softball",
-      description: "Annual spring softball season",
-      startDate: new Date("2026-03-01T00:00:00Z").getTime(),
-      endDate: new Date("2026-06-30T23:59:59Z").getTime(),
-      status: "active",
-      organizerId: "user_clerk_test_001",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    })
-
-    const season2Id = await ctx.db.insert("seasons", {
-      name: "Fall 2025",
-      sport: "softball",
-      description: "Previous fall season",
-      startDate: new Date("2025-09-01T00:00:00Z").getTime(),
-      endDate: new Date("2025-12-31T23:59:59Z").getTime(),
-      status: "complete",
-      organizerId: "user_clerk_test_001",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    })
-
-    const season3Id = await ctx.db.insert("seasons", {
-      name: "Summer 2026",
-      sport: "baseball",
-      startDate: new Date("2026-07-01T00:00:00Z").getTime(),
-      endDate: new Date("2026-09-30T23:59:59Z").getTime(),
-      status: "planning",
-      organizerId: "user_clerk_test_001",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    })
-
-    // Link teams to seasons
+    // Spring 2026 → Diamond Divas (existing)
     await ctx.db.insert("seasonTeams", {
       seasonId: season1Id,
       teamId: team1Id,
       createdAt: Date.now(),
     })
+    // Spring 2026 → Swing Sisters (existing)
     await ctx.db.insert("seasonTeams", {
       seasonId: season1Id,
       teamId: team2Id,
       createdAt: Date.now(),
     })
+    // Spring 2026 → Ball Busters (new)
+    await ctx.db.insert("seasonTeams", {
+      seasonId: season1Id,
+      teamId: team3Id,
+      createdAt: Date.now(),
+    })
+    // Spring 2026 → Pitch Please (new)
+    await ctx.db.insert("seasonTeams", {
+      seasonId: season1Id,
+      teamId: team4Id,
+      createdAt: Date.now(),
+    })
+    // Fall 2025 → Ball Busters (existing)
     await ctx.db.insert("seasonTeams", {
       seasonId: season2Id,
       teamId: team3Id,
       createdAt: Date.now(),
     })
+    // Fall 2025 → Pitch Please (existing)
     await ctx.db.insert("seasonTeams", {
       seasonId: season2Id,
       teamId: team4Id,
       createdAt: Date.now(),
     })
 
-    // Link tournament to first season
-    await ctx.db.patch(tournamentId, {
+    // ============================================================
+    // STEP 8: INSERT SEASON GAMES (8 records — Spring 2026)
+    // ============================================================
+    // Game 1 — Week 1: Diamond Divas vs Swing Sisters (completed, DD 5-3)
+    await ctx.db.insert("seasonGames", {
       seasonId: season1Id,
+      homeTeamId: team1Id,
+      awayTeamId: team2Id,
+      scheduledDate: new Date("2026-03-02T18:00:00Z").getTime(),
+      homeScore: 5,
+      awayScore: 3,
+      status: "completed",
+      location: "Field A - Main Diamond",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // Game 2 — Week 1: Ball Busters vs Pitch Please (completed, tie 2-2)
+    await ctx.db.insert("seasonGames", {
+      seasonId: season1Id,
+      homeTeamId: team3Id,
+      awayTeamId: team4Id,
+      scheduledDate: new Date("2026-03-02T18:00:00Z").getTime(),
+      homeScore: 2,
+      awayScore: 2,
+      status: "completed",
+      location: "Field B - Secondary Diamond",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // Game 3 — Week 2: Swing Sisters vs Ball Busters (completed, BB 6-4)
+    await ctx.db.insert("seasonGames", {
+      seasonId: season1Id,
+      homeTeamId: team2Id,
+      awayTeamId: team3Id,
+      scheduledDate: new Date("2026-03-09T18:00:00Z").getTime(),
+      homeScore: 4,
+      awayScore: 6,
+      status: "completed",
+      location: "Field A - Main Diamond",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // Game 4 — Week 2: Pitch Please vs Diamond Divas (completed, DD 8-1)
+    await ctx.db.insert("seasonGames", {
+      seasonId: season1Id,
+      homeTeamId: team4Id,
+      awayTeamId: team1Id,
+      scheduledDate: new Date("2026-03-09T18:00:00Z").getTime(),
+      homeScore: 1,
+      awayScore: 8,
+      status: "completed",
+      location: "Field B - Secondary Diamond",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // Game 5 — Week 3: Diamond Divas vs Ball Busters (completed, BB 4-3)
+    await ctx.db.insert("seasonGames", {
+      seasonId: season1Id,
+      homeTeamId: team1Id,
+      awayTeamId: team3Id,
+      scheduledDate: new Date("2026-03-16T18:00:00Z").getTime(),
+      homeScore: 3,
+      awayScore: 4,
+      status: "completed",
+      location: "Field A - Main Diamond",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // Game 6 — Week 3: Swing Sisters vs Pitch Please (completed, SS 7-5)
+    await ctx.db.insert("seasonGames", {
+      seasonId: season1Id,
+      homeTeamId: team2Id,
+      awayTeamId: team4Id,
+      scheduledDate: new Date("2026-03-16T18:00:00Z").getTime(),
+      homeScore: 7,
+      awayScore: 5,
+      status: "completed",
+      location: "Field B - Secondary Diamond",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // Game 7 — Week 4: Ball Busters vs Pitch Please (scheduled)
+    await ctx.db.insert("seasonGames", {
+      seasonId: season1Id,
+      homeTeamId: team3Id,
+      awayTeamId: team4Id,
+      scheduledDate: new Date("2026-03-23T18:00:00Z").getTime(),
+      status: "scheduled",
+      location: "Field A - Main Diamond",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    })
+
+    // Game 8 — Week 4: Swing Sisters vs Diamond Divas (scheduled)
+    await ctx.db.insert("seasonGames", {
+      seasonId: season1Id,
+      homeTeamId: team2Id,
+      awayTeamId: team1Id,
+      scheduledDate: new Date("2026-03-23T18:00:00Z").getTime(),
+      status: "scheduled",
+      location: "Field B - Secondary Diamond",
+      createdAt: Date.now(),
       updatedAt: Date.now(),
     })
 
     // ============================================================
-    // STEP 6: INSERT GAMES
+    // STEP 9: INSERT TOURNAMENT GAMES (4 records — 2 existing, 2 new)
     // ============================================================
-    // Create games that reference the tournament and teams.
-    // Game 1: COMPLETED - Team 1 vs Team 2 (Team 1 won 8-3)
-    // Game 2: SCHEDULED - Team 3 vs Team 4 (no results yet)
-
+    // Game 1 — Round 1: Diamond Divas vs Swing Sisters (completed, DD 8-3)
     const game1Id = await ctx.db.insert("games", {
       tournamentId,
-      round: 1, // First round (quarterfinals in a 4-team bracket)
-      gameNumber: 1, // First game of the round
+      round: 1,
+      gameNumber: 1,
       team1Id,
       team2Id,
-      winnerId: team1Id, // Team 1 won
+      winnerId: team1Id,
       scheduledTime: new Date("2026-07-15T09:00:00Z").getTime(),
       actualStartTime: new Date("2026-07-15T09:05:00Z").getTime(),
       actualEndTime: new Date("2026-07-15T10:12:00Z").getTime(),
@@ -371,149 +749,181 @@ export const seed = mutation({
       status: "completed",
     })
 
+    // Game 2 — Round 1: Ball Busters vs Pitch Please (scheduled)
     const game2Id = await ctx.db.insert("games", {
       tournamentId,
       round: 1,
       gameNumber: 2,
       team1Id: team3Id,
       team2Id: team4Id,
-      winnerId: undefined, // No winner yet
       scheduledTime: new Date("2026-07-15T11:00:00Z").getTime(),
-      actualStartTime: undefined,
-      actualEndTime: undefined,
       fieldId: field2Id,
-      team1Score: undefined,
-      team2Score: undefined,
+      status: "scheduled",
+    })
+
+    // New Game 3 — Round 2 (Semifinal): Diamond Divas vs Ball Busters (completed, DD 6-4)
+    const game3Id = await ctx.db.insert("games", {
+      tournamentId,
+      round: 2,
+      gameNumber: 3,
+      team1Id,
+      team2Id: team3Id,
+      winnerId: team1Id,
+      scheduledTime: new Date("2026-07-16T09:00:00Z").getTime(),
+      actualStartTime: new Date("2026-07-16T09:10:00Z").getTime(),
+      actualEndTime: new Date("2026-07-16T10:30:00Z").getTime(),
+      fieldId: field1Id,
+      team1Score: 6,
+      team2Score: 4,
+      status: "completed",
+    })
+
+    // New Game 4 — Round 3 (Championship): Diamond Divas vs TBD (scheduled)
+    await ctx.db.insert("games", {
+      tournamentId,
+      round: 3,
+      gameNumber: 4,
+      team1Id,
+      scheduledTime: new Date("2026-07-17T10:00:00Z").getTime(),
+      fieldId: field1Id,
       status: "scheduled",
     })
 
     // ============================================================
-    // STEP 7: INSERT GAME STATS
+    // STEP 10: INSERT GAME STATS (14 records — 7 existing, 7 new)
     // ============================================================
-    // Add batting statistics for players in the completed game.
-    // This tests the gameStats table for stats retrieval.
-
-    // Team 1 players stats (Diamond Divas - won 8-3)
-    // Player 1: 3 at-bats, 2 hits (1 double, 1 single), 2 RBI
+    // === Existing — Game 1 stats (Diamond Divas vs Swing Sisters) ===
+    // Diamond Divas — Game 1 batting
     await ctx.db.insert("gameStats", {
       gameId: game1Id,
       playerId: team1PlayerIds[0],
       sportType: "softball",
       gamesPlayed: 1,
-      atBats: 3,
-      hits: 2,
-      singles: 1,
-      doubles: 1,
-      triples: 0,
-      homeRuns: 0,
-      rbi: 2,
+      atBats: 3, hits: 2, singles: 1, doubles: 1, triples: 0, homeRuns: 0, rbi: 2,
     })
-
-    // Player 2: 4 at-bats, 3 hits (2 singles, 1 triple), 1 RBI
     await ctx.db.insert("gameStats", {
       gameId: game1Id,
       playerId: team1PlayerIds[1],
       sportType: "softball",
       gamesPlayed: 1,
-      atBats: 4,
-      hits: 3,
-      singles: 2,
-      doubles: 0,
-      triples: 1,
-      homeRuns: 0,
-      rbi: 1,
+      atBats: 4, hits: 3, singles: 2, doubles: 0, triples: 1, homeRuns: 0, rbi: 1,
     })
-
-    // Player 3: 3 at-bats, 2 hits (2 singles), 3 RBI
     await ctx.db.insert("gameStats", {
       gameId: game1Id,
       playerId: team1PlayerIds[2],
       sportType: "softball",
       gamesPlayed: 1,
-      atBats: 3,
-      hits: 2,
-      singles: 2,
-      doubles: 0,
-      triples: 0,
-      homeRuns: 0,
-      rbi: 3,
+      atBats: 3, hits: 2, singles: 2, doubles: 0, triples: 0, homeRuns: 0, rbi: 3,
     })
-
-    // Player 4: 2 at-bats, 1 hit (1 single), 1 RBI
     await ctx.db.insert("gameStats", {
       gameId: game1Id,
       playerId: team1PlayerIds[3],
       sportType: "softball",
       gamesPlayed: 1,
-      atBats: 2,
-      hits: 1,
-      singles: 1,
-      doubles: 0,
-      triples: 0,
-      homeRuns: 0,
-      rbi: 1,
+      atBats: 2, hits: 1, singles: 1, doubles: 0, triples: 0, homeRuns: 0, rbi: 1,
     })
 
-    // Team 2 players stats (Swing Sisters - lost 3-8)
-    // Player 1: 3 at-bats, 1 hit (1 single), 0 RBI
+    // Swing Sisters — Game 1 batting
     await ctx.db.insert("gameStats", {
       gameId: game1Id,
       playerId: team2PlayerIds[0],
       sportType: "softball",
       gamesPlayed: 1,
-      atBats: 3,
-      hits: 1,
-      singles: 1,
-      doubles: 0,
-      triples: 0,
-      homeRuns: 0,
-      rbi: 0,
+      atBats: 3, hits: 1, singles: 1, doubles: 0, triples: 0, homeRuns: 0, rbi: 0,
     })
-
-    // Player 2: 4 at-bats, 2 hits (2 singles), 2 RBI
     await ctx.db.insert("gameStats", {
       gameId: game1Id,
       playerId: team2PlayerIds[1],
       sportType: "softball",
       gamesPlayed: 1,
-      atBats: 4,
-      hits: 2,
-      singles: 2,
-      doubles: 0,
-      triples: 0,
-      homeRuns: 0,
-      rbi: 2,
+      atBats: 4, hits: 2, singles: 2, doubles: 0, triples: 0, homeRuns: 0, rbi: 2,
     })
-
-    // Player 3: 3 at-bats, 0 hits, 0 RBI
     await ctx.db.insert("gameStats", {
       gameId: game1Id,
       playerId: team2PlayerIds[2],
       sportType: "softball",
       gamesPlayed: 1,
-      atBats: 3,
-      hits: 0,
-      singles: 0,
-      doubles: 0,
-      triples: 0,
-      homeRuns: 0,
-      rbi: 0,
+      atBats: 3, hits: 0, singles: 0, doubles: 0, triples: 0, homeRuns: 0, rbi: 0,
     })
+
+    // === New — Game 3 stats (Diamond Divas vs Ball Busters) ===
+    // Diamond Divas — Game 3 batting (same players, for multi-game aggregation)
+    await ctx.db.insert("gameStats", {
+      gameId: game3Id,
+      playerId: team1PlayerIds[0],
+      sportType: "softball",
+      gamesPlayed: 1,
+      atBats: 4, hits: 3, singles: 2, doubles: 1, triples: 0, homeRuns: 0, rbi: 2,
+    })
+    await ctx.db.insert("gameStats", {
+      gameId: game3Id,
+      playerId: team1PlayerIds[1],
+      sportType: "softball",
+      gamesPlayed: 1,
+      atBats: 3, hits: 1, singles: 1, doubles: 0, triples: 0, homeRuns: 0, rbi: 1,
+    })
+    await ctx.db.insert("gameStats", {
+      gameId: game3Id,
+      playerId: team1PlayerIds[2],
+      sportType: "softball",
+      gamesPlayed: 1,
+      atBats: 4, hits: 2, singles: 2, doubles: 0, triples: 0, homeRuns: 0, rbi: 1,
+    })
+    await ctx.db.insert("gameStats", {
+      gameId: game3Id,
+      playerId: team1PlayerIds[3],
+      sportType: "softball",
+      gamesPlayed: 1,
+      atBats: 2, hits: 0, singles: 0, doubles: 0, triples: 0, homeRuns: 0, rbi: 0,
+    })
+
+    // Ball Busters — Game 3 batting (first stats for these players)
+    await ctx.db.insert("gameStats", {
+      gameId: game3Id,
+      playerId: team3PlayerIds[0],
+      sportType: "softball",
+      gamesPlayed: 1,
+      atBats: 3, hits: 2, singles: 1, doubles: 1, triples: 0, homeRuns: 0, rbi: 1,
+    })
+    await ctx.db.insert("gameStats", {
+      gameId: game3Id,
+      playerId: team3PlayerIds[1],
+      sportType: "softball",
+      gamesPlayed: 1,
+      atBats: 4, hits: 1, singles: 0, doubles: 0, triples: 1, homeRuns: 0, rbi: 1,
+    })
+    await ctx.db.insert("gameStats", {
+      gameId: game3Id,
+      playerId: team3PlayerIds[2],
+      sportType: "softball",
+      gamesPlayed: 1,
+      atBats: 3, hits: 0, singles: 0, doubles: 0, triples: 0, homeRuns: 0, rbi: 0,
+    })
+
+    // ============================================================
+    // STEP 11: PATCH TOURNAMENT SEASON LINKS
+    // ============================================================
+    // Link Summer Softball Classic to Spring 2026 season
+    await ctx.db.patch(tournamentId, {
+      seasonId: season1Id,
+      updatedAt: Date.now(),
+    })
+    // Winter and Fall tournaments intentionally left unlinked
+    // (Winter is "draft", Fall is "registration_open" — not yet associated with a season)
 
     // ============================================================
     // RETURN SUMMARY
     // ============================================================
-    // Return IDs for reference and verification.
-    // In production, you might want to return more structured data
-    // or log these to the console.
     return {
       tournamentId,
+      tournamentIds: [tournamentId, winterTournamentId, fallTournamentId],
       fieldIds: [field1Id, field2Id],
-      teamIds: [team1Id, team2Id, team3Id, team4Id],
-      gameIds: [game1Id, game2Id],
-      playerCount: 32,
+      teamIds: [team1Id, team2Id, team3Id, team4Id, team5Id, team6Id, team7Id, team8Id],
+      gameIds: [game1Id, game2Id, game3Id],
+      playerCount: 48,
       seasonIds: [season1Id, season2Id, season3Id],
-      message: "Seed data inserted successfully. 1 tournament, 2 fields, 4 teams (8 players each), 2 games, 7 player stat records, and 3 seasons with season-team links.",
+      message:
+        "Seed data inserted successfully: 1 user profile, 3 seasons, 3 tournaments, 6 fields, 8 teams (48 players), 6 seasonTeams, 8 seasonGames (6 completed, 2 scheduled), 4 tournament games (2 completed, 1 scheduled, 1 TBD), and 14 gameStats records.",
     }
   },
 })
@@ -523,14 +933,11 @@ export const seed = mutation({
  * Useful for resetting the database before re-seeding.
  *
  * WARNING: This will delete ALL data in the database, not just seed data.
- * In production, you would want to add checks or use a separate
- * collection for test data.
  */
 export const clearAllData = mutation({
   args: {},
   handler: async (ctx) => {
     // Query all tables and delete all records.
-    // Note: This is destructive and should only be used in development.
     const tables = [
       "seasonGames",
       "seasonTeams",
@@ -552,9 +959,6 @@ export const clearAllData = mutation({
       }
     }
 
-    // Note: seasonGames, seasonTeams, and seasons are now included.
-    // Clearing by table means tournament.seasonId references may be orphaned,
-    // which is acceptable for development seed/clear cycles.
     return { message: `Cleared ${tables.length} tables` }
   },
 })

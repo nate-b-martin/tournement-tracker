@@ -64,9 +64,15 @@ export function TeamRosterDialog({
 								className="flex items-center justify-between rounded-lg border border-card-outline/70 bg-background/40 px-4 py-2"
 							>
 								<div className="flex items-center gap-3">
-									<span className="font-medium">
+									<button
+										type="button"
+										className="font-medium hover:underline cursor-pointer"
+										onClick={() => {
+											window.location.href = `/players/${player._id}`;
+										}}
+									>
 										{player.firstName} {player.lastName}
-									</span>
+									</button>
 									{player.isCaptain && (
 										<span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-400">
 											Captain
