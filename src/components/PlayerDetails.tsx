@@ -127,8 +127,8 @@ export function PlayerDetails({ playerId, onBack }: PlayerDetailsProps) {
 					</CardHeader>
 					<CardContent className="space-y-2 text-sm">
 						<p>
-							<span className="text-muted-foreground">Position:</span>{" "}
-							{player.position || "-"}
+							<span className="text-muted-foreground">Jersey:</span>{" "}
+							{player.jerseyNumber ?? "-"}
 						</p>
 						<p>
 							<span className="text-muted-foreground">Contact:</span>{" "}
@@ -209,10 +209,19 @@ export function PlayerDetails({ playerId, onBack }: PlayerDetailsProps) {
 								<div className="flex justify-between">
 									<span className="text-muted-foreground">Average:</span>
 									<span className="font-medium">
-										{(
-											stats.reduce((acc, s) => acc + s.battingAverage, 0) /
-											stats.length
-										).toFixed(3)}
+										{(() => {
+											const totalAtBats = stats.reduce(
+												(acc, s) => acc + s.atBats,
+												0,
+											);
+											const totalHits = stats.reduce(
+												(acc, s) => acc + s.hits,
+												0,
+											);
+											return totalAtBats > 0
+												? (totalHits / totalAtBats).toFixed(3)
+												: "-";
+										})()}
 									</span>
 								</div>
 							</div>
@@ -249,8 +258,8 @@ export function PlayerDetails({ playerId, onBack }: PlayerDetailsProps) {
 									{player.phone || "-"}
 								</p>
 								<p>
-									<span className="text-muted-foreground">Position:</span>{" "}
-									{player.position || "-"}
+									<span className="text-muted-foreground">Jersey Number:</span>{" "}
+									{player.jerseyNumber ?? "-"}
 								</p>
 							</CardContent>
 						</Card>
@@ -271,8 +280,8 @@ export function PlayerDetails({ playerId, onBack }: PlayerDetailsProps) {
 									{player.isCaptain ? "Yes" : "No"}
 								</p>
 								<p>
-									<span className="text-muted-foreground">Organization:</span>{" "}
-									{player.organization || "-"}
+									<span className="text-muted-foreground">Team:</span>{" "}
+									{player.team?.name || "No Team"}
 								</p>
 							</CardContent>
 						</Card>

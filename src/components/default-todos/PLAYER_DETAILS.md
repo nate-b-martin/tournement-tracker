@@ -1,21 +1,18 @@
 ## Player Details Component TODOs
 
-### In Progress
+### Completed
 - [x] Create PLAYER_DETAILS_DESIGN.md design document
 - [x] Create src/hooks/usePlayerById.ts hook
 - [x] Create src/routes/players/$id/index.tsx route
-- [ ] Update src/components/PlayersTable.tsx name click handlers for stats view
-
-### Completed
-- [x] Create comprehensive design documentation
-- [x] Set up data fetching patterns
+- [x] Create src/components/PlayerDetails.tsx component
+- [x] Update src/components/PlayersTable.tsx name click handlers (contact + stats views)
+- [x] Update src/components/TeamRosterDialog.tsx with player name links
+- [x] Add unit tests (tests/unit/components/PlayerDetails.test.tsx)
 - [x] Implement error handling and loading states
 - [x] Add admin RBAC (edit permissions)
 
 ### Next Steps
-- Update PlayersTable.tsx to make stats view player names clickable
-- Optionally update TeamsTable.tsx to add player links
-- Test Player Details functionality
+- Test Player Details functionality (E2E)
 - Run linting and format
 
 ## Design References

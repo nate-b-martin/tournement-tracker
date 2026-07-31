@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PlayerDetails } from "@/components/PlayerDetails";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -49,12 +49,10 @@ const mockPlayer = {
 		city: "Portland",
 	},
 	jerseyNumber: 23,
-	position: "Pitcher",
 	email: "emma@example.com",
 	phone: "(555) 123-4567",
 	status: "active" as const,
 	isCaptain: true,
-	organization: "Example Corp",
 	createdAt: Date.now(),
 	updatedAt: Date.now(),
 };
@@ -66,12 +64,10 @@ const mockPlayerNoTeam = {
 	teamId: undefined,
 	team: null,
 	jerseyNumber: 10,
-	position: "Fielder",
 	email: "john@example.com",
 	phone: "(555) 987-6543",
 	status: "inactive" as const,
 	isCaptain: false,
-	organization: "Example Corp",
 	createdAt: Date.now(),
 	updatedAt: Date.now(),
 };
@@ -136,8 +132,10 @@ describe("PlayerDetails component", () => {
 
 		expect(screen.getByText(/emma wilson/i)).toBeTruthy();
 		expect(screen.getAllByText(/broncos/i).length).toBeGreaterThanOrEqual(1);
-		expect(screen.getAllByText(/emma@example.com/i).length).toBeGreaterThanOrEqual(1);
-		expect(screen.getAllByText(/pitcher/i).length).toBeGreaterThanOrEqual(1);
+		expect(
+			screen.getAllByText(/emma@example.com/i).length,
+		).toBeGreaterThanOrEqual(1);
+		expect(screen.getAllByText(/23/i).length).toBeGreaterThanOrEqual(1);
 		expect(screen.getAllByText(/active/i).length).toBeGreaterThanOrEqual(1);
 	});
 
@@ -146,16 +144,22 @@ describe("PlayerDetails component", () => {
 		mockUseGameStatsByPlayer.mockReturnValue([
 			{
 				_id: "stat_001",
-				playerId: "player_001",
-				gameId: "game_001",
-				points: 15,
-				assists: 3,
-				rebounds: 7,
+				playerId: "player_001" as Id<"players">,
+				gameId: "game_001" as Id<"games">,
+				gamesPlayed: 1,
+				atBats: 4,
+				hits: 2,
+				singles: 1,
+				doubles: 1,
+				triples: 0,
+				homeRuns: 0,
+				rbi: 1,
 				game: {
-					_id: "game_001",
-					date: Date.now(),
-					homeTeam: "Team A",
-					awayTeam: "Team B",
+					_id: "game_001" as Id<"games">,
+					tournamentId: "tournament_001" as Id<"tournaments">,
+					round: 1,
+					gameNumber: 1,
+					status: "completed" as const,
 				},
 			},
 		]);
@@ -170,6 +174,7 @@ describe("PlayerDetails component", () => {
 
 		expect(screen.getByText("Game Stats")).toBeTruthy();
 		expect(screen.getByText("Stats")).toBeTruthy();
+		expect(screen.getByText(/0\.500/)).toBeTruthy();
 	});
 
 	it("hides edit button for non-admin users", () => {
