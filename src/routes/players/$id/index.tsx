@@ -4,6 +4,7 @@ import {
 	useParams,
 } from "@tanstack/react-router";
 import { PlayerDetails } from "@/components/PlayerDetails";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
 export const Route = createFileRoute("/players/$id/")({
@@ -15,9 +16,11 @@ function PlayerDetailsRoute() {
 	const navigate = useNavigate();
 
 	return (
-		<PlayerDetails
-			playerId={id as Id<"players">}
-			onBack={() => navigate({ to: "/playerspage" })}
-		/>
+		<ProtectedRoute requireAdmin={false}>
+			<PlayerDetails
+				playerId={id as Id<"players">}
+				onBack={() => navigate({ to: "/playerspage" })}
+			/>
+		</ProtectedRoute>
 	);
 }

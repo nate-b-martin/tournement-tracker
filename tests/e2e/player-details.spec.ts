@@ -23,8 +23,11 @@ test.describe("Player Details", () => {
 			await page.waitForURL(/\/players\//);
 
 			// Verify the details page shows the player's name in the header
-			const headerName = page.locator("h1");
-			await expect(headerName).toContainText(expectedName?.trim() ?? "");
+			const headerName = page.getByRole("heading", {
+				level: 1,
+				name: new RegExp(expectedName?.trim() ?? "", "i"),
+			});
+			await expect(headerName).toBeVisible();
 		});
 
 		test("renders player details header, info cards, and tabs", async ({
@@ -120,7 +123,9 @@ test.describe("Player Details", () => {
 		}) => {
 			await page.goto("/players/some-player-id");
 			await page.waitForLoadState("networkidle");
-			const accessDenied = page.getByText(/please sign in to access/i);
+			const accessDenied = page.getByRole("heading", {
+				name: /authentication required/i,
+			});
 			await expect(accessDenied).toBeVisible({ timeout: 10000 });
 		});
 	});
