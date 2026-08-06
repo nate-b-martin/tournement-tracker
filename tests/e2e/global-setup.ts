@@ -1,3 +1,4 @@
+import { createClerkClient } from "@clerk/backend";
 import { clerk, clerkSetup } from "@clerk/testing/playwright";
 import { test as setup } from "@playwright/test";
 import dotenv from "dotenv";
@@ -17,11 +18,42 @@ if (fs.existsSync(envLocalPath)) {
 const CLERK_PUBLISHABLE_KEY = process.env.VITE_CLERK_PUBLISHABLE_KEY;
 const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 const CLERK_TEST_EMAIL = process.env.CLERK_TEST_EMAIL;
+const CLERK_TEST_PASSWORD = process.env.CLERK_TEST_PASSWORD;
 
 // Debug logging
 console.log(`DEBUG: CLERK_PUBLISHABLE_KEY exists: ${!!CLERK_PUBLISHABLE_KEY}`);
 console.log(`DEBUG: CLERK_SECRET_KEY exists: ${!!CLERK_SECRET_KEY}`);
 console.log(`DEBUG: CLERK_TEST_EMAIL exists: ${!!CLERK_TEST_EMAIL}`);
+console.log(`DEBUG: CLERK_TEST_PASSWORD exists: ${!!CLERK_TEST_PASSWORD}`);
+
+// Idempotently create the Clerk test user via the Backend API so the UI
+// sign-in always has a valid account to authenticate with in CI (previously
+// "No user found with email" aborted the run on fresh instances).
+async function ensureTestUserExists(): Promise<void> {
+	if (!CLERK_SECRET_KEY || !CLERK_TEST_EMAIL) return;
+	const client = createClerkClient({ secretKey: CLERK_SECRET_KEY });
+
+	try {
+		const matching = await client.users.getUserList({
+			emailAddress: [CLERK_TEST_EMAIL],
+		});
+		if (matching && matching.data && matching.data.length > 0) {
+			console.log(`✓ Clerk test user already exists: ${CLERK_TEST_EMAIL}`);
+			return;
+		}
+	} catch (error) {
+		console.warn("Failed to query Clerk test user; will attempt to create:", error);
+	}
+
+	await client.users.createUser({
+		emailAddress: [CLERK_TEST_EMAIL],
+		...((CLERK_TEST_PASSWORD && { password: CLERK_TEST_PASSWORD }) ?? {}),
+		firstName: "E2E",
+		lastName: "Tester",
+		skipPasswordRequirement: !CLERK_TEST_PASSWORD,
+	});
+	console.log(`✓ Created Clerk test user: ${CLERK_TEST_EMAIL}`);
+}
 
 const authFile = path.join(__dirname, "../../playwright/.clerk/user.json");
 const authDir = path.dirname(authFile);
@@ -48,6 +80,9 @@ setup("authenticate user and save auth state", async ({ page, context }) => {
 			fs.mkdirSync(authDir, { recursive: true });
 		}
 
+		// Ensure the test account exists before attempting UI sign-in.
+		await ensureTestUserExists();
+
 		// Configure Playwright with Clerk
 		await clerkSetup({
 			publishableKey: CLERK_PUBLISHABLE_KEY,
@@ -58,7 +93,8 @@ setup("authenticate user and save auth state", async ({ page, context }) => {
 		await page.goto("/");
 		await page.waitForLoadState("networkidle");
 
-		// Sign in with test credentials
+		// Sign in with test credentials (email-based sign-in auto-creates a
+		// backend sign-in ticket, so no password is required)
 		await clerk.signIn({
 			page,
 			emailAddress: CLERK_TEST_EMAIL,
