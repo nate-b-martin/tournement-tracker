@@ -140,6 +140,24 @@ export class SetupWizardPage {
 			.getByRole("button", { name: /remove/i });
 	}
 
+	get browseExistingPlayersButton(): Locator {
+		return this.page.getByRole("button", { name: /browse existing players/i });
+	}
+
+	get searchPlayersInput(): Locator {
+		return this.page.getByLabel(/search players/i);
+	}
+
+	searchPlayerResult(firstName: string, lastName: string): Locator {
+		return this.page.getByText(`${firstName} ${lastName}`);
+	}
+
+	addExistingPlayerToRoster(firstName: string, lastName: string): Locator {
+		return this.searchPlayerResult(firstName, lastName)
+			.locator("..")
+			.getByRole("button", { name: /add to roster/i });
+	}
+
 	// ── Step 3: Create Season ────────────────────────────────
 
 	get step3Heading(): Locator {

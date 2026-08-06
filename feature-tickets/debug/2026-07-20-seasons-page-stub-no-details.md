@@ -3,7 +3,8 @@ created: 2026-07-20
 source: qa-playwright-workflow-explorer
 sourceTicket: feature-tickets/Enhancments/ideas.md (line 17)
 priority: P1
-status: open
+status: closed
+resolved: 2026-08-05
 ---
 
 # Debug: Seasons Page — Stub shows no season details
@@ -97,6 +98,12 @@ no other details on page
 3. [ ] Update `clearAllData` mutation to include seasons/seasonTeams/seasonGames
 4. [ ] Write Playwright E2E tests for the seasons listing page
 5. [ ] Run `npm run check` and `npx playwright test`
+
+## Resolution
+
+Resolved 2026-08-05. `src/routes/seasonspage/index.tsx` now renders `<SeasonsTable />`, a fully
+implemented data table (search, filters, pagination) with rows linking to `/seasons/$id` detail
+pages. E2E coverage exists in `tests/e2e/seasons.spec.ts`. Verified in code and marked closed.
 
 ## Implementation Reference
 

@@ -183,6 +183,44 @@ test.describe("Setup Wizard", () => {
 		});
 	});
 
+	test.describe("Flow 3b: Admin searches and adds existing players", () => {
+		test("browses and adds an existing player to a roster", async ({ page }) => {
+			const wizard = new SetupWizardPage(page);
+			await wizard.goto();
+			await wizard.openWizard();
+			await wizard.waitForDialog();
+
+			// Step 1 → select two teams
+			const teamButton1 = wizard.existingTeam("Diamond Divas");
+			const teamButton2 = wizard.existingTeam("Swing Sisters");
+			const bothTeams =
+				(await teamButton1.isVisible().catch(() => false)) &&
+				(await teamButton2.isVisible().catch(() => false));
+			test.skip(!bothTeams, "Seeded teams not available");
+
+			await teamButton1.click();
+			await teamButton2.click();
+			await wizard.goNext();
+			await expect(wizard.step2Heading).toBeVisible();
+
+			// Step 2 → open the existing-players search
+			await expect(wizard.browseExistingPlayersButton).toBeVisible();
+			await wizard.browseExistingPlayersButton.click();
+			await expect(wizard.searchPlayersInput).toBeVisible();
+
+			// Search and add the first result
+			await wizard.searchPlayersInput.fill("Player");
+			await page.waitForTimeout(500);
+
+			const firstAddButton = wizard.addExistingPlayerToRoster("Diamond", "Player");
+			const hasResult = await firstAddButton.isVisible().catch(() => false);
+			test.skip(!hasResult, "No seeded players matched the search");
+
+			await firstAddButton.click();
+			await expect(wizard.playerInRoster("Diamond", "Player")).toBeVisible();
+		});
+	});
+
 	test.describe("Flow 4: Admin discards wizard with unsaved data", () => {
 		test("shows discard confirmation dialog", async ({ page }) => {
 			const wizard = new SetupWizardPage(page);

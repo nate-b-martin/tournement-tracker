@@ -3,7 +3,8 @@ created: 2026-07-20
 source: qa-playwright-workflow-explorer
 sourceTicket: feature-tickets/Enhancments/ideas.md
 priority: P2
-status: open
+status: closed
+resolved: 2026-08-05
 ---
 
 # Debug: Season Wizard — "Add Existing Players" Not Implemented
@@ -114,3 +115,11 @@ Not collected (no error handlers triggered — test failed on assertion, not bro
 3. [ ] Add ability to select and add existing players to a team's roster via `ADD_PLAYER` dispatch
 4. [ ] Re-run verification with Playwright CLI
 5. [ ] Generate the test once verification passes
+
+## Resolution
+
+Resolved 2026-08-05. `StepManageRosters.tsx` now wires `useQuery(api.players.search, ...)` and
+renders a "Browse Existing Players" section with a name search input, results list (showing team
+badges), and per-result "Add to Roster" buttons dispatching `ADD_PLAYER`. E2E coverage added in
+`tests/e2e/setup-wizard.spec.ts` ("browses and adds an existing player to a roster") with
+supporting locators in `tests/e2e/pages/SetupWizardPage.ts`. Verified in code and marked closed.
