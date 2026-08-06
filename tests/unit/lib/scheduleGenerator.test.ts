@@ -4,8 +4,13 @@ import {
 	generateRoundRobinPairings,
 } from "@/lib/scheduleGenerator";
 
+const MS_PER_DAY = 86400000;
+
 describe("computeGameDays", () => {
-	const startDate = new Date("2026-01-05").getTime(); // Monday
+	// Jan 5, 2026 is a Monday — construct as local time so getDay() math is
+	// deterministic regardless of the runner's timezone (date-only string
+	// literals parse as UTC and shift the local weekday).
+	const startDate = new Date(2026, 0, 5).getTime(); // Monday
 
 	it("returns correct dates for a single week", () => {
 		const result = computeGameDays({
@@ -35,7 +40,7 @@ describe("computeGameDays", () => {
 	});
 
 	it("handles start date mid-week, returns next occurrence", () => {
-		const wedStart = new Date("2026-01-07").getTime(); // Wednesday
+		const wedStart = new Date(2026, 0, 7).getTime(); // Wednesday
 		const result = computeGameDays({
 			startDate: wedStart,
 			regularSeasonWeeks: 1,
@@ -55,8 +60,10 @@ describe("computeGameDays", () => {
 		});
 
 		expect(result).toHaveLength(2);
-		expect(new Date(result[0]).getDay()).toBe(0);
-		expect(new Date(result[1]).getDay()).toBe(6);
+		// Week of Mon Jan 5, 2026: Sat Jan 10 comes before Sun Jan 11 chronologically.
+		expect(new Date(result[0]).getDay()).toBe(6);
+		expect(new Date(result[1]).getDay()).toBe(0);
+		expect(result[1] - result[0]).toBe(MS_PER_DAY);
 	});
 
 	it("sorts returned dates chronologically", () => {
