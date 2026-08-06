@@ -16,14 +16,6 @@ mcp-todos.json
 .netlify
 .claude/**
 error-screenshots
-<<<<<<< HEAD
-playwright-report/index.html
 playwright/.clerk
-
-=======
 playwright-report/*.html
-<<<<<<< HEAD
->>>>>>> 529da0e (Update node versino in ci.yml github workflows)
-=======
 playwright-report/data
->>>>>>> d060ee4 (feat: add VITE_CONVEX_URL to environment checks and enhance e2e test diagnostics)

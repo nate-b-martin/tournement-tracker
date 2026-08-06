@@ -123,7 +123,9 @@ export function useAuth(): UseAuthResult {
 						err instanceof Error ? err.message : "Failed to create profile";
 					setError(err instanceof Error ? err : new Error(errorMsg));
 					toast.error(`Auth error: ${errorMsg}`);
-					console.error("Failed to create user profile:", err);
+					if (import.meta.env.DEV) {
+						console.error("Failed to create user profile:", err);
+					}
 				})
 				.finally(() => {
 					setIsCreatingProfile(false);

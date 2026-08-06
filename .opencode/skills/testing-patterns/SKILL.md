@@ -246,6 +246,8 @@ export class SeasonDetailPage {
   }
 }
 ```
+### Global Setup Pattern (from `tests/e2e/global-setup.ts`)
+The global setup file handles Clerk authentication and saves storage state for reuse across tests.
 
 ## Key Files to Reference
 - `tests/unit/components/DataTable.test.tsx` — 637 lines of DataTable test patterns
