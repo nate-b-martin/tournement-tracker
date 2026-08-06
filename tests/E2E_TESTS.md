@@ -13,6 +13,7 @@ Files of interest
 - `tests/e2e/global-setup.ts` — single source of truth for creating auth state (calls `clerkSetup()` + `clerk.signIn()` and writes `playwright/.clerk/user.json`).
 - `tests/e2e/fixtures/auth.ts` — lightweight test export (`test` and `expect`). It no longer performs sign-in.
 - `tests/e2e/*.spec.ts` — specs. Auth tests use default project `storageState`; unauthenticated tests call `test.use({ storageState: { cookies: [], origins: [] } })`.
+- `tests/e2e/pages/` — Page Object models encapsulating selectors and interactions.
 - `playwright/.clerk/user.json` — generated auth-state file (ignored by git).
 
 ## Environment variables (required)
@@ -20,8 +21,9 @@ Set these in `.env.local` or CI secrets before running tests:
 - `VITE_CLERK_PUBLISHABLE_KEY` — Clerk publishable key
 - `CLERK_SECRET_KEY` — Clerk secret key (sensitive)
 - `CLERK_TEST_EMAIL` — test user's email (used during global setup to sign in)
+- `CLERK_TEST_PASSWORD` — test user's password (required by `global-setup.ts`)
 
-Note: We also provide a placeholder `.env` file in the repo for local dev (do not commit secrets).
+Note: The global-setup reads `CLERK_TEST_EMAIL` and `CLERK_TEST_PASSWORD`, not `CLERK_EMAIL` or `ADMIN_CLERK_EMAIL`. Add these two explicitly to `.env.local`.
 
 ## How the authentication flow works
 1. Global setup project runs first (Playwright project named `global setup`).
@@ -99,18 +101,71 @@ npx playwright test tests/e2e/global-setup.ts
 - For behavior requiring an authenticated session, rely on the saved `storageState` (no per-test sign-in).
 - If you need multiple roles (admin, user), extend `global-setup.ts` to generate multiple `playwright/.clerk/<role>.json` files and use `test.use({ storageState: 'playwright/.clerk/admin.json' })` in the relevant `describe` blocks.
 
+## E2E Spec Files
+
+| Spec File | Tests |
+|-----------|-------|
+| `auth.spec.ts` | Authentication flow, access denied for protected routes |
+| `navigation.spec.ts` | Menu open/close, sign-in visibility, sidebar links |
+| `seasons.spec.ts` | Season list page rendering, search, filter, empty state |
+| `schedule-autogeneration.spec.ts` | Schedule generation dialog, bracket generation, unauthenticated redirect |
+
+## Page Objects
+
+| Page Object | File | Key Locators |
+|-------------|------|-------------|
+| `AuthPage` | `pages/AuthPage.ts` | `signInButton`, `userButton` |
+| `ProtectedPage` | `pages/ProtectedPage.ts` | `dashboardHeading`, `accessDeniedTitle` |
+| `Navigation` | `pages/Navigation.ts` | Menu open/close, sign-in button visibility |
+| `ClerkLogin` | `pages/ClerkLogin.ts` | Clerk-specific login flow |
+| `SeasonsPage` | `pages/SeasonsPage.ts` | `heading`, `createSeasonButton`, `table`, `searchInput`, `statusFilterChips` |
+| `SeasonDetailPage` | `pages/SeasonDetailPage.ts` | Tabs (Overview/Schedule/Standings), generate schedule dialog, bracket button |
+| `SetupWizardPage` | `pages/SetupWizardPage.ts` | First-run setup wizard elements |
+
+## Resilient Test Pattern (Missing Seed Data)
+
+When testing features that need seed data (seasons with teams), use `test.skip()` to avoid failures from missing precondition:
+
+```typescript
+test("generates schedule for existing season", async ({ page }) => {
+  const detailPage = new SeasonDetailPage(page);
+  await page.goto("/seasonspage");
+  await page.waitForLoadState("networkidle");
+
+  const seasonLink = page.getByRole("link").filter({ has: page.locator("text=") });
+  const linkCount = await seasonLink.count().catch(() => 0);
+  test.skip(linkCount === 0, "No seasons available");
+
+  await seasonLink.first().click();
+  await page.waitForURL(/\/seasons\//);
+  await detailPage.clickScheduleTab();
+
+  const btnVisible = await detailPage.generateScheduleButton
+    .isVisible()
+    .catch(() => false);
+  if (!btnVisible) {
+    test.skip(true, "Generate Schedule not visible — not admin or no teams");
+  }
+  // ... happy path continues
+});
+```
+
+Always use `.catch(() => false)` or `.catch(() => 0)` on `.isVisible()` / `.count()` to avoid unhandled rejections from detached elements.
+
 ## Key file references (quick)
 - `playwright.config.ts` — test runner config and project dependency wiring.
 - `tests/e2e/global-setup.ts` — authenticate + persist storage state.
 - `playwright/.clerk/user.json` — saved authenticated state.
 - `tests/e2e/fixtures/auth.ts` — test harness `test` export (no sign-in logic).
 - `tests/e2e/*.spec.ts` — spec files.
+- `tests/e2e/pages/` — Page Object Model classes.
 
 ## Troubleshooting checklist (quick)
-1. Are env vars set? `VITE_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_TEST_EMAIL`.
+1. Are env vars set? `VITE_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_TEST_EMAIL`, `CLERK_TEST_PASSWORD`.
 2. Is dev server running or reachable? (Playwright can start it per config.)
 3. Does `playwright/.clerk/user.json` exist? If not, run global setup to create it.
 4. If a test can't find UI elements, open the HTML report (`npx playwright show-report`) and inspect screenshots/traces.
+5. Vite dev server orphaned after tests? Run `pkill -f "vite"` to free CPU.
 
 ---
 Saved: `tests/E2E_TESTS.md` — place any follow-up questions or requests (CI example workflows, per-worker auth, role-based tests) and I can expand this doc with examples for those scenarios.

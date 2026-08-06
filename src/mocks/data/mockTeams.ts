@@ -5,7 +5,7 @@
  * Each team includes proper references and realistic information.
  */
 
-import type { Doc } from "../../../convex/_generated/dataModel";
+import type { Doc, Id } from "../../../convex/_generated/dataModel";
 
 /**
  * Mock team data that matches the Convex teams schema
@@ -15,9 +15,9 @@ import type { Doc } from "../../../convex/_generated/dataModel";
  */
 export const mockTeams: Doc<"teams">[] = [
 	{
-		_id: "team_1" as any,
+		_id: "team_1" as unknown as Id<"teams">,
 		_creationTime: Date.now() - 86400000 * 30, // 30 days ago
-		tournamentId: "tournament_1" as any,
+		tournamentId: "tournament_1" as unknown as Id<"tournaments">,
 		name: "Thunderbirds",
 		description: "Competitive youth baseball team with strong batting lineup",
 		coachName: "Michael Rodriguez",
@@ -28,14 +28,14 @@ export const mockTeams: Doc<"teams">[] = [
 		organization: "Springfield Youth Baseball League",
 		teamAgeGroup: "U14",
 		status: "active",
-		captainPlayerId: "player_3" as any,
+		captainPlayerId: "player_3" as unknown as Id<"players">,
 		createdAt: Date.now() - 86400000 * 30, // 30 days ago
 		updatedAt: Date.now() - 86400000 * 2, // 2 days ago
 	},
 	{
-		_id: "team_2" as any,
+		_id: "team_2" as unknown as Id<"teams">,
 		_creationTime: Date.now() - 86400000 * 25,
-		tournamentId: "tournament_1" as any,
+		tournamentId: "tournament_1" as unknown as Id<"tournaments">,
 		name: "Warriors",
 		description: "Focused on defensive strategy and teamwork",
 		coachName: "Sarah Johnson",
@@ -46,14 +46,14 @@ export const mockTeams: Doc<"teams">[] = [
 		organization: "Riverside Athletic Association",
 		teamAgeGroup: "U14",
 		status: "active",
-		captainPlayerId: "player_7" as any,
+		captainPlayerId: "player_7" as unknown as Id<"players">,
 		createdAt: Date.now() - 86400000 * 25,
 		updatedAt: Date.now() - 86400000 * 5,
 	},
 	{
-		_id: "team_3" as any,
+		_id: "team_3" as unknown as Id<"teams">,
 		_creationTime: Date.now() - 86400000 * 20,
-		tournamentId: "tournament_1" as any,
+		tournamentId: "tournament_1" as unknown as Id<"tournaments">,
 		name: "Eagles",
 		description: "Fast-paced team with excellent base running skills",
 		coachName: "David Chen",
@@ -64,14 +64,14 @@ export const mockTeams: Doc<"teams">[] = [
 		organization: "Oakland Sports Club",
 		teamAgeGroup: "U14",
 		status: "active",
-		captainPlayerId: "player_12" as any,
+		captainPlayerId: "player_12" as unknown as Id<"players">,
 		createdAt: Date.now() - 86400000 * 20,
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "team_4" as any,
+		_id: "team_4" as unknown as Id<"teams">,
 		_creationTime: Date.now() - 86400000 * 35,
-		tournamentId: "tournament_1" as any,
+		tournamentId: "tournament_1" as unknown as Id<"tournaments">,
 		name: "Lions",
 		description: "Power hitting team with strong pitchers",
 		coachName: "Jennifer Martinez",
@@ -82,14 +82,14 @@ export const mockTeams: Doc<"teams">[] = [
 		organization: "Westfield Youth Sports",
 		teamAgeGroup: "U14",
 		status: "active",
-		captainPlayerId: "player_18" as any,
+		captainPlayerId: "player_18" as unknown as Id<"players">,
 		createdAt: Date.now() - 86400000 * 35,
 		updatedAt: Date.now() - 86400000 * 3,
 	},
 	{
-		_id: "team_5" as any,
+		_id: "team_5" as unknown as Id<"teams">,
 		_creationTime: Date.now() - 86400000 * 28,
-		tournamentId: "tournament_1" as any,
+		tournamentId: "tournament_1" as unknown as Id<"tournaments">,
 		name: "Tigers",
 		description: "Balanced team with solid all-around skills",
 		coachName: "Robert Kim",
@@ -100,14 +100,14 @@ export const mockTeams: Doc<"teams">[] = [
 		organization: "Northwood Baseball Academy",
 		teamAgeGroup: "U14",
 		status: "active",
-		captainPlayerId: "player_23" as any,
+		captainPlayerId: "player_23" as unknown as Id<"players">,
 		createdAt: Date.now() - 86400000 * 28,
 		updatedAt: Date.now() - 86400000 * 4,
 	},
 	{
-		_id: "team_6" as any,
+		_id: "team_6" as unknown as Id<"teams">,
 		_creationTime: Date.now() - 86400000 * 40,
-		tournamentId: "tournament_1" as any,
+		tournamentId: "tournament_1" as unknown as Id<"tournaments">,
 		name: "Panthers",
 		description: "Currently suspended for the season",
 		coachName: "Amanda Wilson",

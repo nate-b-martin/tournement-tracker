@@ -12,3 +12,9 @@ export {
 	useMockPlayerSearch,
 	useMockPlayers,
 } from "./useMockPlayers";
+export {
+	useMockTournamentById,
+	useMockTournamentCount,
+	useMockTournamentList,
+	useMockTournaments,
+} from "./useMockTournaments";

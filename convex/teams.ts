@@ -1,4 +1,4 @@
-import { query, type QueryCtx } from "./_generated/server";
+import { mutation, query, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 
 const MAX_PAGE_SIZE = 100;
@@ -134,6 +134,19 @@ export const list = query({
     // Get total count before pagination
     const totalCount = teams.length;
 
+// Fetch player counts for each team
+    const allPlayers = await ctx.db.query("players").collect();
+    const teamsWithCounts = teams.map((team) => {
+      const playerCount = allPlayers.filter(
+        (p) => p.teamId === team._id,
+      ).length;
+      return {
+        ...team,
+        playerCount,
+      };
+    });
+    teams = teamsWithCounts;
+
     // Apply pagination
     const normalizedPagination = clampPagination(args.pagination);
     if (normalizedPagination) {
@@ -148,5 +161,81 @@ export const list = query({
       teams: safeTeams,
       totalCount,
     };
+  },
+});
+
+export const create = mutation({
+  args: {
+    tournamentId: v.id("tournaments"),
+    name: v.string(),
+    description: v.optional(v.string()),
+    coachName: v.string(),
+    coachEmail: v.string(),
+    coachPhone: v.string(),
+    city: v.optional(v.string()),
+    homeField: v.optional(v.string()),
+    organization: v.optional(v.string()),
+    teamAgeGroup: v.optional(v.string()),
+    status: v.optional(
+      v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended")),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    return await ctx.db.insert("teams", {
+      ...args,
+      status: args.status ?? "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const update = mutation({
+  args: {
+    id: v.id("teams"),
+    tournamentId: v.optional(v.id("tournaments")),
+    name: v.optional(v.string()),
+    description: v.optional(v.string()),
+    coachName: v.optional(v.string()),
+    coachEmail: v.optional(v.string()),
+    coachPhone: v.optional(v.string()),
+    city: v.optional(v.string()),
+    homeField: v.optional(v.string()),
+    organization: v.optional(v.string()),
+    teamAgeGroup: v.optional(v.string()),
+    status: v.optional(
+      v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended")),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const { id, ...fields } = args;
+    await ctx.db.patch(id, {
+      ...fields,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.id("teams") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    // Unlink all players on this team
+    const players = await ctx.db.query("players").collect();
+
+    const teamPlayers = players.filter((p) => p.teamId === args.id);
+    for (const player of teamPlayers) {
+      await ctx.db.patch(player._id, { teamId: undefined });
+    }
+
+    await ctx.db.delete(args.id);
   },
 });

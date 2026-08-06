@@ -23,5 +23,12 @@ test.describe("Navigation", () => {
         await navigation.closeMenu();
         await expect(navigation.sidebar).toHaveClass(/-translate-x-full/);
         });
+
+        test("shows Seasons navigation link", async ({ page }) => {
+            await page.goto("/");
+        const navigation = new Navigation(page);
+        await navigation.openMenu();
+        await expect(navigation.seasonsLink).toBeVisible();
+        });
     });
 });

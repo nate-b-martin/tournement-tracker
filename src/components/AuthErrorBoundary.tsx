@@ -1,7 +1,7 @@
-import { Component, ReactNode } from "react";
+import { AlertCircle } from "lucide-react";
+import { Component, type ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Button } from "./ui/button";
-import { AlertCircle } from "lucide-react";
 
 interface Props {
 	children: ReactNode;
@@ -25,9 +25,7 @@ export class AuthErrorBoundary extends Component<Props, State> {
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		if (import.meta.env.DEV) {
-			console.error("Auth error:", error, errorInfo);
-		}
+		console.error("Auth error:", error, errorInfo);
 	}
 
 	handleRetry = () => {
@@ -44,7 +42,8 @@ export class AuthErrorBoundary extends Component<Props, State> {
 							<AlertCircle className="h-4 w-4" />
 							<AlertTitle>Authentication Error</AlertTitle>
 							<AlertDescription>
-								An authentication issue occurred. Please try again.
+								{this.state.error?.message ||
+									"Failed to initialize authentication"}
 							</AlertDescription>
 						</Alert>
 						<Button onClick={this.handleRetry} className="mt-4">

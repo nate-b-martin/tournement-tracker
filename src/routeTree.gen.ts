@@ -13,8 +13,13 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TournamentspageIndexRouteImport } from './routes/tournamentspage/index'
 import { Route as TeamspageIndexRouteImport } from './routes/teamspage/index'
+import { Route as SeasonspageIndexRouteImport } from './routes/seasonspage/index'
 import { Route as PlayerspageIndexRouteImport } from './routes/playerspage/index'
+import { Route as GamespageIndexRouteImport } from './routes/gamespage/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as TournamentsIdIndexRouteImport } from './routes/tournaments/$id/index'
+import { Route as SeasonsIdIndexRouteImport } from './routes/seasons/$id/index'
+import { Route as PlayersIdIndexRouteImport } from './routes/players/$id/index'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
@@ -36,9 +41,19 @@ const TeamspageIndexRoute = TeamspageIndexRouteImport.update({
   path: '/teamspage/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SeasonspageIndexRoute = SeasonspageIndexRouteImport.update({
+  id: '/seasonspage/',
+  path: '/seasonspage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayerspageIndexRoute = PlayerspageIndexRouteImport.update({
   id: '/playerspage/',
   path: '/playerspage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamespageIndexRoute = GamespageIndexRouteImport.update({
+  id: '/gamespage/',
+  path: '/gamespage/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -46,31 +61,61 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TournamentsIdIndexRoute = TournamentsIdIndexRouteImport.update({
+  id: '/tournaments/$id/',
+  path: '/tournaments/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SeasonsIdIndexRoute = SeasonsIdIndexRouteImport.update({
+  id: '/seasons/$id/',
+  path: '/seasons/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayersIdIndexRoute = PlayersIdIndexRouteImport.update({
+  id: '/players/$id/',
+  path: '/players/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/gamespage': typeof GamespageIndexRoute
   '/playerspage': typeof PlayerspageIndexRoute
+  '/seasonspage': typeof SeasonspageIndexRoute
   '/teamspage': typeof TeamspageIndexRoute
   '/tournamentspage': typeof TournamentspageIndexRoute
+  '/players/$id': typeof PlayersIdIndexRoute
+  '/seasons/$id': typeof SeasonsIdIndexRoute
+  '/tournaments/$id': typeof TournamentsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/gamespage': typeof GamespageIndexRoute
   '/playerspage': typeof PlayerspageIndexRoute
+  '/seasonspage': typeof SeasonspageIndexRoute
   '/teamspage': typeof TeamspageIndexRoute
   '/tournamentspage': typeof TournamentspageIndexRoute
+  '/players/$id': typeof PlayersIdIndexRoute
+  '/seasons/$id': typeof SeasonsIdIndexRoute
+  '/tournaments/$id': typeof TournamentsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/gamespage/': typeof GamespageIndexRoute
   '/playerspage/': typeof PlayerspageIndexRoute
+  '/seasonspage/': typeof SeasonspageIndexRoute
   '/teamspage/': typeof TeamspageIndexRoute
   '/tournamentspage/': typeof TournamentspageIndexRoute
+  '/players/$id/': typeof PlayersIdIndexRoute
+  '/seasons/$id/': typeof SeasonsIdIndexRoute
+  '/tournaments/$id/': typeof TournamentsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -78,34 +123,54 @@ export interface FileRouteTypes {
     | '/'
     | '/mcp'
     | '/dashboard'
+    | '/gamespage'
     | '/playerspage'
+    | '/seasonspage'
     | '/teamspage'
     | '/tournamentspage'
+    | '/players/$id'
+    | '/seasons/$id'
+    | '/tournaments/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/mcp'
     | '/dashboard'
+    | '/gamespage'
     | '/playerspage'
+    | '/seasonspage'
     | '/teamspage'
     | '/tournamentspage'
+    | '/players/$id'
+    | '/seasons/$id'
+    | '/tournaments/$id'
   id:
     | '__root__'
     | '/'
     | '/mcp'
     | '/dashboard/'
+    | '/gamespage/'
     | '/playerspage/'
+    | '/seasonspage/'
     | '/teamspage/'
     | '/tournamentspage/'
+    | '/players/$id/'
+    | '/seasons/$id/'
+    | '/tournaments/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   McpRoute: typeof McpRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  GamespageIndexRoute: typeof GamespageIndexRoute
   PlayerspageIndexRoute: typeof PlayerspageIndexRoute
+  SeasonspageIndexRoute: typeof SeasonspageIndexRoute
   TeamspageIndexRoute: typeof TeamspageIndexRoute
   TournamentspageIndexRoute: typeof TournamentspageIndexRoute
+  PlayersIdIndexRoute: typeof PlayersIdIndexRoute
+  SeasonsIdIndexRoute: typeof SeasonsIdIndexRoute
+  TournamentsIdIndexRoute: typeof TournamentsIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -138,11 +203,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamspageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seasonspage/': {
+      id: '/seasonspage/'
+      path: '/seasonspage'
+      fullPath: '/seasonspage'
+      preLoaderRoute: typeof SeasonspageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/playerspage/': {
       id: '/playerspage/'
       path: '/playerspage'
       fullPath: '/playerspage'
       preLoaderRoute: typeof PlayerspageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gamespage/': {
+      id: '/gamespage/'
+      path: '/gamespage'
+      fullPath: '/gamespage'
+      preLoaderRoute: typeof GamespageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
@@ -152,6 +231,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tournaments/$id/': {
+      id: '/tournaments/$id/'
+      path: '/tournaments/$id'
+      fullPath: '/tournaments/$id'
+      preLoaderRoute: typeof TournamentsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seasons/$id/': {
+      id: '/seasons/$id/'
+      path: '/seasons/$id'
+      fullPath: '/seasons/$id'
+      preLoaderRoute: typeof SeasonsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/players/$id/': {
+      id: '/players/$id/'
+      path: '/players/$id'
+      fullPath: '/players/$id'
+      preLoaderRoute: typeof PlayersIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -159,9 +259,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   McpRoute: McpRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  GamespageIndexRoute: GamespageIndexRoute,
   PlayerspageIndexRoute: PlayerspageIndexRoute,
+  SeasonspageIndexRoute: SeasonspageIndexRoute,
   TeamspageIndexRoute: TeamspageIndexRoute,
   TournamentspageIndexRoute: TournamentspageIndexRoute,
+  PlayersIdIndexRoute: PlayersIdIndexRoute,
+  SeasonsIdIndexRoute: SeasonsIdIndexRoute,
+  TournamentsIdIndexRoute: TournamentsIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

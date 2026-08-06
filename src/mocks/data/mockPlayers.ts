@@ -5,7 +5,7 @@
  * Each player includes proper team references and realistic information.
  */
 
-import type { Doc } from "../../../convex/_generated/dataModel";
+import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import { mockTeams } from "./mockTeams";
 
 /**
@@ -17,10 +17,10 @@ import { mockTeams } from "./mockTeams";
 export const mockPlayers: Doc<"players">[] = [
 	// Thunderbirds Players (team_1)
 	{
-		_id: "player_1" as any,
+		_id: "player_1" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 29,
 		userId: undefined,
-		teamId: "team_1" as any,
+		teamId: "team_1" as unknown as Id<"teams">,
 		firstName: "Ethan",
 		lastName: "Mitchell",
 		jerseyNumber: 12,
@@ -33,10 +33,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_2" as any,
+		_id: "player_2" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 28,
 		userId: undefined,
-		teamId: "team_1" as any,
+		teamId: "team_1" as unknown as Id<"teams">,
 		firstName: "Liam",
 		lastName: "Thompson",
 		jerseyNumber: 5,
@@ -49,10 +49,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 2,
 	},
 	{
-		_id: "player_3" as any,
+		_id: "player_3" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 27,
 		userId: undefined,
-		teamId: "team_1" as any,
+		teamId: "team_1" as unknown as Id<"teams">,
 		firstName: "Noah",
 		lastName: "Anderson",
 		jerseyNumber: 23,
@@ -65,10 +65,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_4" as any,
+		_id: "player_4" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 26,
 		userId: undefined,
-		teamId: "team_1" as any,
+		teamId: "team_1" as unknown as Id<"teams">,
 		firstName: "Oliver",
 		lastName: "Williams",
 		jerseyNumber: 8,
@@ -83,10 +83,10 @@ export const mockPlayers: Doc<"players">[] = [
 
 	// Warriors Players (team_2)
 	{
-		_id: "player_5" as any,
+		_id: "player_5" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 24,
 		userId: undefined,
-		teamId: "team_2" as any,
+		teamId: "team_2" as unknown as Id<"teams">,
 		firstName: "Lucas",
 		lastName: "Brown",
 		jerseyNumber: 15,
@@ -99,10 +99,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 2,
 	},
 	{
-		_id: "player_6" as any,
+		_id: "player_6" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 23,
 		userId: undefined,
-		teamId: "team_2" as any,
+		teamId: "team_2" as unknown as Id<"teams">,
 		firstName: "Henry",
 		lastName: "Davis",
 		jerseyNumber: 7,
@@ -115,10 +115,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_7" as any,
+		_id: "player_7" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 22,
 		userId: undefined,
-		teamId: "team_2" as any,
+		teamId: "team_2" as unknown as Id<"teams">,
 		firstName: "Alexander",
 		lastName: "Miller",
 		jerseyNumber: 33,
@@ -131,10 +131,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_8" as any,
+		_id: "player_8" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 21,
 		userId: undefined,
-		teamId: "team_2" as any,
+		teamId: "team_2" as unknown as Id<"teams">,
 		firstName: "Benjamin",
 		lastName: "Wilson",
 		jerseyNumber: 2,
@@ -149,10 +149,10 @@ export const mockPlayers: Doc<"players">[] = [
 
 	// Eagles Players (team_3)
 	{
-		_id: "player_9" as any,
+		_id: "player_9" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 19,
 		userId: undefined,
-		teamId: "team_3" as any,
+		teamId: "team_3" as unknown as Id<"teams">,
 		firstName: "Mason",
 		lastName: "Taylor",
 		jerseyNumber: 11,
@@ -165,10 +165,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_10" as any,
+		_id: "player_10" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 18,
 		userId: undefined,
-		teamId: "team_3" as any,
+		teamId: "team_3" as unknown as Id<"teams">,
 		firstName: "William",
 		lastName: "Anderson",
 		jerseyNumber: 44,
@@ -181,10 +181,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 2,
 	},
 	{
-		_id: "player_11" as any,
+		_id: "player_11" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 17,
 		userId: undefined,
-		teamId: "team_3" as any,
+		teamId: "team_3" as unknown as Id<"teams">,
 		firstName: "James",
 		lastName: "Thomas",
 		jerseyNumber: 9,
@@ -197,10 +197,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_12" as any,
+		_id: "player_12" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 16,
 		userId: undefined,
-		teamId: "team_3" as any,
+		teamId: "team_3" as unknown as Id<"teams">,
 		firstName: "Daniel",
 		lastName: "Jackson",
 		jerseyNumber: 16,
@@ -213,10 +213,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_13" as any,
+		_id: "player_13" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 15,
 		userId: undefined,
-		teamId: "team_3" as any,
+		teamId: "team_3" as unknown as Id<"teams">,
 		firstName: "Michael",
 		lastName: "White",
 		jerseyNumber: 27,
@@ -231,10 +231,10 @@ export const mockPlayers: Doc<"players">[] = [
 
 	// Lions Players (team_4)
 	{
-		_id: "player_14" as any,
+		_id: "player_14" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 34,
 		userId: undefined,
-		teamId: "team_4" as any,
+		teamId: "team_4" as unknown as Id<"teams">,
 		firstName: "Joseph",
 		lastName: "Harris",
 		jerseyNumber: 3,
@@ -247,10 +247,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_15" as any,
+		_id: "player_15" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 33,
 		userId: undefined,
-		teamId: "team_4" as any,
+		teamId: "team_4" as unknown as Id<"teams">,
 		firstName: "David",
 		lastName: "Martin",
 		jerseyNumber: 19,
@@ -263,10 +263,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 3,
 	},
 	{
-		_id: "player_16" as any,
+		_id: "player_16" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 32,
 		userId: undefined,
-		teamId: "team_4" as any,
+		teamId: "team_4" as unknown as Id<"teams">,
 		firstName: "Samuel",
 		lastName: "Garcia",
 		jerseyNumber: 31,
@@ -279,10 +279,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 5,
 	},
 	{
-		_id: "player_17" as any,
+		_id: "player_17" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 31,
 		userId: undefined,
-		teamId: "team_4" as any,
+		teamId: "team_4" as unknown as Id<"teams">,
 		firstName: "Carter",
 		lastName: "Rodriguez",
 		jerseyNumber: 6,
@@ -295,10 +295,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 2,
 	},
 	{
-		_id: "player_18" as any,
+		_id: "player_18" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 30,
 		userId: undefined,
-		teamId: "team_4" as any,
+		teamId: "team_4" as unknown as Id<"teams">,
 		firstName: "Wyatt",
 		lastName: "Lopez",
 		jerseyNumber: 42,
@@ -313,10 +313,10 @@ export const mockPlayers: Doc<"players">[] = [
 
 	// Tigers Players (team_5)
 	{
-		_id: "player_19" as any,
+		_id: "player_19" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 27,
 		userId: undefined,
-		teamId: "team_5" as any,
+		teamId: "team_5" as unknown as Id<"teams">,
 		firstName: "Owen",
 		lastName: "Gonzalez",
 		jerseyNumber: 14,
@@ -329,10 +329,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_20" as any,
+		_id: "player_20" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 26,
 		userId: undefined,
-		teamId: "team_5" as any,
+		teamId: "team_5" as unknown as Id<"teams">,
 		firstName: "Gabriel",
 		lastName: "Perez",
 		jerseyNumber: 10,
@@ -345,10 +345,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 2,
 	},
 	{
-		_id: "player_21" as any,
+		_id: "player_21" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 25,
 		userId: undefined,
-		teamId: "team_5" as any,
+		teamId: "team_5" as unknown as Id<"teams">,
 		firstName: "Julian",
 		lastName: "Sanchez",
 		jerseyNumber: 22,
@@ -361,10 +361,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 1,
 	},
 	{
-		_id: "player_22" as any,
+		_id: "player_22" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 24,
 		userId: undefined,
-		teamId: "team_5" as any,
+		teamId: "team_5" as unknown as Id<"teams">,
 		firstName: "Levi",
 		lastName: "Ramirez",
 		jerseyNumber: 35,
@@ -377,10 +377,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 6,
 	},
 	{
-		_id: "player_23" as any,
+		_id: "player_23" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 23,
 		userId: undefined,
-		teamId: "team_5" as any,
+		teamId: "team_5" as unknown as Id<"teams">,
 		firstName: "Isaac",
 		lastName: "Cruz",
 		jerseyNumber: 1,
@@ -395,10 +395,10 @@ export const mockPlayers: Doc<"players">[] = [
 
 	// Panthers Players (team_6 - suspended team)
 	{
-		_id: "player_24" as any,
+		_id: "player_24" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 39,
 		userId: undefined,
-		teamId: "team_6" as any,
+		teamId: "team_6" as unknown as Id<"teams">,
 		firstName: "Jack",
 		lastName: " Torres",
 		jerseyNumber: 18,
@@ -411,10 +411,10 @@ export const mockPlayers: Doc<"players">[] = [
 		updatedAt: Date.now() - 86400000 * 10,
 	},
 	{
-		_id: "player_25" as any,
+		_id: "player_25" as unknown as Id<"players">,
 		_creationTime: Date.now() - 86400000 * 38,
 		userId: undefined,
-		teamId: "team_6" as any,
+		teamId: "team_6" as unknown as Id<"teams">,
 		firstName: "Luke",
 		lastName: " Flores",
 		jerseyNumber: 28,
@@ -467,7 +467,7 @@ export function searchMockPlayers(query: string) {
 		(player) =>
 			player.firstName.toLowerCase().includes(searchTerm) ||
 			player.lastName.toLowerCase().includes(searchTerm) ||
-			(player.email && player.email.toLowerCase().includes(searchTerm)),
+			player.email?.toLowerCase().includes(searchTerm),
 	);
 }
 

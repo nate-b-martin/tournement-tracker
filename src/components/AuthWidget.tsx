@@ -1,10 +1,10 @@
-import { useAuth } from "@/hooks/useAuth";
-import { useClerk } from "@clerk/clerk-react";
-import { SignInButton, UserButton } from "@clerk/clerk-react";
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { LogOut, Shield, Eye } from "lucide-react";
+import { SignInButton, UserButton, useClerk } from "@clerk/clerk-react";
+import { Eye, LogOut, Shield } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
 
 export function AuthWidget() {
 	const { isLoaded, isSignedIn, isAdmin, user, profile } = useAuth();
@@ -23,11 +23,11 @@ export function AuthWidget() {
 	// Loading state
 	if (!isLoaded) {
 		return (
-			<div className="flex items-center gap-2 p-3">
-				<div className="h-8 w-8 rounded-full bg-gray-700 animate-pulse" />
+			<div className="flex items-center gap-3 p-3">
+				<Skeleton className="h-10 w-10 rounded-full" />
 				<div className="flex flex-col gap-2 flex-1">
-					<div className="h-3 w-20 bg-gray-700 rounded animate-pulse" />
-					<div className="h-2 w-16 bg-gray-700 rounded animate-pulse" />
+					<Skeleton className="h-4 w-32" />
+					<Skeleton className="h-3 w-24" />
 				</div>
 			</div>
 		);

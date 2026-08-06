@@ -7,16 +7,32 @@
  * @fileoverview Table component for displaying player data
  */
 
+import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
+import { toast } from "sonner";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import {
+	type PlayerStatsWithTeam,
+	usePlayerStats,
+} from "@/hooks/usePlayerStats";
 import {
 	type PlayerListOptions,
 	type PlayerWithTeam,
 	usePlayers,
 } from "@/hooks/usePlayers";
-import { type PlayerStatsWithTeam, usePlayerStats } from "@/hooks/usePlayerStats";
 import { cn } from "@/lib/utils";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
+import { ConfirmDelete } from "./ConfirmDelete";
 import { DataTable } from "./DataTable/DataTable";
 import type { ColumnDef } from "./DataTable/types";
+import { PlayerDialog } from "./PlayerDialog";
 
 interface PlayersTableProps {
 	/** Optional initial options for the players query */
@@ -38,7 +54,12 @@ const STATUS_FILTERS: Array<{ value: FilterStatus; label: string }> = [
 ];
 
 function isFilterStatus(value: string | undefined): value is FilterStatus {
-	return value === "all" || value === "active" || value === "inactive" || value === "injured";
+	return (
+		value === "all" ||
+		value === "active" ||
+		value === "inactive" ||
+		value === "injured"
+	);
 }
 
 //  Column definitions for the players table
@@ -48,9 +69,15 @@ const playerColumns: ColumnDef<PlayerWithTeam>[] = [
 		field: "lastName",
 		sortable: true,
 		cell: (player) => (
-			<span className="font-medium">
+			<button
+				type="button"
+				className="cursor-pointer font-medium hover:underline"
+				onClick={() => {
+					window.location.href = `/players/${player._id}`;
+				}}
+			>
 				{player.firstName} {player.lastName}
-			</span>
+			</button>
 		),
 	},
 	{
@@ -111,9 +138,15 @@ const playerStatsColumns: ColumnDef<PlayerStatsWithTeam>[] = [
 		field: "lastName",
 		sortable: true,
 		cell: (player) => (
-			<span className="font-medium">
+			<button
+				type="button"
+				className="cursor-pointer text-left font-medium hover:underline"
+				onClick={() => {
+					window.location.href = `/players/${player._id}`;
+				}}
+			>
 				{player.firstName} {player.lastName}
-			</span>
+			</button>
 		),
 	},
 	{
@@ -197,11 +230,29 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 		setFiltering: setStatsFiltering,
 		currentOptions: statsCurrentOptions,
 	} = usePlayerStats(initialOptions);
+	const teamsResult = useQuery(api.teams.list, {});
+	const allTeams = teamsResult?.teams || [];
+	const deletePlayer = useMutation(api.players.remove);
+
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [editingPlayer, setEditingPlayer] = useState<
+		PlayerWithTeam | undefined
+	>();
+	const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+	const [deletingPlayer, setDeletingPlayer] = useState<
+		PlayerWithTeam | undefined
+	>();
+	const [isDeleting, setIsDeleting] = useState(false);
+
 	const [searchQuery, setSearchQuery] = useState("");
 	const [tableView, setTableView] = useState<PlayerTableView>("contact");
 	const initialStatus = initialOptions?.filtering?.status?.[0];
 	const [statusFilter, setStatusFilter] = useState<FilterStatus>(
 		isFilterStatus(initialStatus) ? initialStatus : "all",
+	);
+	const [teamFilter, setTeamFilter] = useState<Id<"teams"> | "all">(
+		initialOptions?.filtering?.teamId || "all",
 	);
 
 	// Client-side search filter function - filters players without API calls
@@ -239,8 +290,10 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 			nextFiltering.status = [status];
 		}
 
-		if (teamId) {
-			nextFiltering.teamId = teamId;
+		const resolvedTeamId =
+			teamId || (teamFilter !== "all" ? teamFilter : undefined);
+		if (resolvedTeamId) {
+			nextFiltering.teamId = resolvedTeamId;
 		}
 
 		return Object.keys(nextFiltering).length > 0 ? nextFiltering : undefined;
@@ -249,18 +302,34 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 	const resetPagination = () => {
 		setPagination({
 			pageIndex: DEFAULT_PAGINATION.pageIndex,
-			pageSize: currentOptions?.pagination?.pageSize || DEFAULT_PAGINATION.pageSize,
+			pageSize:
+				currentOptions?.pagination?.pageSize || DEFAULT_PAGINATION.pageSize,
 		});
 		setStatsPagination({
 			pageIndex: DEFAULT_PAGINATION.pageIndex,
-			pageSize: statsCurrentOptions?.pagination?.pageSize || DEFAULT_PAGINATION.pageSize,
+			pageSize:
+				statsCurrentOptions?.pagination?.pageSize ||
+				DEFAULT_PAGINATION.pageSize,
 		});
 	};
 
 	const applyStatusFilter = (status: FilterStatus) => {
-		setFiltering(buildFiltering(status, currentOptions?.filtering?.teamId));
+		setFiltering(
+			buildFiltering(status, teamFilter !== "all" ? teamFilter : undefined),
+		);
 		setStatsFiltering(
-			buildFiltering(status, statsCurrentOptions?.filtering?.teamId),
+			buildFiltering(status, teamFilter !== "all" ? teamFilter : undefined),
+		);
+		resetPagination();
+	};
+
+	const applyTeamFilter = (teamId: Id<"teams"> | "all") => {
+		setTeamFilter(teamId);
+		setFiltering(
+			buildFiltering(statusFilter, teamId !== "all" ? teamId : undefined),
+		);
+		setStatsFiltering(
+			buildFiltering(statusFilter, teamId !== "all" ? teamId : undefined),
 		);
 		resetPagination();
 	};
@@ -268,6 +337,7 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 	const clearFilters = () => {
 		setSearchQuery("");
 		setStatusFilter("all");
+		setTeamFilter("all");
 		setFiltering(undefined);
 		setStatsFiltering(undefined);
 		resetPagination();
@@ -307,15 +377,35 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 	};
 
 	const handleEdit = (player: PlayerWithTeam) => {
-		if (import.meta.env.DEV) {
-			console.log("Editing player:", player);
-		}
+		setEditingPlayer(player);
+		setDialogMode("edit");
+		setDialogOpen(true);
 	};
 
 	const handleDelete = (player: PlayerWithTeam) => {
-		if (import.meta.env.DEV) {
-			console.log("Deleting player:", player);
+		setDeletingPlayer(player);
+		setDeleteConfirmOpen(true);
+	};
+
+	const confirmDelete = async () => {
+		if (!deletingPlayer) return;
+		setIsDeleting(true);
+		try {
+			await deletePlayer({ id: deletingPlayer._id as Id<"players"> });
+			toast.success("Player deleted");
+			setDeleteConfirmOpen(false);
+			setDeletingPlayer(undefined);
+		} catch {
+			toast.error("Failed to delete player");
+		} finally {
+			setIsDeleting(false);
 		}
+	};
+
+	const handleAddPlayer = () => {
+		setEditingPlayer(undefined);
+		setDialogMode("create");
+		setDialogOpen(true);
 	};
 
 	const toolbarFilters = STATUS_FILTERS.map((filter) => ({
@@ -326,6 +416,25 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 			applyStatusFilter(filter.value);
 		},
 	}));
+
+	const teamFilterContent = allTeams.length > 0 && (
+		<Select
+			value={teamFilter === "all" ? "all" : teamFilter}
+			onValueChange={(val) => applyTeamFilter(val as Id<"teams"> | "all")}
+		>
+			<SelectTrigger className="w-[180px]">
+				<SelectValue placeholder="All Teams" />
+			</SelectTrigger>
+			<SelectContent>
+				<SelectItem value="all">All Teams</SelectItem>
+				{allTeams.map((team) => (
+					<SelectItem key={team._id} value={team._id}>
+						{team.name}
+					</SelectItem>
+				))}
+			</SelectContent>
+		</Select>
+	);
 
 	const toggleContent = (
 		<div
@@ -406,41 +515,85 @@ export function PlayersTable({ initialOptions, isAdmin }: PlayersTableProps) {
 	}
 
 	return (
-		<DataTable
-			data={filteredPlayers}
-			columns={playerColumns}
-			isLoading={isLoading}
-			totalCount={totalCount}
-			pagination={currentOptions?.pagination || DEFAULT_PAGINATION}
-			onPaginationChange={handlePaginationChange}
-			sorting={currentOptions?.sorting}
-			onSort={handleSort}
-			emptyMessage="No players found"
-			itemName="players"
-			toolbar={{
-				search: {
-					value: searchQuery,
-					placeholder: "Search players, email, phone...",
-					onChange: (value) => {
-						setSearchQuery(value);
+		<>
+			<DataTable
+				data={filteredPlayers}
+				columns={playerColumns}
+				isLoading={isLoading}
+				totalCount={totalCount}
+				pagination={currentOptions?.pagination || DEFAULT_PAGINATION}
+				onPaginationChange={handlePaginationChange}
+				sorting={currentOptions?.sorting}
+				onSort={handleSort}
+				emptyMessage="No players found"
+				itemName="players"
+				toolbar={{
+					search: {
+						value: searchQuery,
+						placeholder: "Search players, email, phone...",
+						onChange: (value) => {
+							setSearchQuery(value);
+						},
 					},
-				},
-				filters: toolbarFilters,
-				extraContent: toggleContent,
-				actions: [
-					{
-						label: "Clear filters",
-						variant: "ghost",
-						onClick: clearFilters,
-					},
-				],
-			}}
-			actions={{
-				canEdit: isAdmin ?? false,
-				canDelete: isAdmin ?? false,
-				onEdit: handleEdit,
-				onDelete: handleDelete,
-			}}
-		/>
+					filters: toolbarFilters,
+					extraContent: (
+						<>
+							{teamFilterContent}
+							{toggleContent}
+						</>
+					),
+					actions: [
+						...(isAdmin
+							? [
+									{
+										label: "Add Player",
+										variant: "default" as const,
+										onClick: handleAddPlayer,
+									},
+								]
+							: []),
+						{
+							label: "Clear filters",
+							variant: "ghost" as const,
+							onClick: clearFilters,
+						},
+					],
+				}}
+				actions={{
+					canEdit: isAdmin ?? false,
+					canDelete: isAdmin ?? false,
+					onEdit: handleEdit,
+					onDelete: handleDelete,
+				}}
+			/>
+			<PlayerDialog
+				mode={dialogMode}
+				player={editingPlayer}
+				teamId={currentOptions?.filtering?.teamId}
+				teams={allTeams.map((t) => ({
+					_id: t._id as Id<"teams">,
+					name: t.name,
+				}))}
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				onSuccess={() => {
+					setEditingPlayer(undefined);
+				}}
+			/>
+			<ConfirmDelete
+				open={deleteConfirmOpen}
+				onOpenChange={(val) => {
+					setDeleteConfirmOpen(val);
+					if (!val) setDeletingPlayer(undefined);
+				}}
+				itemName={
+					deletingPlayer
+						? `${deletingPlayer.firstName} ${deletingPlayer.lastName}`
+						: "this player"
+				}
+				onConfirm={confirmDelete}
+				isLoading={isDeleting}
+			/>
+		</>
 	);
 }

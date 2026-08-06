@@ -27,5 +27,13 @@ export class Navigation {
         await this.closeMenuButton.click();
     }
 
+    get seasonsLink() {
+        return this.page.getByRole('link', { name: 'Seasons' });
+    }
+
+    async clickSeasons() {
+        await this.seasonsLink.click();
+    }
+
 
 }
