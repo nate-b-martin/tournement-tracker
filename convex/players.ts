@@ -240,6 +240,19 @@ export const countByTeam = query({
 	},
 });
 
+export const listByTeamIds = query({
+	args: { teamIds: v.array(v.id("teams")) },
+	handler: async (ctx, args) => {
+		if (args.teamIds.length === 0) return [];
+		const adminView = await isViewerAdmin(ctx);
+		const teamIdSet = new Set(args.teamIds);
+		const players = await ctx.db.query("players").collect();
+		return players
+			.filter((p) => p.teamId && teamIdSet.has(p.teamId))
+			.map((p) => ({ ...redactPlayer(p, adminView) }));
+	},
+});
+
 export const create = mutation({
   args: {
     teamId: v.optional(v.id("teams")),

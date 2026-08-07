@@ -1,16 +1,58 @@
 import { useQuery } from "convex/react";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "../../../../convex/_generated/api";
 import { useWizard } from "../SetupWizardContext";
-import type { PlayerEntry, WizardAction } from "../types";
+import type { PlayerEntry, TeamEntry, WizardAction } from "../types";
 
 export function StepManageRosters() {
 	const formId = useId();
 	const { state, dispatch } = useWizard();
 	const [activeTeamKey, setActiveTeamKey] = useState<string | null>(null);
+
+	const selectedTeamIds = state.selectedTeams
+		.filter(
+			(
+				t,
+			): t is TeamEntry & {
+				existingId: NonNullable<TeamEntry["existingId"]>;
+			} => !t.isNew && !!t.existingId,
+		)
+		.map((t) => t.existingId);
+
+	const linkedPlayers = useQuery(
+		api.players.listByTeamIds,
+		selectedTeamIds.length > 0 ? { teamIds: selectedTeamIds } : "skip",
+	);
+
+	useEffect(() => {
+		if (!linkedPlayers) return;
+
+		for (const team of state.selectedTeams) {
+			if (state.rosters[team.key] !== undefined) continue;
+
+			if (team.isNew) {
+				dispatch({ type: "SET_ROSTER", teamKey: team.key, players: [] });
+				continue;
+			}
+
+			const teamPlayers = linkedPlayers.filter(
+				(p) => p.teamId === team.existingId,
+			);
+			dispatch({
+				type: "SET_ROSTER",
+				teamKey: team.key,
+				players: teamPlayers.map((p) => ({
+					firstName: p.firstName,
+					lastName: p.lastName,
+					jerseyNumber: p.jerseyNumber ?? undefined,
+					existingPlayerId: p._id,
+				})),
+			});
+		}
+	}, [linkedPlayers, state.selectedTeams, state.rosters, dispatch]);
 
 	const activeTeam =
 		activeTeamKey && state.selectedTeams.find((t) => t.key === activeTeamKey);
@@ -34,6 +76,10 @@ export function StepManageRosters() {
 				<h3 className="text-lg font-medium">Manage Rosters</h3>
 				<p className="text-sm text-muted-foreground">
 					Add players to each team. At least 1 player per team is recommended.
+				</p>
+				<p className="text-sm text-muted-foreground">
+					Players already on a team are added automatically. Remove any you
+					don't want included.
 				</p>
 			</div>
 

@@ -1,8 +1,18 @@
-import { act, render, renderHook, screen } from "@testing-library/react";
+import { useReducer } from "react";
+import {
+	act,
+	fireEvent,
+	render,
+	renderHook,
+	screen,
+	waitFor,
+} from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import {
+	initialState,
 	SetupWizardProvider,
 	useWizard,
+	wizardReducer,
 } from "@/components/SetupWizard/SetupWizardContext";
 import type { TeamEntry, WizardState } from "@/components/SetupWizard/types";
 import { WizardStep } from "@/components/SetupWizard/types";
@@ -377,6 +387,169 @@ describe("StepManageRosters", () => {
 			</SetupWizardProvider>,
 		);
 		expect(screen.getByText("Manage Rosters")).toBeTruthy();
+	});
+});
+
+describe("StepManageRosters auto-seed", () => {
+	const existingTeam: TeamEntry = {
+		key: "t1",
+		existingId: "team_123",
+		isNew: false,
+		name: "Team A",
+		coachName: "Coach A",
+		coachEmail: "a@test.com",
+		coachPhone: "555-0001",
+	};
+
+	function RosterHarness({ initial }: { initial: Partial<WizardState> }) {
+		const [state, dispatch] = useReducer(wizardReducer, {
+			...initialState,
+			...initial,
+		});
+		return (
+			<SetupWizardProvider externalState={state} externalDispatch={dispatch}>
+				<StepManageRosters />
+			</SetupWizardProvider>
+		);
+	}
+
+	function mockLinkedPlayers(players: unknown[]) {
+		vi.mocked(useQuery).mockImplementation((_fn, args) => {
+			if (
+				typeof args === "object" &&
+				args !== null &&
+				"teamIds" in args
+			) {
+				return players as never;
+			}
+			return undefined;
+		});
+	}
+
+	it("seeds linked players into an existing team's roster", async () => {
+		mockLinkedPlayers([
+			{
+				_id: "player_1",
+				firstName: "Jane",
+				lastName: "Doe",
+				jerseyNumber: 42,
+				teamId: "team_123",
+			},
+		]);
+
+		render(<RosterHarness initial={{ selectedTeams: [existingTeam] }} />);
+		fireEvent.click(screen.getByText("Team A"));
+
+		expect(await screen.findByText("Jane Doe")).toBeTruthy();
+		expect(screen.getByText("#42")).toBeTruthy();
+		expect(screen.getByText("Remove")).toBeTruthy();
+	});
+
+	it("shows helper copy about auto-added players", () => {
+		render(<RosterHarness initial={{ selectedTeams: [existingTeam] }} />);
+
+		expect(
+			screen.getByText(/Players already on a team are added automatically/i),
+		).toBeTruthy();
+	});
+
+	it("does not re-seed a roster already initialized to empty", async () => {
+		mockLinkedPlayers([
+			{
+				_id: "player_1",
+				firstName: "Jane",
+				lastName: "Doe",
+				jerseyNumber: 42,
+				teamId: "team_123",
+			},
+		]);
+
+		render(
+			<RosterHarness
+				initial={{ selectedTeams: [existingTeam], rosters: { t1: [] } }}
+			/>,
+		);
+		fireEvent.click(screen.getByText("Team A"));
+
+		await waitFor(() =>
+			expect(screen.queryByText("Jane Doe")).toBeNull(),
+		);
+		expect(screen.getByText(/No players added yet./)).toBeTruthy();
+	});
+
+	it("does not re-seed an already-seeded roster", async () => {
+		mockLinkedPlayers([
+			{
+				_id: "player_1",
+				firstName: "Jane",
+				lastName: "Doe",
+				jerseyNumber: 42,
+				teamId: "team_123",
+			},
+		]);
+
+		render(
+			<RosterHarness
+				initial={{
+					selectedTeams: [existingTeam],
+					rosters: {
+						t1: [
+							{
+								firstName: "Jane",
+								lastName: "Doe",
+								jerseyNumber: 42,
+								existingPlayerId: "player_1",
+							},
+						],
+					},
+				}}
+			/>,
+		);
+		fireEvent.click(screen.getByText("Team A"));
+
+		await waitFor(() =>
+			expect(screen.getAllByText("Jane Doe")).toHaveLength(1),
+		);
+	});
+
+	it("seeds existing teams and leaves new teams empty", async () => {
+		mockLinkedPlayers([
+			{
+				_id: "player_1",
+				firstName: "Jane",
+				lastName: "Doe",
+				jerseyNumber: 42,
+				teamId: "team_123",
+			},
+		]);
+
+		const newTeam: TeamEntry = {
+			key: "t2",
+			isNew: true,
+			name: "Team B",
+			coachName: "Coach B",
+			coachEmail: "b@test.com",
+			coachPhone: "555-0002",
+		};
+
+		render(
+			<RosterHarness
+				initial={{ selectedTeams: [existingTeam, newTeam] }}
+			/>,
+		);
+
+		fireEvent.click(screen.getByText("Team A"));
+		expect(await screen.findByText("Jane Doe")).toBeTruthy();
+
+		fireEvent.click(screen.getByText("Team B"));
+		expect(await screen.findByText(/No players added yet./)).toBeTruthy();
+	});
+
+	it("shows empty state when no teams are selected", () => {
+		render(<RosterHarness initial={{ selectedTeams: [] }} />);
+		expect(
+			screen.getByText(/No teams selected yet/i),
+		).toBeTruthy();
 	});
 });
 
