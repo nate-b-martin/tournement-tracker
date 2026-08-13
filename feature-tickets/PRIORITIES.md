@@ -46,29 +46,16 @@ that is **ahead of `main`** and not yet merged/PR'd.
 
 ---
 
-### 🟡 P1 — Homepage dashboard upgrade (~30% complete)
+### 🟢 P2 — Expand E2E coverage (~40% complete)
 
-`src/routes/index.tsx` is currently just 3 static count cards + an "Open Dashboard" link.
+Existing specs: `auth`, `navigation`, `player-details`, `schedule-autogeneration`, `seasons`, `setup-wizard`. Added: `tournaments`, `teams`, `players`.
 
-**Ideas:**
-- [ ] Navigation cards linking to Teams / Players / Tournaments / Seasons pages
-- [ ] Recent tournaments and seasons list
-- [ ] Role-aware quick actions (admin vs spectator)
-- [ ] Empty/loading states
-- [ ] Responsive grid layout
+**Covered:**
+- [x] Tournaments CRUD (create / edit / delete)
+- [x] Teams page (listing, search, filters) + create-flow scaffold
+- [x] Players page (listing, search, filters, stats view toggle)
 
-**Why:** Matches the flagged gap in `MVP_ROADMAP.md`; high visible value; reuses existing hooks.
-
----
-
-### 🟢 P2 — Expand E2E coverage (~25% complete)
-
-Only 6 spec files exist today: `auth`, `navigation`, `player-details`, `schedule-autogeneration`, `seasons`, `setup-wizard`.
-
-**Missing CRUD flows to cover:**
-- [ ] Tournaments CRUD (create / edit / delete)
-- [ ] Teams CRUD
-- [ ] Players CRUD + status filtering
+**Still missing:**
 - [ ] Fields management
 - [ ] Games management
 - [ ] Player stats page
@@ -100,6 +87,7 @@ The 3 backlog tickets appear implemented in code (`DataTable.tsx` has memoized v
 | Item | Status |
 |------|--------|
 | Feature tickets 01–22 + 25 | ✅ Implemented (`complete/`) |
+| Homepage dashboard upgrade | ✅ Implemented 2026-08-06 (`src/routes/index.tsx`) |
 | Debug: seasons page stub | ✅ Closed 2026-08-05 (`debug/`) |
 | Debug: wizard add-existing-players | ✅ Closed 2026-08-05 (`debug/`) |
 | Backlog: memoization / callbacks / auth toasts | ✅ Implemented in code |

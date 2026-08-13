@@ -8,7 +8,7 @@ Phased implementation plan. All core features (CRUD, tournaments, games, bracket
 ```
 Auth System            ████████████████████████████████ 100%
 Convex Schema          ████████████████████████████████ 100%
-Homepage               ████████░░░░░░░░░░░░░░░░░░░░░░░  30% (basic stats cards)
+Homepage               ████████████████████████████████ 100% (dashboard-style: stats, nav cards, recent lists)
 Dashboard              ████████████████████████████████ 100%
 Players Page           ████████████████████████████████ 100% (full CRUD)
 Teams Page             ████████████████████████████████ 100% (full CRUD)
@@ -21,7 +21,7 @@ Player-Team Assignment ███████████████████
 Seasons                ████████████████████████████████ 100% (full lifecycle)
 Setup Wizard           ████████████████████████████████ 100% (5-step dialog)
 Unit Tests             ██████████████████████░░░░░░░░░  65% (core components tested)
-E2E Tests              ██████████░░░░░░░░░░░░░░░░░░░░░  25% (auth + navigation scaffold)
+E2E Tests              ████████████████░░░░░░░░░░░░░░  40% (auth, nav, seasons, tournaments, teams, players)
 ```
 
 ## Remaining Work
