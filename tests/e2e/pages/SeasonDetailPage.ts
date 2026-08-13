@@ -1,22 +1,16 @@
 import type { Page } from "@playwright/test";
+import { TabbedDetailPage } from "./TabbedDetailPage";
 
-export class SeasonDetailPage {
-	constructor(private page: Page) {}
+export class SeasonDetailPage extends TabbedDetailPage {
+	constructor(page: Page) {
+		super(page, {
+			backPattern: /back to seasons/i,
+			tabs: ["Overview", "Schedule", "Standings"],
+		});
+	}
 
 	get generateScheduleButton() {
 		return this.page.getByRole("button", { name: /generate schedule/i });
-	}
-
-	get scheduleTab() {
-		return this.page.getByRole("tab", { name: /schedule/i });
-	}
-
-	get standingsTab() {
-		return this.page.getByRole("tab", { name: /standings/i });
-	}
-
-	get overviewTab() {
-		return this.page.getByRole("tab", { name: /overview/i });
 	}
 
 	get scheduleTypeSelect() {
@@ -72,11 +66,11 @@ export class SeasonDetailPage {
 	}
 
 	async clickScheduleTab() {
-		await this.scheduleTab.click();
+		await this.clickTab("schedule");
 	}
 
 	async clickStandingsTab() {
-		await this.standingsTab.click();
+		await this.clickTab("standings");
 	}
 
 	async clickGenerateSchedule() {
@@ -108,6 +102,6 @@ export class SeasonDetailPage {
 	}
 
 	async waitForScheduleTab() {
-		await this.scheduleTab.waitFor({ state: "visible", timeout: 10000 });
+		await this.waitForTab("schedule");
 	}
 }

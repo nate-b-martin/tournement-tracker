@@ -1,53 +1,26 @@
 import type { Page } from "@playwright/test";
+import { CrudTablePage } from "./TablePage";
 
-export class TournamentsPage {
-	constructor(private page: Page) {}
-
-	get heading() {
-		return this.page.getByRole("heading", { name: /tournaments/i });
+export class TournamentsPage extends CrudTablePage {
+	constructor(page: Page) {
+		super(page, {
+			route: "/tournamentspage",
+			headingPattern: /tournaments/i,
+			searchPlaceholder: /search tournaments/i,
+			itemName: "tournaments",
+		});
 	}
 
 	get newTournamentButton() {
 		return this.page.getByRole("button", { name: /new tournament/i });
 	}
 
-	get searchInput() {
-		return this.page.getByPlaceholder(/search tournaments/i);
-	}
-
-	get clearFiltersButton() {
-		return this.page.getByRole("button", { name: /clear filters/i });
-	}
-
-	get tableRows() {
-		return this.page.getByRole("row");
-	}
-
-	statusChip(status: string) {
-		return this.page
-			.locator("button")
-			.filter({ hasText: new RegExp(`^${status}$`, "i") });
-	}
-
-	tournamentLink(name: string) {
-		return this.page.getByRole("link", { name: new RegExp(name, "i") });
-	}
-
-	rowActions(name: string) {
-		return this.page.getByRole("row").filter({ hasText: name });
-	}
-
-	editButton(name: string) {
-		return this.rowActions(name).getByRole("button", { name: /edit/i });
-	}
-
-	deleteButton(name: string) {
-		return this.rowActions(name).getByRole("button", { name: /delete/i });
-	}
-
-	// Create dialog
 	get createDialogTitle() {
 		return this.page.getByRole("heading", { name: /create tournament/i });
+	}
+
+	get editDialogTitle() {
+		return this.page.getByRole("heading", { name: /edit tournament/i });
 	}
 
 	get nameInput() {
@@ -70,21 +43,8 @@ export class TournamentsPage {
 		return this.page.getByText(/tournament (created|updated) successfully/i);
 	}
 
-	// Delete confirm dialog
-	get deleteConfirmTitle() {
-		return this.page.getByRole("heading", { name: /are you sure/i });
-	}
-
-	get confirmDeleteButton() {
-		return this.page.getByRole("button", { name: /^delete$/i });
-	}
-
-	async goto() {
-		await this.page.goto("/tournamentspage");
-	}
-
-	async waitForPageLoad() {
-		await this.heading.waitFor({ state: "visible", timeout: 15000 });
+	tournamentLink(name: string) {
+		return this.page.getByRole("link", { name: new RegExp(name, "i") });
 	}
 
 	async openCreateDialog() {
@@ -97,17 +57,5 @@ export class TournamentsPage {
 		await this.nameInput.fill(name);
 		await this.sportInput.fill(sport);
 		await this.submitCreateButton.click();
-	}
-
-	async search(query: string) {
-		await this.searchInput.fill(query);
-	}
-
-	async filterByStatus(status: string) {
-		await this.statusChip(status).click();
-	}
-
-	async clearFilters() {
-		await this.clearFiltersButton.click();
 	}
 }

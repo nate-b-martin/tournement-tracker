@@ -1,22 +1,24 @@
 import type { Page } from "@playwright/test";
+import { TabbedDetailPage } from "./TabbedDetailPage";
 
-export class PlayerDetailsPage {
-	constructor(private page: Page) {}
-
-	get backButton() {
-		return this.page.getByRole("button", { name: /back to players/i });
-	}
-
-	get overviewTab() {
-		return this.page.getByRole("tab", { name: /overview/i });
-	}
-
-	get gameStatsTab() {
-		return this.page.getByRole("tab", { name: /game stats/i });
+export class PlayerDetailsPage extends TabbedDetailPage {
+	constructor(page: Page) {
+		super(page, {
+			backPattern: /back to players/i,
+			tabs: ["Overview", "Game Stats"],
+		});
 	}
 
 	get editButton() {
 		return this.page.getByLabel("Edit player");
+	}
+
+	get overviewTab() {
+		return this.tab("overview");
+	}
+
+	get gameStatsTab() {
+		return this.tab("game stats");
 	}
 
 	playerName(name: string) {
@@ -28,10 +30,10 @@ export class PlayerDetailsPage {
 	}
 
 	async clickOverviewTab() {
-		await this.overviewTab.click();
+		await this.clickTab("overview");
 	}
 
 	async clickGameStatsTab() {
-		await this.gameStatsTab.click();
+		await this.clickTab("game stats");
 	}
 }

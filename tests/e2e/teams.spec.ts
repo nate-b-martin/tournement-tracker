@@ -27,13 +27,7 @@ test.describe("Teams Page", () => {
 			await teamsPage.goto();
 			await teamsPage.waitForPageLoad();
 
-			const tableVisible = await teamsPage.tableRows.first().isVisible().catch(() => false);
-			const emptyVisible = await page
-				.getByText(/no teams found/i)
-				.isVisible()
-				.catch(() => false);
-
-			expect(tableVisible || emptyVisible).toBe(true);
+			expect(await teamsPage.expectTableOrEmpty()).toBe(true);
 		});
 
 		test("search filters teams", async ({ page }) => {

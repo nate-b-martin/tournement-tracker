@@ -165,9 +165,8 @@ test.describe("Tournaments Page", () => {
 				test.skip(true, "Tournament not available to delete");
 			}
 
-			await deleteButton.click();
-			await expect(tournamentsPage.deleteConfirmTitle).toBeVisible();
-			await tournamentsPage.confirmDeleteButton.click();
+			await tournamentsPage.openDeleteDialog(`${tournamentName} Updated`);
+			await tournamentsPage.confirmDelete();
 
 			await expect(page.getByText(/tournament deleted/i)).toBeVisible({
 				timeout: 10000,

@@ -27,13 +27,7 @@ test.describe("Players Page", () => {
 			await playersPage.goto();
 			await playersPage.waitForPageLoad();
 
-			const tableVisible = await playersPage.tableRows.first().isVisible().catch(() => false);
-			const emptyVisible = await page
-				.getByText(/no players found/i)
-				.isVisible()
-				.catch(() => false);
-
-			expect(tableVisible || emptyVisible).toBe(true);
+			expect(await playersPage.expectTableOrEmpty()).toBe(true);
 		});
 
 		test("search filters players", async ({ page }) => {

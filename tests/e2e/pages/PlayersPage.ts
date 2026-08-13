@@ -1,26 +1,18 @@
 import type { Page } from "@playwright/test";
+import { CrudTablePage } from "./TablePage";
 
-export class PlayersPage {
-	constructor(private page: Page) {}
-
-	get heading() {
-		return this.page.getByRole("heading", { name: /players/i });
+export class PlayersPage extends CrudTablePage {
+	constructor(page: Page) {
+		super(page, {
+			route: "/playerspage",
+			headingPattern: /players/i,
+			searchPlaceholder: /search players, email/i,
+			itemName: "players",
+		});
 	}
 
 	get addPlayerButton() {
 		return this.page.getByRole("button", { name: /add player/i });
-	}
-
-	get searchInput() {
-		return this.page.getByPlaceholder(/search players, email/i);
-	}
-
-	get clearFiltersButton() {
-		return this.page.getByRole("button", { name: /clear filters/i });
-	}
-
-	get tableRows() {
-		return this.page.getByRole("row");
 	}
 
 	get contactInfoTab() {
@@ -29,27 +21,5 @@ export class PlayersPage {
 
 	get individualStatsTab() {
 		return this.page.getByRole("tab", { name: /individual stats/i });
-	}
-
-	statusChip(status: string) {
-		return this.page
-			.locator("button")
-			.filter({ hasText: new RegExp(`^${status}$`, "i") });
-	}
-
-	async goto() {
-		await this.page.goto("/playerspage");
-	}
-
-	async waitForPageLoad() {
-		await this.heading.waitFor({ state: "visible", timeout: 15000 });
-	}
-
-	async search(query: string) {
-		await this.searchInput.fill(query);
-	}
-
-	async filterByStatus(status: string) {
-		await this.statusChip(status).click();
 	}
 }
