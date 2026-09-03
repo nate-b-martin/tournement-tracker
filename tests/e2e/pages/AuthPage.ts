@@ -4,7 +4,7 @@ export class AuthPage {
 	constructor(private page: Page) {}
 
 	get signInButton() {
-		return this.page.getByRole("button", { name: /sign in/i });
+		return this.page.getByRole("button", { name: /sign in/i }).first();
 	}
 
 	get userButton() {

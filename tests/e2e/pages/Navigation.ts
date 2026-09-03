@@ -12,7 +12,7 @@ export class Navigation {
     }
 
     get signInButton() {
-        return this.page.getByRole('button', { name: /sign in/i });
+        return this.page.getByRole('button', { name: /sign in/i }).first();
     }
 
     get closeMenuButton() {
