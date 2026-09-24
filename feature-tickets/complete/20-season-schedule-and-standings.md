@@ -1,3 +1,8 @@
+---
+status: complete
+resolved: 2026-09-24
+---
+
 # Feature 20: Season Schedule & Standings Tabs
 
 ## Overview

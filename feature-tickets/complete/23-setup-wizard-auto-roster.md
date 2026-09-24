@@ -1,3 +1,8 @@
+---
+status: complete
+resolved: 2026-09-24
+---
+
 # Feature 23: Setup Wizard — Auto-Populate Rosters with Linked Players
 
 ## Overview

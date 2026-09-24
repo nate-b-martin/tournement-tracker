@@ -19,41 +19,16 @@
 
 ## Current Priorities
 
-### 🟡 P1 — Close & verify the two "open" debug tickets
+### 🟢 P2 — Expand E2E coverage
 
-Both are effectively **already implemented in code** but still marked `status: open` in `feature-tickets/debug/`.
-
-| Ticket | Code status | Action |
-|--------|-------------|--------|
-| `2026-07-20-seasons-page-stub-no-details.md` | `seasonspage/index.tsx` now renders `<SeasonsTable />` | ✅ Closed 2026-08-05 |
-| `2026-07-20-wizard-add-existing-players-not-implemented.md` | `StepManageRosters.tsx:98` wires `api.players.search` | ✅ Closed 2026-08-05 |
-
-**Why:** Quick win — closes open loops with minimal effort.
-
----
-
-### 🟡 P1 — Merge `schedule-autogeneration` branch into `main`
-
-The current branch contains feature work (season detail page, player details, schedule generation)
-that is **ahead of `main`** and not yet merged/PR'd.
-
-**Why:** Locks in tickets 20/21/22/25 that currently only exist on this branch.
-
-**Checklist:**
-- [ ] Rebase/merge `main` into `schedule-autogeneration`
-- [ ] Run `npm run check && npm run test && npm run build`
-- [ ] Open PR, get review, merge
-
----
-
-### 🟢 P2 — Expand E2E coverage (~40% complete)
-
-Existing specs: `auth`, `navigation`, `player-details`, `schedule-autogeneration`, `seasons`, `setup-wizard`. Added: `tournaments`, `teams`, `players`.
+Existing specs: `auth`, `navigation`, `player-details`, `schedule-autogeneration`, `seasons`,
+`setup-wizard`, `tournaments`, `teams`, `players`.
 
 **Covered:**
 - [x] Tournaments CRUD (create / edit / delete)
 - [x] Teams page (listing, search, filters) + create-flow scaffold
 - [x] Players page (listing, search, filters, stats view toggle)
+- [x] Season schedule generation + bracket dialog visibility
 
 **Still missing:**
 - [ ] Fields management
@@ -65,20 +40,10 @@ Existing specs: `auth`, `navigation`, `player-details`, `schedule-autogeneration
 
 ---
 
-### 🟢 P2 — Backlog performance tickets (verification)
-
-The 3 backlog tickets appear implemented in code (`DataTable.tsx` has memoized values/callbacks,
-`ProtectedRoute.tsx` has sonner toasts). Verify and close:
-- [ ] `complete/backlog/01-memoize-derived-values.md`
-- [ ] `complete/backlog/02-stabilize-callbacks.md`
-- [ ] `complete/backlog/03-auth-toast-notifications.md`
-
----
-
 ### ⚪ P3 — Process / cleanup
 
-- [ ] Commit the uncommitted ticket reorg (deletions of `TODO/21,22`, untracked `complete/21,22`)
 - [ ] Keep `PRIORITIES.md` up to date as tickets ship
+- [ ] Triage any remaining scenarios in `Enhancments/ideas.md`
 
 ---
 
@@ -86,11 +51,16 @@ The 3 backlog tickets appear implemented in code (`DataTable.tsx` has memoized v
 
 | Item | Status |
 |------|--------|
-| Feature tickets 01–22 + 25 | ✅ Implemented (`complete/`) |
+| Feature tickets 01–23 + 25 | ✅ Implemented (`complete/`) |
+| Feature 20: Season Schedule & Standings | ✅ Implemented — moved to `complete/` 2026-09-24 |
+| Feature 21: Schedule Auto-Generation | ✅ Implemented — duplicate `TODO/21` removed 2026-09-24 |
+| Feature 23: Setup Wizard auto-roster | ✅ Implemented — moved to `complete/` 2026-09-24 |
+| `schedule-autogeneration` branch merge | ✅ Merged into `main` (PR #11) |
 | Homepage dashboard upgrade | ✅ Implemented 2026-08-06 (`src/routes/index.tsx`) |
 | Debug: seasons page stub | ✅ Closed 2026-08-05 (`debug/`) |
 | Debug: wizard add-existing-players | ✅ Closed 2026-08-05 (`debug/`) |
-| Backlog: memoization / callbacks / auth toasts | ✅ Implemented in code |
+| Backlog: memoization / callbacks / auth toasts | ✅ Verified — tickets in `complete/backlog/` |
+| Wizard submit redirect (ideas.md 404) | ✅ Implemented — `SetupWizard.tsx` navigates to `/seasons/$id` |
 
 ---
 

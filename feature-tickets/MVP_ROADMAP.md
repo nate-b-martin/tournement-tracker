@@ -28,11 +28,11 @@ E2E Tests              ████████████████░░░
 
 | Priority | Ticket               | Effort  | Description |
 |----------|----------------------|---------|-------------|
-| 🟡 P2    | Backlog tickets (3)  | Low     | Memoization, callback stabilization, auth toast notifications |
+| 🟢 P2    | E2E coverage gaps    | Medium  | Fields, Games, Player stats page, Bracket view specs |
 
 ## Notes
 
-- Tickets 14–19 (Seasons + Setup Wizard feature set) are all complete
+- Tickets 14–21 + 23 + 25 (Seasons, Setup Wizard, schedule generation, player details) are all complete
 - All feature tickets are in `complete/`, `complete/auth/`, `complete/backlog/`
 - `vite.config.ts` excludes `tanstackStart()` plugin during Vitest runs (`process.env.VITEST`) to fix React hooks CJS/ESM interop issue
 - Seasons use `planning` → `active` → `complete` status lifecycle
