@@ -1,0 +1,34 @@
+# Dependencies and build output are produced inside the image.
+node_modules
+dist
+dist-ssr
+.nitro
+.output
+.vinxi
+.tanstack
+.netlify
+.wrangler
+wrangler
+
+# Never bake secrets into an image layer. `VITE_*` values are supplied as build
+# args (see Dockerfile) and are safe to publish; everything else is not.
+.env
+.env.local
+.env.*.local
+
+# Test / tooling artefacts are not needed to build or serve the app.
+playwright
+playwright-report
+test-results
+error-screenshots
+
+# Repo-only files.
+feature-tickets
+docs
+tests
+.git
+.gitignore
+*.log
+*.md
+*.tgz
+screenshot.png

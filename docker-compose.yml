@@ -1,0 +1,59 @@
+services:
+  convex-backend:
+    # Pin to a specific release revision for reproducible upgrades, e.g.
+    # image: ghcr.io/get-convex/convex-backend:v1.xx.x
+    # Upgrade notes (incl. required backend migrations) live in ticket 04.
+    image: ghcr.io/get-convex/convex-backend:latest
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    ports:
+      - "3210:3210" # client sync
+      - "3211:3211" # site proxy (HTTP actions, JWKS)
+    volumes:
+      - data:/convex/data
+    environment:
+      - CONVEX_CLOUD_ORIGIN=${CONVEX_CLOUD_ORIGIN:-http://127.0.0.1:3210}
+      - CONVEX_SITE_ORIGIN=${CONVEX_SITE_ORIGIN:-http://127.0.0.1:3211}
+      - INSTANCE_NAME=${INSTANCE_NAME:-tournament-tracker}
+      - INSTANCE_SECRET=${INSTANCE_SECRET:-changeme-dev-secret}
+      - RUST_LOG=${RUST_LOG:-info}
+      - DISABLE_METRICS_ENDPOINT=true
+    healthcheck:
+      test: curl -f http://localhost:3210/version
+      interval: 5s
+      start_period: 10s
+
+  frontend:
+    build:
+      context: .
+      args:
+        # Host-reachable on purpose: the browser connects to Convex directly, so
+        # the compose service name (`convex-backend:3210`) would not resolve.
+        VITE_CONVEX_URL: ${VITE_CONVEX_URL:-http://localhost:3210}
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
+    # Runtime-only (not a build arg): the SSR bundle reads this from
+    # `process.env`, so the compose service name is safe to use here even though
+    # it is unreachable from the browser.
+    environment:
+      - CONVEX_SSR_URL=${CONVEX_SSR_URL:-http://convex-backend:3210}
+    stop_grace_period: 10s
+    ports:
+      - "3000:3000"
+    depends_on:
+      convex-backend:
+        condition: service_healthy
+
+  convex-dashboard:
+    image: ghcr.io/get-convex/convex-dashboard:latest
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    ports:
+      - "127.0.0.1:6791:6791"
+    environment:
+      - NEXT_PUBLIC_DEPLOYMENT_URL=${NEXT_PUBLIC_DEPLOYMENT_URL:-http://127.0.0.1:3210}
+    depends_on:
+      convex-backend:
+        condition: service_healthy
+
+volumes:
+  data:

@@ -2,9 +2,10 @@ import { ConvexQueryClient } from "@convex-dev/react-query";
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { ConvexReactClient } from "convex/react";
+import { getConvexUrl } from "./lib/convex-url";
 import { routeTree } from "./routeTree.gen";
 
-const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
+const CONVEX_URL = getConvexUrl();
 if (!CONVEX_URL) {
 	throw new Error("missing VITE_CONVEX_URL envar");
 }

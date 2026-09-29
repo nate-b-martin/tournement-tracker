@@ -55,6 +55,48 @@ npm run dev
 
 **Note:** The Convex dev server must be running alongside `npm run dev` for the application to work.
 
+### Self-Hosted Backend (Docker)
+
+Instead of `npx convex dev`, the Convex backend can run in Docker with its default **SQLite** storage persisted in a volume:
+
+```bash
+cp docker-compose.env.example .env
+# Edit .env and replace INSTANCE_SECRET with a stable random value.
+docker compose up -d convex-backend
+docker compose up -d convex-dashboard # optional dashboard at http://127.0.0.1:6791
+```
+
+- SQLite data persists in the `data` volume (`/convex/data`); no Postgres service is used.
+- Log in to the dashboard with an admin key:
+  `docker compose exec convex-backend ./generate_admin_key.sh`
+- Each run of `generate_admin_key.sh` issues a **new** key, so keep the one you use.
+  Previously issued keys keep working across restarts as long as `INSTANCE_NAME` and
+  `INSTANCE_SECRET` stay unchanged; changing `INSTANCE_SECRET` invalidates all of them.
+
+> **One backend at a time.** The containerized backend and `npx convex dev` both bind port `3210` and hold separate data stores. Run one or the other — never both. Full self-hosting ops documentation (env template, image pinning/migrations, security) is tracked in the self-hosting feature tickets.
+
+### Self-Hosted Frontend (Docker)
+
+The TanStack Start app also ships as a production image that serves server-rendered HTML on port `3000`:
+
+```bash
+docker compose up -d --build          # backend + frontend
+docker compose up -d convex-dashboard # optional
+```
+
+Then open <http://localhost:3000>.
+
+- The `frontend` service waits for `convex-backend` to become healthy before starting.
+- Vite inlines `VITE_*` variables **at build time**, so the Convex URL must be one the
+  *browser* can reach — `http://localhost:3210`, never the compose service name
+  `convex-backend:3210`. Change it via `VITE_CONVEX_URL` in `.env`, then rebuild
+  (`docker compose build frontend`); restarting is not enough.
+- Server-side rendering resolves its own Convex URL from the runtime env var
+  `CONVEX_SSR_URL` (default `http://convex-backend:3210`), because SSR runs inside the
+  container where `localhost` is the container itself. It is read from `process.env`, so it
+  never lands in the client bundle and a restart — not a rebuild — is enough to change it.
+- `npm run start` runs the same server locally without Docker.
+
 ### Seed Data
 
 Populate the database with test data for development:

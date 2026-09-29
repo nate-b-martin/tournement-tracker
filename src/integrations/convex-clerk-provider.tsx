@@ -2,8 +2,9 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { useEffect, useState } from "react";
+import { getConvexUrl } from "@/lib/convex-url";
 
-const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
+const CONVEX_URL = getConvexUrl();
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!CONVEX_URL) {
