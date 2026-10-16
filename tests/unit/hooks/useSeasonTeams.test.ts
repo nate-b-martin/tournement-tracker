@@ -1,5 +1,6 @@
 import { renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
+
 import { useSeasonTeams } from "@/hooks/useSeasonTeams";
 
 vi.mock("convex/react", () => ({
@@ -59,10 +60,7 @@ describe("useSeasonTeams", () => {
 
 		const { result } = renderHook(() => useSeasonTeams(undefined));
 
-		expect(vi.mocked(useQuery)).toHaveBeenCalledWith(
-			expect.anything(),
-			"skip",
-		);
+		expect(vi.mocked(useQuery)).toHaveBeenCalledWith(expect.anything(), "skip");
 		expect(result.current.isLoading).toBe(true);
 		expect(result.current.teams).toEqual([]);
 	});

@@ -23,6 +23,7 @@ test-results
 error-screenshots
 
 # Repo-only files.
+.opencode
 feature-tickets
 docs
 tests

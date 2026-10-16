@@ -1,22 +1,25 @@
 # TanStack Tournament Tracker - Agent Guidelines
 
 ## Build Commands
-- `npm run dev` - Start development server on port 3000
-- `npm run build` - Build for production
-- `npm run test` - Run all tests with Vitest
-- `npm run test <path>` - Run single test file (e.g., `npm run test src/components/Button.test.tsx`)
-- `npm run test:watch` - Run tests in watch mode (not yet configured, would be `vitest watch`)
-- `npm run lint` - Run Biome linter
-- `npm run format` - Format code with Biome
-- `npm run check` - Run Biome format + lint
+The toolchain is [Vite+](https://viteplus.dev) (`vite-plus`, pinned in `package.json`): Vite 8 + Rolldown, Vitest 5, Oxlint, and Oxfmt, configured in `vite.config.ts` (the `fmt`, `lint`, and `test` blocks).
+
+- `bun run dev` - Start dev server on port 3000 (`vp dev`)
+- `bun run build` - Build for production (`vp build`)
+- `bun run test` - Run all unit tests (`vp test run`, Vitest 5)
+- `bun run test <path>` - Run a single test file (e.g. `bun run test tests/unit/hooks/usePagination.test.ts`)
+- `bun run test:watch` - Run tests in watch mode
+- `bun run lint` - Lint with Oxlint (`vp lint`)
+- `bun run format` - Format with Oxfmt (`vp fmt`)
+- `bun run check` - Format + lint check (`vp check`)
 
 ## Code Style
 
 ### Formatting & Linting
-- Use Biome for formatting (tab indentation, double quotes)
-- Run `npm run check` before committing to ensure code passes format + lint
+- Formatting is Oxfmt and linting is Oxlint, both configured in `vite.config.ts` (`fmt` and `lint` blocks)
+- Conventions: tab indentation, double quotes, 80-column width, imports sorted automatically
+- Run `bun run check` before committing to ensure code passes format + lint
 - Never disable lint rules without explicit justification
-- Biome organizes imports automatically per configuration
+- Type-aware lint rules run (`lint.options.typeAware`); the full project type check (`lint.options.typeCheck`) stays off until the pre-existing TypeScript errors are resolved
 
 ### Import Organization
 Order imports as follows:
@@ -72,7 +75,7 @@ Order imports as follows:
 ### shadcn/ui Components
 - Use shadcn components for UI elements: `bunx shadcn@latest add <component>`
 - Common components: Button, Card, Table, Badge, Dialog, DropdownMenu, Input, Form
-- Run `npm run format` after adding new components
+- Run `bun run format` after adding new components
 - Components use `cn()` utility from `@/lib/utils` for class merging
 
 ### TailwindCSS
@@ -178,9 +181,9 @@ CLERK_JWT_ISSUER_DOMAIN=https://your-domain.clerk.accounts.com
 ```
 
 ### Local Development
-- Run Convex dev server: `npx convex dev` (concurrent with `npm run dev`)
+- Run Convex dev server: `bunx convex dev` (concurrent with `bun run dev`)
 - Automatically manages local schema and data
-- Seeding: Add test data in `convex/seed.ts` and run `npx convex seed`
+- Seeding: Add test data in `convex/seed.ts` and run `bunx convex seed`
 
 ## Testing with Convex
 
@@ -199,20 +202,20 @@ CLERK_JWT_ISSUER_DOMAIN=https://your-domain.clerk.accounts.com
 1. **Planning**: Check `feature-tickets/` for related tickets and dependencies
 2. **Design**: Create design doc in `src/design/<FEATURE>_DESIGN.md` if adding new routes
 3. **Implementation**: Follow order in AGENTS.md (code style → components → Convex functions)
-4. **Testing**: Run `npm run test` for affected features, `npm run check` for formatting
+4. **Testing**: Run `bun run test` for affected features, `bun run check` for formatting
 5. **Verification**: Ensure new features respect RBAC (test as different roles)
 
 ## Development Workflow
 
 1. Check relevant design doc in `src/design/` before implementing
-2. Run `npm run check` to verify formatting/linting
-3. Run `npm run test` for affected files
-4. Build with `npm run build` before submitting PRs
+2. Run `bun run check` to verify formatting/linting
+3. Run `bun run test` for affected files
+4. Build with `bun run build` before submitting PRs
 
 ## Notes
 
 - Single-admin, self-hosted system - first user auto-promotes to admin
 - Team management is primary feature - prioritize in UI
 - Docker-ready - keep dependencies minimal
-- Convex development requires concurrent `npx convex dev` terminal
+- Convex development requires concurrent `bunx convex dev` terminal
 - Always validate auth server-side; client-side checks are UX only

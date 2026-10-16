@@ -79,7 +79,7 @@ The following components from shadcn are available in `src/components/ui/`:
 bunx shadcn@latest add <component-name>
 ```
 
-Then run `npm run format` to organize imports.
+Then run `bun run format` to organize imports.
 
 ## Tailwind CSS Patterns
 

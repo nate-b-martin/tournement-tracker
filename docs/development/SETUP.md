@@ -19,8 +19,8 @@ CLERK_JWT_ISSUER_DOMAIN=https://your-domain.clerk.accounts.com
 You can generate these automatically:
 
 ```bash
-npx convex init     # Creates VITE_CONVEX_URL
-npx clerk init      # Creates Clerk keys + JWT issuer
+bunx convex init     # Creates VITE_CONVEX_URL
+bunx clerk init      # Creates Clerk keys + JWT issuer
 ```
 
 ## Running Locally
@@ -29,12 +29,12 @@ The project requires two concurrent servers:
 
 ```bash
 # Terminal 1: Convex backend
-npx convex dev
+bunx convex dev
 ```
 
 ```bash
 # Terminal 2: Vite dev server (port 3000)
-npm run dev
+bun run dev
 ```
 
 **Important**: Both must be running simultaneously. The app will not work without the Convex dev server running.
@@ -44,7 +44,7 @@ npm run dev
 Populate the database with test data:
 
 ```bash
-npx convex seed
+bunx convex seed
 ```
 
 This creates:
@@ -58,14 +58,14 @@ This creates:
 Clear all data via the Convex dashboard:
 
 ```bash
-npx convex dashboard
+bunx convex dashboard
 # Run the clearAllData mutation manually
 ```
 
 ## Production Build
 
 ```bash
-npm run build
+bun run build
 ```
 
 Output goes to `dist/client/`. Deploy via Netlify (see `netlify.toml`).
@@ -74,18 +74,18 @@ Output goes to `dist/client/`. Deploy via Netlify (see `netlify.toml`).
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start Vite dev server on port 3000 |
-| `npm run build` | Build for production |
-| `npm run test` | Run all unit tests |
-| `npm run test <path>` | Run a specific test file |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:e2e` | Run Playwright E2E tests (headless) |
-| `npm run check` | Format + lint check (Biome) |
-| `npm run format` | Format code (Biome) |
-| `npm run lint` | Lint check only (Biome) |
-| `npx convex dev` | Start Convex dev server |
-| `npx convex seed` | Seed database with test data |
-| `npx convex dashboard` | Open Convex dashboard |
+| `bun run dev` | Start Vite dev server on port 3000 |
+| `bun run build` | Build for production |
+| `bun run test` | Run all unit tests |
+| `bun run test <path>` | Run a specific test file |
+| `bun run test:watch` | Run tests in watch mode |
+| `bun run test:e2e` | Run Playwright E2E tests (headless) |
+| `bun run check` | Format + lint check (Oxfmt + Oxlint) |
+| `bun run format` | Format code (Oxfmt) |
+| `bun run lint` | Lint check only (Oxlint) |
+| `bunx convex dev` | Start Convex dev server |
+| `bunx convex seed` | Seed database with test data |
+| `bunx convex dashboard` | Open Convex dashboard |
 
 ## Project Structure
 
@@ -130,21 +130,21 @@ tests/
 bunx shadcn@latest add <component-name>
 ```
 
-Then run `npm run format` to organize imports.
+Then run `bun run format` to organize imports.
 
 ## Testing
 
 ### Unit Tests
 ```bash
-npm run test              # All tests
-npm run test tests/unit/components/DataTable.test.tsx  # Single file
+bun run test              # All tests
+bun run test tests/unit/components/DataTable.test.tsx  # Single file
 ```
 
 ### E2E Tests
 ```bash
-npm run test:e2e              # Headless
-npm run test:e2e:ui           # UI debug mode
-npm run test:e2e:headed       # Visible browser
+bun run test:e2e              # Headless
+bun run test:e2e:ui           # UI debug mode
+bun run test:e2e:headed       # Visible browser
 ```
 
 E2E tests require the dev server running. They use Clerk test credentials from `.env.local`:

@@ -1,18 +1,21 @@
 # syntax=docker/dockerfile:1
 
-# Keep this tag in sync with the CI Node version (.github/workflows/ci.yml).
-# Ticket 15 formalises that coupling.
-ARG NODE_VERSION=24-alpine
+# Build with the official Vite+ toolchain image. It runs as the non-root `vp`
+# user and provisions the exact Node.js version from `.node-version`, so there is
+# no Node-version-specific image tag to keep in sync with CI.
+# Keep this version in sync with the `vite-plus` devDependency; ticket 15
+# formalises that coupling (see tests/unit/infra/dockerImage.test.ts).
+ARG VITE_PLUS_VERSION=1.3.0
 
 # ---- Build stage ------------------------------------------------------------
-FROM node:${NODE_VERSION} AS build
+FROM ghcr.io/voidzero-dev/vite-plus:${VITE_PLUS_VERSION} AS build
 WORKDIR /app
 
 # Install from the lockfile only, so the image is reproducible.
-COPY package.json package-lock.json ./
-RUN npm ci --no-audit --no-fund
+COPY --chown=vp:vp package.json bun.lock .node-version ./
+RUN vp install --frozen-lockfile
 
-COPY . .
+COPY --chown=vp:vp . .
 
 # Vite inlines `VITE_*` variables at BUILD time — there is no runtime env
 # injection for the client bundle. The browser (not the compose network) is what
@@ -23,10 +26,25 @@ ARG VITE_CLERK_PUBLISHABLE_KEY=""
 ENV VITE_CONVEX_URL=${VITE_CONVEX_URL}
 ENV VITE_CLERK_PUBLISHABLE_KEY=${VITE_CLERK_PUBLISHABLE_KEY}
 
-RUN npm run build
+RUN vp build
+
+# Export the exact Node.js binary Vite+ resolved from `.node-version` so the
+# runtime stage runs the SSR bundle on the same runtime.
+RUN cp "$(vp env which node | head -1)" /tmp/node
+
+# ---- Dependencies stage -----------------------------------------------------
+# A separate, fresh `--prod` install so devDependencies (including the Vite+
+# toolchain) are excluded from the runtime image. Running `--prod` over the full
+# install above would not prune the already-installed devDependencies.
+FROM ghcr.io/voidzero-dev/vite-plus:${VITE_PLUS_VERSION} AS deps
+WORKDIR /app
+COPY --chown=vp:vp package.json bun.lock .node-version ./
+RUN vp install --frozen-lockfile --prod
 
 # ---- Runtime stage ----------------------------------------------------------
-FROM node:${NODE_VERSION} AS runtime
+# glibc base: the copied Node.js binary is an official, signature-verified build
+# (the toolchain image is glibc based, so a musl runtime would not run it).
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -39,16 +57,17 @@ ENV PORT=3000
 # the compose network.
 ENV CONVEX_SSR_URL=http://convex-backend:3210
 
-# Only the SSR bundle, the static client assets and the installed packages are
+# Only the SSR bundle, the static client assets and the production packages are
 # needed at runtime. `dist/server/server.js` exports a WinterCG-style `fetch`
 # handler rather than listening on a socket, so it is mounted by `srvx`, which
 # also serves `dist/client` as static assets. Keep this command in sync with the
 # `start` script in package.json.
+COPY --from=build /tmp/node /usr/local/bin/node
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 
-USER node
+USER nobody
 EXPOSE 3000
 
 # Exec the server directly (no `npm run` wrapper) so Node is PID 1 and receives

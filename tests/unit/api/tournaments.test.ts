@@ -1,7 +1,6 @@
-import { describe, expect, it } from "vitest";
-import {
-	mockTournaments,
-} from "../../../src/mocks/data/mockTournaments";
+import { describe, expect, it } from "vite-plus/test";
+
+import { mockTournaments } from "../../../src/mocks/data/mockTournaments";
 
 function simulateList(options: {
 	pagination?: { pageIndex: number; pageSize: number };
@@ -149,15 +148,9 @@ describe("tournaments API (simulated Convex queries)", () => {
 			const result = simulateList({
 				sorting: { field: "startDate", direction: "asc" },
 			});
-			const hasUndefined = result.data.filter(
-				(t) => t.startDate === undefined,
-			);
-			const hasDefined = result.data.filter(
-				(t) => t.startDate !== undefined,
-			);
-			expect(hasDefined.length + hasUndefined.length).toBe(
-				result.data.length,
-			);
+			const hasUndefined = result.data.filter((t) => t.startDate === undefined);
+			const hasDefined = result.data.filter((t) => t.startDate !== undefined);
+			expect(hasDefined.length + hasUndefined.length).toBe(result.data.length);
 		});
 
 		it("filters by multiple statuses", () => {
@@ -168,9 +161,9 @@ describe("tournaments API (simulated Convex queries)", () => {
 			});
 			expect(result.data.length).toBeGreaterThanOrEqual(2);
 			result.data.forEach((t) => {
-				expect(
-					t.status === "draft" || t.status === "registration_open",
-				).toBe(true);
+				expect(t.status === "draft" || t.status === "registration_open").toBe(
+					true,
+				);
 			});
 		});
 	});
@@ -183,17 +176,13 @@ describe("tournaments API (simulated Convex queries)", () => {
 
 	describe("getById", () => {
 		it("retrieves a tournament by ID", () => {
-			const tournament = mockTournaments.find(
-				(t) => t._id === "tournament_1",
-			);
+			const tournament = mockTournaments.find((t) => t._id === "tournament_1");
 			expect(tournament).toBeDefined();
 			expect(tournament!.name).toBe("Spring Championship");
 		});
 
 		it("returns undefined for non-existent ID", () => {
-			const tournament = mockTournaments.find(
-				(t) => t._id === "non_existent",
-			);
+			const tournament = mockTournaments.find((t) => t._id === "non_existent");
 			expect(tournament).toBeUndefined();
 		});
 	});

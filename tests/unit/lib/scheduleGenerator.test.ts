@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
+
 import {
 	computeGameDays,
 	generateRoundRobinPairings,
@@ -96,9 +97,7 @@ describe("generateRoundRobinPairings", () => {
 
 		for (const round of rounds) {
 			for (const game of round) {
-				const key = [game.homeTeamIndex, game.awayTeamIndex]
-					.sort()
-					.join("-");
+				const key = [game.homeTeamIndex, game.awayTeamIndex].sort().join("-");
 				matchups.add(key);
 			}
 		}
@@ -113,7 +112,9 @@ describe("generateRoundRobinPairings", () => {
 
 		for (const round of rounds) {
 			for (const game of round) {
-				const sorted = [game.homeTeamIndex, game.awayTeamIndex].sort().join("-");
+				const sorted = [game.homeTeamIndex, game.awayTeamIndex]
+					.sort()
+					.join("-");
 				matchups.set(sorted, (matchups.get(sorted) || 0) + 1);
 			}
 		}

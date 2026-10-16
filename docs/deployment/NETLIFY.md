@@ -6,15 +6,15 @@
 
 ```toml
 [build]
-  command = "vite build"
+  command = "npx vp build"
   dir = "dist/client"
 [dev]
-  command = "npm run dev"
+  command = "npx vp dev"
   targetPort = 3000
   port = 8888
 ```
 
-- **Build command**: `vite build` — produces static output in `dist/client/`
+- **Build command**: `npx vp build` — produces static output in `dist/client/`
 - **Publish directory**: `dist/client/`
 - **Dev port**: 3000 (Netlify dev proxies to this)
 
@@ -24,14 +24,14 @@
 
 1. Push to `main` branch (or open a PR)
 2. Netlify auto-detects the project (linked via Netlify dashboard)
-3. Runs `vite build`
+3. Runs `npx vp build`
 4. Deploys `dist/client/` to production
 
 ### Manual (CLI)
 
 ```bash
-npm run build
-npx netlify deploy --prod --dir=dist/client
+bun run build
+bunx netlify deploy --prod --dir=dist/client
 ```
 
 ## Environment Variables
@@ -54,22 +54,22 @@ Before deploying to production:
 - [ ] Convex project is in production mode (not dev)
 - [ ] Clerk application is published (not in development mode)
 - [ ] Seed data has been cleared from production database
-- [ ] `npm run build` succeeds locally
-- [ ] `npm run check` passes
-- [ ] `npm run test` passes
+- [ ] `bun run build` succeeds locally
+- [ ] `bun run check` passes
+- [ ] `bun run test` passes
 
 ## Convex Production Setup
 
 1. Deploy Convex functions to production:
    ```bash
-   npx convex deploy
+   bunx convex deploy
    ```
 
 2. The production Convex URL will be different from the dev URL. Update `VITE_CONVEX_URL` in Netlify.
 
 3. Convex production dashboard:
    ```bash
-   npx convex dashboard --prod
+   bunx convex dashboard --prod
    ```
 
 ## Clerk Production Setup
@@ -85,10 +85,10 @@ Before deploying to production:
 
 On every PR and push to `main`:
 
-1. `npm install`
-2. `npm run check` (Biome format + lint)
-3. `npm run build`
-4. `npm run test` (Vitest unit tests)
+1. `voidzero-dev/setup-vp` installs Vite+, Node 24.22.0 and the project dependencies
+2. `vp check` (Oxfmt + Oxlint)
+3. `vp build`
+4. `vp test` (Vitest unit tests)
 5. Starts Convex dev server, seeds data, runs Playwright E2E tests
 6. Uploads test artifacts on failure
 

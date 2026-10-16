@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 const mockUseAuth = vi.fn();
 vi.mock("@/hooks/useAuth", () => ({
@@ -18,13 +18,17 @@ vi.mock("@tanstack/react-router", () => ({
 	Link: ({
 		children,
 		to,
-	}: { children: React.ReactNode; to: string; params?: Record<string, string> }) => (
-		<a href={to}>{children}</a>
-	),
+	}: {
+		children: React.ReactNode;
+		to: string;
+		params?: Record<string, string>;
+	}) => <a href={to}>{children}</a>,
 }));
 
 vi.mock("@/components/SetupWizard", () => ({
-	SetupWizard: ({ open }: { open: boolean }) => <div data-testid="setup-wizard" />,
+	SetupWizard: ({ open }: { open: boolean }) => (
+		<div data-testid="setup-wizard" />
+	),
 }));
 
 vi.mock("@clerk/clerk-react", () => ({

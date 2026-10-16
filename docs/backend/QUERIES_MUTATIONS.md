@@ -2,7 +2,7 @@
 
 ## Overview
 
-All Convex functions live in `convex/*.ts` and are auto-deployed by `npx convex dev`. Each file exports queries (read) and mutations (write). Generated API bindings in `convex/_generated/` make these callable from the frontend as `api.<file>.<functionName>`.
+All Convex functions live in `convex/*.ts` and are auto-deployed by `bunx convex dev`. Each file exports queries (read) and mutations (write). Generated API bindings in `convex/_generated/` make these callable from the frontend as `api.<file>.<functionName>`.
 
 ## File: `convex/tournaments.ts`
 

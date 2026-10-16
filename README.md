@@ -32,7 +32,7 @@ A real-time tournament management system for American sports (starting with soft
 
 1. **Install dependencies:**
 ```bash
-npm install
+bun install
 ```
 
 2. **Set up environment variables** in `.env.local`:
@@ -42,18 +42,18 @@ VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_JWT_ISSUER_DOMAIN=https://your-domain.clerk.accounts.com
 ```
 
-(Run `npx convex init` and `npx clerk init` to generate these automatically)
+(Run `bunx convex init` and `bunx clerk init` to generate these automatically)
 
 3. **Start development with both servers running concurrently:**
 ```bash
 # Terminal 1: Start Convex backend
-npx convex dev
+bunx convex dev
 
 # Terminal 2: Start dev server (port 3000)
-npm run dev
+bun run dev
 ```
 
-**Note:** The Convex dev server must be running alongside `npm run dev` for the application to work.
+**Note:** The Convex dev server must be running alongside `bun run dev` for the application to work.
 
 ### One-Shot Bootstrap (Docker)
 
@@ -72,7 +72,7 @@ rewrites its own two lines in `.env.local`. The manual equivalents are documente
 
 ### Self-Hosted Backend (Docker)
 
-Instead of `npx convex dev`, the Convex backend can run in Docker with its default **SQLite** storage persisted in a volume. See the [Docker guide](docs/DOCKER_GUIDE.md#convex-backend) for complete details.
+Instead of `bunx convex dev`, the Convex backend can run in Docker with its default **SQLite** storage persisted in a volume. See the [Docker guide](docs/DOCKER_GUIDE.md#convex-backend) for complete details.
 
 ```bash
 cp docker-compose.env.example .env
@@ -88,7 +88,7 @@ docker compose up -d convex-dashboard # optional dashboard at http://127.0.0.1:6
   Previously issued keys keep working across restarts as long as `INSTANCE_NAME` and
   `INSTANCE_SECRET` stay unchanged; changing `INSTANCE_SECRET` invalidates all of them.
 
-> **One backend at a time.** The containerized backend and `npx convex dev` both bind port `3210` and hold separate data stores. Run one or the other — never both.
+> **One backend at a time.** The containerized backend and `bunx convex dev` both bind port `3210` and hold separate data stores. Run one or the other — never both.
 
 ### Self-Hosted Frontend (Docker)
 
@@ -109,14 +109,14 @@ Then open <http://localhost:3000>.
 - **SSR `CONVEX_SSR_URL` is read at runtime from `process.env`** — since SSR runs inside the
   container where `localhost` is the container itself, the default `http://convex-backend:3210`
   is correct inside the container. A restart (without rebuild) is enough to change it.
-- `npm run start` runs the same server locally without Docker.
+- `bun run start` runs the same server locally without Docker.
 
 ### Seed Data
 
 Populate the database with test data for development:
 
 ```bash
-npx convex seed
+bunx convex seed
 ```
 
 This creates a sample tournament ("Summer Softball Classic 2026") with 2 fields, 4 teams, 32 players, and 2 games with game stats.
@@ -124,13 +124,13 @@ This creates a sample tournament ("Summer Softball Classic 2026") with 2 fields,
 To clear all data:
 ```bash
 # Run the clearAllData mutation via the Convex dashboard
-npx convex dashboard
+bunx convex dashboard
 ```
 
 ## Building For Production
 
 ```bash
-npm run build
+bun run build
 ```
 
 ## Testing
@@ -138,9 +138,9 @@ npm run build
 ### Unit Tests (Vitest + React Testing Library)
 
 ```bash
-npm run test              # Run all tests
-npm run test <file>       # Run single test file
-npm run test:watch        # Run tests in watch mode
+bun run test              # Run all tests
+bun run test <file>       # Run single test file
+bun run test:watch        # Run tests in watch mode
 ```
 
 Tests are in `tests/unit/` and cover:
@@ -151,9 +151,9 @@ Tests are in `tests/unit/` and cover:
 ### E2E Tests (Playwright)
 
 ```bash
-npx playwright test            # Run all E2E tests (headless)
-npx playwright test --ui       # Run E2E with UI debug mode
-npx playwright test --debug    # Run with Playwright inspector
+bunx playwright test            # Run all E2E tests (headless)
+bunx playwright test --ui       # Run E2E with UI debug mode
+bunx playwright test --debug    # Run with Playwright inspector
 ```
 
 E2E tests are in `tests/e2e/` and cover:
@@ -165,12 +165,12 @@ Requires running the dev server. Tests use Clerk test credentials via `auth.ts` 
 
 ## Linting & Formatting
 
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. Always run before committing:
+This project uses [Vite+](https://viteplus.dev) for its toolchain: [Oxlint](https://oxc.rs) for linting and [Oxfmt](https://oxc.rs) for formatting, both configured in the `fmt` and `lint` blocks of `vite.config.ts`. Always run before committing:
 
 ```bash
-npm run check     # Format + lint check
-npm run format    # Format code
-npm run lint      # Lint check only
+bun run check     # Format + lint check
+bun run format    # Format code
+bun run lint      # Lint check only
 ```
 
 ## Styling
@@ -180,10 +180,10 @@ This project uses [Tailwind CSS](https://tailwindcss.com/) for styling with [sha
 ### Adding shadcn Components
 
 ```bash
-npx shadcn@latest add <component-name>
+bunx shadcn@latest add <component-name>
 ```
 
-Run `npm run format` after adding components.
+Run `bun run format` after adding components.
 
 Common components: Button, Card, Table, Badge, Dialog, DropdownMenu, Input, Form
 
@@ -201,9 +201,9 @@ The project includes an MCP (Model Context Protocol) server endpoint at `/mcp`, 
 - **Tables**: Custom DataTable component with search, filter chips, sort, pagination
 - **Icons**: Lucide React
 - **Toasts**: Sonner
-- **Testing**: Vitest + React Testing Library (unit), Playwright (E2E)
-- **Formatting**: Biome (tab indentation, double quotes)
-- **Build**: Vite v7 + TypeScript strict mode
+- **Testing**: Vitest 5 + React Testing Library (unit), Playwright (E2E)
+- **Linting & formatting**: Oxlint + Oxfmt via Vite+ (tab indentation, double quotes)
+- **Build**: Vite 8 + Rolldown + TypeScript strict mode
 - **Hosting**: Netlify (`netlify.toml`)
 
 ### Database & Authentication
@@ -287,9 +287,9 @@ For detailed code style, patterns, authentication/authorization, database best p
 
 **Key principles:**
 - Check `src/design/` for design docs before implementing routes
-- Use `npm run check` before committing (format + lint)
+- Use `bun run check` before committing (format + lint)
 - Always validate auth server-side in Convex mutations
-- Run `npx convex dev` concurrently with `npm run dev`
+- Run `bunx convex dev` concurrently with `bun run dev`
 
 ## Resources
 

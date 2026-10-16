@@ -24,7 +24,7 @@ The skill will:
 5. Execute each implementation step
 6. Write necessary tests (unit, API, or UI)
 7. Validate against acceptance criteria
-8. Run `npm run check && npm run test && npm run build`
+8. Run `bun run check && bun run test && bun run build`
 
 ---
 
@@ -86,7 +86,7 @@ Use `todowrite` to create a structured todo list:
 - [ ] Step 2: <description> — pending
 - [ ] Write tests for <entity> — pending
 - [ ] Validation: acceptance criteria — pending
-- [ ] Build check: npm run check + test + build — pending
+- [ ] Build check: bun run check + test + build — pending
 ```
 
 Only one item should be `in_progress` at a time.
@@ -136,10 +136,10 @@ When creating a new file, mirror the closest existing file:
 After writing or editing any file, run:
 
 ```
-npm run check
+bun run check
 ```
 
-Fix any Biome errors before moving on.
+Fix any Oxlint/Oxfmt errors before moving on.
 
 ---
 
@@ -151,11 +151,11 @@ Before validation, create necessary tests for the new or modified code. The scop
 
 | If the feature touches... | Write these tests | Tools & hand-off |
 |---------------------------|-------------------|------------------|
-| **Convex queries or mutations** | API-level tests in `tests/api/<entity>.test.ts`. Mock `ctx.auth.getUserIdentity()` to test auth gating. | Vitest CLI (`npm run test`). Read `testing-patterns` skill for Convex mock patterns. |
+| **Convex queries or mutations** | API-level tests in `tests/api/<entity>.test.ts`. Mock `ctx.auth.getUserIdentity()` to test auth gating. | Vitest CLI (`bun run test`). Read `testing-patterns` skill for Convex mock patterns. |
 | **React components or hooks** | Component unit tests in `tests/unit/components/<Component>.test.tsx` or `tests/unit/hooks/<Hook>.test.ts`. | Vitest + React Testing Library. Read `testing-patterns` skill for patterns and mock data from `src/mocks/`. |
 | **Data flow (hook → query → component)** | Integration tests wiring mock Convex API responses through hooks into components. | Vitest + `testing-patterns` skill for `vi.mock("convex/react")` patterns. |
-| **Routes or pages with auth/navigation** | Playwright E2E tests in `tests/e2e/`. | **Hand off to `qa-test-to-playwright` skill** — it converts scenarios into Playwright specs using MCP browser tools to discover live locators. Use `playwright_browser_*` tools (snapshot, click, type, navigate) for interactive exploration. Validate with `npx playwright test` CLI. |
-| **E2E user flows (CRUD, role gates, empty states)** | Playwright E2E tests in `tests/e2e/`. | **Hand off to `qa-test-to-playwright` skill** for structured conversion. Use `qa-e2e-playwright` skill for running/debugging. Available tools: Playwright MCP browser tools for locator discovery and debugging, Playwright CLI (`npx playwright test`, `--headed`, `--debug`) for execution. |
+| **Routes or pages with auth/navigation** | Playwright E2E tests in `tests/e2e/`. | **Hand off to `qa-test-to-playwright` skill** — it converts scenarios into Playwright specs using MCP browser tools to discover live locators. Use `playwright_browser_*` tools (snapshot, click, type, navigate) for interactive exploration. Validate with `bunx playwright test` CLI. |
+| **E2E user flows (CRUD, role gates, empty states)** | Playwright E2E tests in `tests/e2e/`. | **Hand off to `qa-test-to-playwright` skill** for structured conversion. Use `qa-e2e-playwright` skill for running/debugging. Available tools: Playwright MCP browser tools for locator discovery and debugging, Playwright CLI (`bunx playwright test`, `--headed`, `--debug`) for execution. |
 
 ### 3.2 Read existing tests first
 
@@ -190,7 +190,7 @@ For tests that warrant their own dedicated workflow, load the relevant skill:
 - **Error states**: Test that auth failures, missing data, and invalid inputs produce the expected error.
 - **Edge cases**: Empty data, loading states, boundary values (per the ticket's Edge Cases section).
 - **No coverage regression**: Existing tests must still pass after adding new tests.
-- **For UI tests**: Verify with both `playwright_browser_snapshot` (interactive exploration) and `npx playwright test` (automated run).
+- **For UI tests**: Verify with both `playwright_browser_snapshot` (interactive exploration) and `bunx playwright test` (automated run).
 
 ### 3.5 Register in todo list
 
@@ -400,9 +400,9 @@ For each criterion about data display:
 Run these in order. Stop and fix if any fail:
 
 ```bash
-npm run check    # Biome format + lint
-npm run test     # Unit tests
-npm run build    # Production build (TS typecheck included)
+bun run check    # Oxfmt format + Oxlint
+bun run test     # Unit tests
+bun run build    # Production build
 ```
 
 ### 5.4 Edge Case Verification
@@ -432,9 +432,9 @@ When done, provide a summary:
 - `src/routes/<entity>page/index.tsx` — wired route
 
 **Validation:**
-- `npm run check` — ✅ passed
-- `npm run test` — ✅ passed
-- `npm run build` — ✅ passed
+- `bun run check` — ✅ passed
+- `bun run test` — ✅ passed
+- `bun run build` — ✅ passed
 
 **Acceptance criteria:** 8/8 verified ✅
 ```
@@ -450,6 +450,6 @@ Mark all items completed. If anything was deferred, create a follow-up note.
 - This skill is a workflow orchestrator — it drives the process but delegates technical patterns to sub-skills
 - If a prerequisite ticket is not done but is minor, ask the user whether to do it first or proceed
 - When in doubt about a pattern, read the actual codebase file rather than guessing
-- Run `npm run check` early and often — fix Biome issues immediately
+- Run `bun run check` early and often — fix Oxlint/Oxfmt issues immediately
 - Never commit unless explicitly asked by the user
-- The `_generated` Convex directory auto-updates on `npx convex deploy` — run this after adding new Convex functions
+- The `_generated` Convex directory auto-updates on `bunx convex deploy` — run this after adding new Convex functions

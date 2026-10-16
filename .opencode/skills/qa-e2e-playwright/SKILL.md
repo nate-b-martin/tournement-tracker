@@ -15,32 +15,32 @@ Execute, debug, and author Playwright E2E tests using both the **Playwright MCP 
 | Tool | When to use |
 |------|-------------|
 | **Playwright MCP browser tools** (`playwright_browser_*`) | Step through pages interactively, inspect elements, debug selectors, verify UI state during development |
-| **Playwright CLI** (`npx playwright test`) | Run full test suites, CI, generate reports, catch regressions |
+| **Playwright CLI** (`bunx playwright test`) | Run full test suites, CI, generate reports, catch regressions |
 
 ## Quick Reference
 
 ```bash
 # Run all E2E tests
-npm run test:e2e
+bun run test:e2e
 
 # Run with visible browser
-npm run test:e2e:headed
+bun run test:e2e:headed
 
 # Run with Playwright UI mode (timeline + selector picker)
-npm run test:e2e:ui
+bun run test:e2e:ui
 
 # Run a single test file
-npx playwright test tests/e2e/auth.spec.ts
+bunx playwright test tests/e2e/auth.spec.ts
 
 # Run tests matching a name pattern
-npx playwright test -g "sign in"            # tests with "sign in" in name
-npx playwright test -g "^(Authenticated)"   # tests in "Authenticated" describe block
+bunx playwright test -g "sign in"            # tests with "sign in" in name
+bunx playwright test -g "^(Authenticated)"   # tests in "Authenticated" describe block
 
 # Debug mode (step through with Playwright inspector)
-npx playwright test --debug
+bunx playwright test --debug
 
 # Generate last test results only
-npx playwright test --last-failed
+bunx playwright test --last-failed
 ```
 
 ## Interactive Debugging Workflow
@@ -182,7 +182,7 @@ test("admin creates a new team", async ({ page }) => {
 ### Using Trace Viewer
 ```bash
 # After running tests, open the HTML report
-npx playwright show-report
+bunx playwright show-report
 ```
 The trace viewer shows DOM snapshots, console logs, network requests, and timing for each action. Look for:
 - Unexpected navigation or redirect
@@ -217,13 +217,13 @@ tests/e2e/
 
 | Command | Use case |
 |---------|----------|
-| `npx playwright test` | Run all tests |
-| `npx playwright test --project=chromium` | Run a specific browser project |
-| `npx playwright test --workers=1` | Run tests serially (avoid auth conflicts) |
-| `npx playwright test --reporter=list` | Detailed test output per file |
-| `npx playwright test --retries=3` | Retry failed tests up to 3 times |
-| `npx playwright show-report` | Open HTML report after run |
-| `npx playwright test --grep @smoke` | Run tests tagged with @smoke |
+| `bunx playwright test` | Run all tests |
+| `bunx playwright test --project=chromium` | Run a specific browser project |
+| `bunx playwright test --workers=1` | Run tests serially (avoid auth conflicts) |
+| `bunx playwright test --reporter=list` | Detailed test output per file |
+| `bunx playwright test --retries=3` | Retry failed tests up to 3 times |
+| `bunx playwright show-report` | Open HTML report after run |
+| `bunx playwright test --grep @smoke` | Run tests tagged with @smoke |
 
 ## Environment Verification
 
@@ -245,7 +245,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
 
 ### Known Issues
 
-- **Orphaned Vite dev server**: Playwright's `webServer` config runs `npm run dev` and can leave the Vite dev server running after tests complete, spiking CPU. Kill it with `pkill -f "vite"` if it gets orphaned.
+- **Orphaned Vite dev server**: Playwright's `webServer` config runs `bun run dev` and can leave the Vite dev server running after tests complete, spiking CPU. Kill it with `pkill -f "vite"` if it gets orphaned.
 - **Missing CLERK_TEST_EMAIL**: The global setup (`tests/e2e/global-setup.ts:40`) requires `CLERK_TEST_EMAIL` and `CLERK_TEST_PASSWORD` in `.env.local`. The existing env vars `CLERK_EMAIL` and `ADMIN_CLERK_EMAIL` are NOT used by the global setup — add a `CLERK_TEST_EMAIL` entry explicitly.
 
 ## Resilient Test Pattern (Missing Preconditions)

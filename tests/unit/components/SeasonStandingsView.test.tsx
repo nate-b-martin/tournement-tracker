@@ -1,8 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
+
 import { SeasonStandingsView } from "@/components/SeasonStandingsView";
-import type { Doc } from "../../../convex/_generated/dataModel";
 import type { SeasonGameWithTeams } from "@/hooks/useSeasonGames";
+
+import type { Doc } from "../../../convex/_generated/dataModel";
 
 const mockTeams: Doc<"teams">[] = [
 	{
@@ -69,14 +71,31 @@ function makeGame(
 		homeScore,
 		awayScore,
 		status,
-		homeTeam: { ...mockTeams.find((t) => t._id === homeTeamId)!, name: homeName },
-		awayTeam: { ...mockTeams.find((t) => t._id === awayTeamId)!, name: awayName },
+		homeTeam: {
+			...mockTeams.find((t) => t._id === homeTeamId)!,
+			name: homeName,
+		},
+		awayTeam: {
+			...mockTeams.find((t) => t._id === awayTeamId)!,
+			name: awayName,
+		},
 	} as SeasonGameWithTeams;
 }
 
 describe("SeasonStandingsView", () => {
 	it("shows empty state when no completed games exist", () => {
-		const games = [makeGame("g1", "team-1", "team-2", undefined, undefined, "scheduled", "Diamond Divas", "Swing Sisters")];
+		const games = [
+			makeGame(
+				"g1",
+				"team-1",
+				"team-2",
+				undefined,
+				undefined,
+				"scheduled",
+				"Diamond Divas",
+				"Swing Sisters",
+			),
+		];
 
 		render(<SeasonStandingsView games={games} teams={mockTeams} />);
 
@@ -87,8 +106,26 @@ describe("SeasonStandingsView", () => {
 
 	it("renders standings with correct W/L/T from completed games", () => {
 		const games = [
-			makeGame("g1", "team-1", "team-2", 8, 3, "completed", "Diamond Divas", "Swing Sisters"),
-			makeGame("g2", "team-1", "team-3", 5, 5, "completed", "Diamond Divas", "Ball Busters"),
+			makeGame(
+				"g1",
+				"team-1",
+				"team-2",
+				8,
+				3,
+				"completed",
+				"Diamond Divas",
+				"Swing Sisters",
+			),
+			makeGame(
+				"g2",
+				"team-1",
+				"team-3",
+				5,
+				5,
+				"completed",
+				"Diamond Divas",
+				"Ball Busters",
+			),
 		];
 
 		render(<SeasonStandingsView games={games} teams={mockTeams} />);
@@ -113,8 +150,26 @@ describe("SeasonStandingsView", () => {
 
 	it("ignores scheduled games in standings", () => {
 		const games = [
-			makeGame("g1", "team-1", "team-2", 8, 3, "completed", "Diamond Divas", "Swing Sisters"),
-			makeGame("g2", "team-1", "team-3", undefined, undefined, "scheduled", "Diamond Divas", "Ball Busters"),
+			makeGame(
+				"g1",
+				"team-1",
+				"team-2",
+				8,
+				3,
+				"completed",
+				"Diamond Divas",
+				"Swing Sisters",
+			),
+			makeGame(
+				"g2",
+				"team-1",
+				"team-3",
+				undefined,
+				undefined,
+				"scheduled",
+				"Diamond Divas",
+				"Ball Busters",
+			),
 		];
 
 		render(<SeasonStandingsView games={games} teams={mockTeams} />);
@@ -124,8 +179,26 @@ describe("SeasonStandingsView", () => {
 
 	it("applies green highlight to top 2 rows", () => {
 		const games = [
-			makeGame("g1", "team-1", "team-2", 8, 3, "completed", "Diamond Divas", "Swing Sisters"),
-			makeGame("g2", "team-1", "team-3", 5, 5, "completed", "Diamond Divas", "Ball Busters"),
+			makeGame(
+				"g1",
+				"team-1",
+				"team-2",
+				8,
+				3,
+				"completed",
+				"Diamond Divas",
+				"Swing Sisters",
+			),
+			makeGame(
+				"g2",
+				"team-1",
+				"team-3",
+				5,
+				5,
+				"completed",
+				"Diamond Divas",
+				"Ball Busters",
+			),
 		];
 
 		const { container } = render(
@@ -139,7 +212,16 @@ describe("SeasonStandingsView", () => {
 
 	it("displays column headers", () => {
 		const games = [
-			makeGame("g1", "team-1", "team-2", 8, 3, "completed", "Diamond Divas", "Swing Sisters"),
+			makeGame(
+				"g1",
+				"team-1",
+				"team-2",
+				8,
+				3,
+				"completed",
+				"Diamond Divas",
+				"Swing Sisters",
+			),
 		];
 
 		render(<SeasonStandingsView games={games} teams={mockTeams} />);

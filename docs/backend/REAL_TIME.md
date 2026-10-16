@@ -150,7 +150,7 @@ For immediate feedback before the mutation completes, you'd need an optimistic u
 
 - Open browser DevTools → Network tab → WebSocket messages
 - Convex dev server logs re-executed queries
-- Use `npx convex dashboard` to view function execution logs
+- Use `bunx convex dashboard` to view function execution logs
 
 ## Known Limitations
 
