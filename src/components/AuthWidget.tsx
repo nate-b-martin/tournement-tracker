@@ -1,7 +1,9 @@
 import { SignInButton, UserButton, useClerk } from "@clerk/clerk-react";
 import { Eye, LogOut, Shield } from "lucide-react";
 import { toast } from "sonner";
+
 import { useAuth } from "@/hooks/useAuth";
+
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";

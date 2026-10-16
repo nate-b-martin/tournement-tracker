@@ -8,11 +8,14 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { toast } from "sonner";
+
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
 import { AuthErrorBoundary } from "../components/AuthErrorBoundary";
 import Header from "../components/Header";
 import ConvexClerkProvider from "../integrations/convex-clerk-provider";
+
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({

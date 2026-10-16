@@ -1,241 +1,253 @@
-import { mutation, query, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
+
+import { mutation, query, type QueryCtx } from "./_generated/server";
 
 const MAX_PAGE_SIZE = 100;
 const MAX_SEARCH_LENGTH = 100;
 
 async function isViewerAdmin(ctx: QueryCtx): Promise<boolean> {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) return false;
+	const identity = await ctx.auth.getUserIdentity();
+	if (!identity) return false;
 
-  const viewerProfile = await ctx.db
-    .query("userProfiles")
-    .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
-    .unique();
+	const viewerProfile = await ctx.db
+		.query("userProfiles")
+		.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+		.unique();
 
-  return viewerProfile?.role === "admin";
+	return viewerProfile?.role === "admin";
 }
 
 function sanitizeSearchTerm(search?: string): string {
-  return (search ?? "").trim().toLowerCase().slice(0, MAX_SEARCH_LENGTH);
+	return (search ?? "").trim().toLowerCase().slice(0, MAX_SEARCH_LENGTH);
 }
 
-function clampPagination(
-  pagination?: { pageIndex: number; pageSize: number },
-): { pageIndex: number; pageSize: number } | undefined {
-  if (!pagination) return undefined;
+function clampPagination(pagination?: {
+	pageIndex: number;
+	pageSize: number;
+}): { pageIndex: number; pageSize: number } | undefined {
+	if (!pagination) return undefined;
 
-  return {
-    pageIndex: Math.max(0, pagination.pageIndex),
-    pageSize: Math.min(Math.max(1, pagination.pageSize), MAX_PAGE_SIZE),
-  };
+	return {
+		pageIndex: Math.max(0, pagination.pageIndex),
+		pageSize: Math.min(Math.max(1, pagination.pageSize), MAX_PAGE_SIZE),
+	};
 }
 
 function redactTeam<T extends { coachEmail: string; coachPhone: string }>(
-  team: T,
-  adminView: boolean,
+	team: T,
+	adminView: boolean,
 ): T {
-  if (adminView) {
-    return team;
-  }
+	if (adminView) {
+		return team;
+	}
 
-  return {
-    ...team,
-    coachEmail: "",
-    coachPhone: "",
-  };
+	return {
+		...team,
+		coachEmail: "",
+		coachPhone: "",
+	};
 }
 
 const ListArgs = {
-  pagination: v.optional(
-    v.object({
-      pageIndex: v.number(),
-      pageSize: v.number(),
-    }),
-  ),
-  sorting: v.optional(
-    v.object({
-      field: v.string(),
-      direction: v.union(v.literal("asc"), v.literal("desc")),
-    }),
-  ),
-  filtering: v.optional(
-    v.object({
-      search: v.optional(v.string()),
-      status: v.optional(v.array(v.string())),
-      tournamentId: v.optional(v.id("tournaments")),
-    }),
-  ),
+	pagination: v.optional(
+		v.object({
+			pageIndex: v.number(),
+			pageSize: v.number(),
+		}),
+	),
+	sorting: v.optional(
+		v.object({
+			field: v.string(),
+			direction: v.union(v.literal("asc"), v.literal("desc")),
+		}),
+	),
+	filtering: v.optional(
+		v.object({
+			search: v.optional(v.string()),
+			status: v.optional(v.array(v.string())),
+			tournamentId: v.optional(v.id("tournaments")),
+		}),
+	),
 };
 
 export const count = query({
-  args: {},
-  handler: async (ctx): Promise<number> => {
-    const teams = await ctx.db.query("teams").collect();
-    return teams.length;
-  },
+	args: {},
+	handler: async (ctx): Promise<number> => {
+		const teams = await ctx.db.query("teams").collect();
+		return teams.length;
+	},
 });
 
 export const list = query({
-  args: ListArgs,
-  handler: async (ctx, args) => {
-    const adminView = await isViewerAdmin(ctx);
-    let teams = await ctx.db.query("teams").collect();
+	args: ListArgs,
+	handler: async (ctx, args) => {
+		const adminView = await isViewerAdmin(ctx);
+		let teams = await ctx.db.query("teams").collect();
 
-    // Apply tournamentId filter
-    if (args.filtering?.tournamentId) {
-      teams = teams.filter(
-        (team) => team.tournamentId === args.filtering!.tournamentId,
-      );
-    }
+		// Apply tournamentId filter
+		if (args.filtering?.tournamentId) {
+			teams = teams.filter(
+				(team) => team.tournamentId === args.filtering!.tournamentId,
+			);
+		}
 
-    // Apply text search filter
-    if (args.filtering?.search) {
-      const searchTerm = sanitizeSearchTerm(args.filtering.search);
-      if (!searchTerm) {
-        teams = [];
-      }
+		// Apply text search filter
+		if (args.filtering?.search) {
+			const searchTerm = sanitizeSearchTerm(args.filtering.search);
+			if (!searchTerm) {
+				teams = [];
+			}
 
-      teams = teams.filter(
-        (team) =>
-          team.name.toLowerCase().includes(searchTerm) ||
-          team.coachName.toLowerCase().includes(searchTerm) ||
-          (adminView && team.coachEmail && team.coachEmail.toLowerCase().includes(searchTerm)) ||
-          (team.organization &&
-            team.organization.toLowerCase().includes(searchTerm)),
-      );
-    }
+			teams = teams.filter(
+				(team) =>
+					team.name.toLowerCase().includes(searchTerm) ||
+					team.coachName.toLowerCase().includes(searchTerm) ||
+					(adminView &&
+						team.coachEmail &&
+						team.coachEmail.toLowerCase().includes(searchTerm)) ||
+					(team.organization &&
+						team.organization.toLowerCase().includes(searchTerm)),
+			);
+		}
 
-    // Apply status filter
-    if (args.filtering?.status && args.filtering.status.length > 0) {
-      teams = teams.filter((team) =>
-        args.filtering!.status!.includes(team.status),
-      );
-    }
+		// Apply status filter
+		if (args.filtering?.status && args.filtering.status.length > 0) {
+			teams = teams.filter((team) =>
+				args.filtering!.status!.includes(team.status),
+			);
+		}
 
-    // Apply sorting
-    if (args.sorting) {
-      teams.sort((a, b) => {
-        const { field, direction } = args.sorting!;
-        let aValue: any = a[field as keyof typeof a];
-        let bValue: any = b[field as keyof typeof b];
+		// Apply sorting
+		if (args.sorting) {
+			teams.sort((a, b) => {
+				const { field, direction } = args.sorting!;
+				let aValue: any = a[field as keyof typeof a];
+				let bValue: any = b[field as keyof typeof b];
 
-        // Handle undefined values
-        if (aValue === undefined && bValue === undefined) return 0;
-        if (aValue === undefined) return direction === "asc" ? 1 : -1;
-        if (bValue === undefined) return direction === "asc" ? -1 : 1;
+				// Handle undefined values
+				if (aValue === undefined && bValue === undefined) return 0;
+				if (aValue === undefined) return direction === "asc" ? 1 : -1;
+				if (bValue === undefined) return direction === "asc" ? -1 : 1;
 
-        if (aValue < bValue) return direction === "asc" ? -1 : 1;
-        if (aValue > bValue) return direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
+				if (aValue < bValue) return direction === "asc" ? -1 : 1;
+				if (aValue > bValue) return direction === "asc" ? 1 : -1;
+				return 0;
+			});
+		}
 
-    // Get total count before pagination
-    const totalCount = teams.length;
+		// Get total count before pagination
+		const totalCount = teams.length;
 
-// Fetch player counts for each team
-    const allPlayers = await ctx.db.query("players").collect();
-    const teamsWithCounts = teams.map((team) => {
-      const playerCount = allPlayers.filter(
-        (p) => p.teamId === team._id,
-      ).length;
-      return {
-        ...team,
-        playerCount,
-      };
-    });
-    teams = teamsWithCounts;
+		// Fetch player counts for each team
+		const allPlayers = await ctx.db.query("players").collect();
+		const teamsWithCounts = teams.map((team) => {
+			const playerCount = allPlayers.filter(
+				(p) => p.teamId === team._id,
+			).length;
+			return {
+				...team,
+				playerCount,
+			};
+		});
+		teams = teamsWithCounts;
 
-    // Apply pagination
-    const normalizedPagination = clampPagination(args.pagination);
-    if (normalizedPagination) {
-      const { pageIndex, pageSize } = normalizedPagination;
-      const startIndex = pageIndex * pageSize;
-      teams = teams.slice(startIndex, startIndex + pageSize);
-    }
+		// Apply pagination
+		const normalizedPagination = clampPagination(args.pagination);
+		if (normalizedPagination) {
+			const { pageIndex, pageSize } = normalizedPagination;
+			const startIndex = pageIndex * pageSize;
+			teams = teams.slice(startIndex, startIndex + pageSize);
+		}
 
-    const safeTeams = teams.map((team) => redactTeam(team, adminView));
+		const safeTeams = teams.map((team) => redactTeam(team, adminView));
 
-    return {
-      teams: safeTeams,
-      totalCount,
-    };
-  },
+		return {
+			teams: safeTeams,
+			totalCount,
+		};
+	},
 });
 
 export const create = mutation({
-  args: {
-    tournamentId: v.id("tournaments"),
-    name: v.string(),
-    description: v.optional(v.string()),
-    coachName: v.string(),
-    coachEmail: v.string(),
-    coachPhone: v.string(),
-    city: v.optional(v.string()),
-    homeField: v.optional(v.string()),
-    organization: v.optional(v.string()),
-    teamAgeGroup: v.optional(v.string()),
-    status: v.optional(
-      v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended")),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+	args: {
+		tournamentId: v.id("tournaments"),
+		name: v.string(),
+		description: v.optional(v.string()),
+		coachName: v.string(),
+		coachEmail: v.string(),
+		coachPhone: v.string(),
+		city: v.optional(v.string()),
+		homeField: v.optional(v.string()),
+		organization: v.optional(v.string()),
+		teamAgeGroup: v.optional(v.string()),
+		status: v.optional(
+			v.union(
+				v.literal("active"),
+				v.literal("inactive"),
+				v.literal("suspended"),
+			),
+		),
+	},
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) throw new Error("Unauthorized");
 
-    return await ctx.db.insert("teams", {
-      ...args,
-      status: args.status ?? "active",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-  },
+		return await ctx.db.insert("teams", {
+			...args,
+			status: args.status ?? "active",
+			createdAt: Date.now(),
+			updatedAt: Date.now(),
+		});
+	},
 });
 
 export const update = mutation({
-  args: {
-    id: v.id("teams"),
-    tournamentId: v.optional(v.id("tournaments")),
-    name: v.optional(v.string()),
-    description: v.optional(v.string()),
-    coachName: v.optional(v.string()),
-    coachEmail: v.optional(v.string()),
-    coachPhone: v.optional(v.string()),
-    city: v.optional(v.string()),
-    homeField: v.optional(v.string()),
-    organization: v.optional(v.string()),
-    teamAgeGroup: v.optional(v.string()),
-    status: v.optional(
-      v.union(v.literal("active"), v.literal("inactive"), v.literal("suspended")),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+	args: {
+		id: v.id("teams"),
+		tournamentId: v.optional(v.id("tournaments")),
+		name: v.optional(v.string()),
+		description: v.optional(v.string()),
+		coachName: v.optional(v.string()),
+		coachEmail: v.optional(v.string()),
+		coachPhone: v.optional(v.string()),
+		city: v.optional(v.string()),
+		homeField: v.optional(v.string()),
+		organization: v.optional(v.string()),
+		teamAgeGroup: v.optional(v.string()),
+		status: v.optional(
+			v.union(
+				v.literal("active"),
+				v.literal("inactive"),
+				v.literal("suspended"),
+			),
+		),
+	},
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) throw new Error("Unauthorized");
 
-    const { id, ...fields } = args;
-    await ctx.db.patch(id, {
-      ...fields,
-      updatedAt: Date.now(),
-    });
-  },
+		const { id, ...fields } = args;
+		await ctx.db.patch(id, {
+			...fields,
+			updatedAt: Date.now(),
+		});
+	},
 });
 
 export const remove = mutation({
-  args: { id: v.id("teams") },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
+	args: { id: v.id("teams") },
+	handler: async (ctx, args) => {
+		const identity = await ctx.auth.getUserIdentity();
+		if (!identity) throw new Error("Unauthorized");
 
-    // Unlink all players on this team
-    const players = await ctx.db.query("players").collect();
+		// Unlink all players on this team
+		const players = await ctx.db.query("players").collect();
 
-    const teamPlayers = players.filter((p) => p.teamId === args.id);
-    for (const player of teamPlayers) {
-      await ctx.db.patch(player._id, { teamId: undefined });
-    }
+		const teamPlayers = players.filter((p) => p.teamId === args.id);
+		for (const player of teamPlayers) {
+			await ctx.db.patch(player._id, { teamId: undefined });
+		}
 
-    await ctx.db.delete(args.id);
-  },
+		await ctx.db.delete(args.id);
+	},
 });

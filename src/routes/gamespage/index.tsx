@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+
 import { GamesTable } from "@/components/GamesTable";
 import { useAuth } from "@/hooks/useAuth";
 

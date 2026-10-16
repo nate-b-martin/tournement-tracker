@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -9,11 +10,12 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import type { GameWithTeams } from "@/hooks/useGames";
 import {
 	useGameStatsByGame,
 	useGameStatsMutations,
 } from "@/hooks/useGameStats";
-import type { GameWithTeams } from "@/hooks/useGames";
+
 import { api } from "../../convex/_generated/api";
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 

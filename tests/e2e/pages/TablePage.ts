@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+
 import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
 
 export interface TablePageConfig {
@@ -18,7 +19,10 @@ export interface TablePageConfig {
  * common toolbar (search, status filter chips, clear filters) and table.
  */
 export class TablePage {
-	constructor(protected page: Page, protected config: TablePageConfig) {}
+	constructor(
+		protected page: Page,
+		protected config: TablePageConfig,
+	) {}
 
 	get heading() {
 		return this.page.getByRole("heading", { name: this.config.headingPattern });

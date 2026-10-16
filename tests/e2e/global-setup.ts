@@ -1,10 +1,11 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 import { createClerkClient } from "@clerk/backend";
 import { clerk, clerkSetup } from "@clerk/testing/playwright";
 import { test as setup } from "@playwright/test";
 import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 
 // Load environment variables from .env.local (if it exists)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -12,7 +13,9 @@ const envLocalPath = path.resolve(__dirname, "../../.env.local");
 if (fs.existsSync(envLocalPath)) {
 	dotenv.config({ path: envLocalPath });
 } else {
-	console.log("ℹ️  .env.local not found (expected in CI), using process.env from GitHub Actions");
+	console.log(
+		"ℹ️  .env.local not found (expected in CI), using process.env from GitHub Actions",
+	);
 }
 
 const CLERK_PUBLISHABLE_KEY = process.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -42,12 +45,15 @@ async function ensureTestUserExists(): Promise<void> {
 			return;
 		}
 	} catch (error) {
-		console.warn("Failed to query Clerk test user; will attempt to create:", error);
+		console.warn(
+			"Failed to query Clerk test user; will attempt to create:",
+			error,
+		);
 	}
 
 	await client.users.createUser({
 		emailAddress: [CLERK_TEST_EMAIL],
-		...((CLERK_TEST_PASSWORD && { password: CLERK_TEST_PASSWORD }) ?? {}),
+		...(CLERK_TEST_PASSWORD && { password: CLERK_TEST_PASSWORD }),
 		firstName: "E2E",
 		lastName: "Tester",
 		skipPasswordRequirement: !CLERK_TEST_PASSWORD,
@@ -103,7 +109,8 @@ setup("authenticate user and save auth state", async ({ page, context }) => {
 		await clerk.loaded({ page });
 		await page.waitForFunction(
 			() => {
-				const clerk = (window as unknown as { Clerk: Record<string, unknown> }).Clerk;
+				const clerk = (window as unknown as { Clerk: Record<string, unknown> })
+					.Clerk;
 				return Boolean(clerk?.loaded && (clerk?.session || clerk?.user));
 			},
 			undefined,

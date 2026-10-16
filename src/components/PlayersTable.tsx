@@ -10,6 +10,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { toast } from "sonner";
+
 import {
 	Select,
 	SelectContent,
@@ -18,15 +19,16 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import {
-	type PlayerStatsWithTeam,
-	usePlayerStats,
-} from "@/hooks/usePlayerStats";
-import {
 	type PlayerListOptions,
 	type PlayerWithTeam,
 	usePlayers,
 } from "@/hooks/usePlayers";
+import {
+	type PlayerStatsWithTeam,
+	usePlayerStats,
+} from "@/hooks/usePlayerStats";
 import { cn } from "@/lib/utils";
+
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { ConfirmDelete } from "./ConfirmDelete";

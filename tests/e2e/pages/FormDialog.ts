@@ -17,18 +17,25 @@ export interface FormDialogConfig {
  * + submit). Feature pages extend this and add their specific form fields.
  */
 export class FormDialog {
-	constructor(protected page: Page, protected config: FormDialogConfig) {}
+	constructor(
+		protected page: Page,
+		protected config: FormDialogConfig,
+	) {}
 
 	get dialog() {
 		return this.page.getByRole("dialog");
 	}
 
 	get createTitle() {
-		return this.page.getByRole("heading", { name: this.config.createTitlePattern });
+		return this.page.getByRole("heading", {
+			name: this.config.createTitlePattern,
+		});
 	}
 
 	get editTitle() {
-		return this.page.getByRole("heading", { name: this.config.editTitlePattern });
+		return this.page.getByRole("heading", {
+			name: this.config.editTitlePattern,
+		});
 	}
 
 	get cancelButton() {

@@ -109,7 +109,8 @@ test.describe("Player Details", () => {
 			// Stats area renders (empty state or table)
 			const statsArea = page.getByText(/game stats recorded|^loading stats/i);
 			const table = page.getByRole("table");
-			const hasStatsContent = (await statsArea.count()) > 0 ||
+			const hasStatsContent =
+				(await statsArea.count()) > 0 ||
 				(await table.isVisible().catch(() => false));
 			expect(hasStatsContent).toBe(true);
 		});

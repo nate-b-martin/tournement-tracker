@@ -20,7 +20,9 @@ test.describe("Tournaments Page", () => {
 			await tournamentsPage.goto();
 			await tournamentsPage.waitForPageLoad();
 			await expect(tournamentsPage.heading).toBeVisible();
-			await expect(page.getByText(/create and manage your tournaments/i)).toBeVisible();
+			await expect(
+				page.getByText(/create and manage your tournaments/i),
+			).toBeVisible();
 		});
 
 		test("admin sees the New Tournament button", async ({ page }) => {
@@ -68,7 +70,9 @@ test.describe("Tournaments Page", () => {
 			await tournamentsPage.search("Summer");
 			await page.waitForTimeout(300);
 
-			if (await tournamentsPage.clearFiltersButton.isVisible().catch(() => false)) {
+			if (
+				await tournamentsPage.clearFiltersButton.isVisible().catch(() => false)
+			) {
 				await tournamentsPage.clearFilters();
 				await page.waitForTimeout(300);
 				await expect(tournamentsPage.searchInput).toHaveValue("");
@@ -80,7 +84,10 @@ test.describe("Tournaments Page", () => {
 			await tournamentsPage.goto();
 			await tournamentsPage.waitForPageLoad();
 
-			const link = page.getByRole("link").filter({ has: page.locator("text=") }).first();
+			const link = page
+				.getByRole("link")
+				.filter({ has: page.locator("text=") })
+				.first();
 			if (await link.isVisible().catch(() => false)) {
 				const href = await link.getAttribute("href").catch(() => null);
 				if (href) {
@@ -100,7 +107,9 @@ test.describe("Tournaments Page", () => {
 			await tournamentsPage.waitForPageLoad();
 
 			await tournamentsPage.createTournament(tournamentName, "Baseball");
-			await expect(tournamentsPage.successToast).toBeVisible({ timeout: 10000 });
+			await expect(tournamentsPage.successToast).toBeVisible({
+				timeout: 10000,
+			});
 			await expect(
 				tournamentsPage.tournamentLink(tournamentName),
 			).toBeVisible();
@@ -152,7 +161,9 @@ test.describe("Tournaments Page", () => {
 			await tournamentsPage.nameInput.fill(`${tournamentName} Updated`);
 			await tournamentsPage.saveChangesButton.click();
 
-			await expect(tournamentsPage.successToast).toBeVisible({ timeout: 10000 });
+			await expect(tournamentsPage.successToast).toBeVisible({
+				timeout: 10000,
+			});
 		});
 
 		test("deletes an existing tournament", async ({ page }) => {
@@ -160,7 +171,9 @@ test.describe("Tournaments Page", () => {
 			await tournamentsPage.goto();
 			await tournamentsPage.waitForPageLoad();
 
-			const deleteButton = tournamentsPage.deleteButton(`${tournamentName} Updated`);
+			const deleteButton = tournamentsPage.deleteButton(
+				`${tournamentName} Updated`,
+			);
 			if (!(await deleteButton.isVisible().catch(() => false))) {
 				test.skip(true, "Tournament not available to delete");
 			}

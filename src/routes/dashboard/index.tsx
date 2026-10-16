@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { Wand2 } from "lucide-react";
 import { useState } from "react";
+
 import { PlayersTable } from "@/components/PlayersTable";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SetupWizard } from "@/components/SetupWizard";
@@ -15,6 +16,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
+
 import { api } from "../../../convex/_generated/api";
 
 export const Route = createFileRoute("/dashboard/")({

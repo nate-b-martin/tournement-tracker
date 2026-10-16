@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Home, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
+
 import { useAuth } from "@/hooks/useAuth";
+
 import { AuthWidget } from "./AuthWidget";
 
 // Custom hook for media queries
@@ -27,7 +29,9 @@ const SMALL_SCREEN_BREAKPOINT = 768;
 
 export default function Header() {
 	const [isOpen, setIsOpen] = useState(false);
-	const isSmallScreen = useMediaQuery(`(max-width: ${SMALL_SCREEN_BREAKPOINT}px)`);
+	const isSmallScreen = useMediaQuery(
+		`(max-width: ${SMALL_SCREEN_BREAKPOINT}px)`,
+	);
 	useAuth();
 
 	return (
@@ -59,32 +63,53 @@ export default function Header() {
 				{/* Horizontal navigation links - shown only on large screens */}
 				{!isSmallScreen && (
 					<nav className="ml-auto flex items-center gap-1">
-						<Link to="/" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+						<Link
+							to="/"
+							className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+						>
 							<Home size={18} />
 							<span>Home</span>
 						</Link>
 
-						<Link to="/dashboard" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+						<Link
+							to="/dashboard"
+							className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+						>
 							<span>Dashboard</span>
 						</Link>
 
-						<Link to="/playerspage" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+						<Link
+							to="/playerspage"
+							className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+						>
 							<span>Players</span>
 						</Link>
 
-						<Link to="/teamspage" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+						<Link
+							to="/teamspage"
+							className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+						>
 							<span>Teams</span>
 						</Link>
 
-						<Link to="/tournamentspage" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+						<Link
+							to="/tournamentspage"
+							className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+						>
 							<span>Tournaments</span>
 						</Link>
 
-						<Link to="/gamespage" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+						<Link
+							to="/gamespage"
+							className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+						>
 							<span>Games</span>
 						</Link>
 
-						<Link to="/seasonspage" className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+						<Link
+							to="/seasonspage"
+							className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-700 transition-colors text-sm"
+						>
 							<span>Seasons</span>
 						</Link>
 					</nav>

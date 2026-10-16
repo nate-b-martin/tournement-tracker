@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { SeasonsTable } from "@/components/SeasonsTable";
 

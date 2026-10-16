@@ -1,5 +1,6 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+
+import { mutation, query } from "./_generated/server";
 
 function nextPowerOf2(n: number): number {
 	let p = 1;
@@ -54,9 +55,7 @@ export const list = query({
 		}
 
 		if (args.filtering?.status && args.filtering.status.length > 0) {
-			games = games.filter((g) =>
-				args.filtering!.status!.includes(g.status),
-			);
+			games = games.filter((g) => args.filtering!.status!.includes(g.status));
 		}
 
 		if (args.filtering?.round !== undefined) {
@@ -248,9 +247,7 @@ export const generateBracket = mutation({
 		const season = await ctx.db.get(args.seasonId);
 		if (!season) throw new Error("Season not found");
 
-		const existingTournamentGames = await ctx.db
-			.query("games")
-			.collect();
+		const existingTournamentGames = await ctx.db.query("games").collect();
 		const gamesToDelete = existingTournamentGames.filter(
 			(g) => g.tournamentId === args.tournamentId,
 		);
@@ -268,9 +265,7 @@ export const generateBracket = mutation({
 			.withIndex("by_seasonId", (q) => q.eq("seasonId", args.seasonId))
 			.collect();
 
-		const completedGames = seasonGames.filter(
-			(g) => g.status === "completed",
-		);
+		const completedGames = seasonGames.filter((g) => g.status === "completed");
 		if (completedGames.length === 0) {
 			throw new Error(
 				"No completed games yet. Standings cannot be determined.",
@@ -332,10 +327,7 @@ export const generateBracket = mutation({
 				return b.pointsFor - a.pointsFor;
 			});
 
-		let playoffCount = Math.min(
-			args.playoffTeamsCount,
-			sortedTeams.length,
-		);
+		let playoffCount = Math.min(args.playoffTeamsCount, sortedTeams.length);
 		if (playoffCount < 2) {
 			throw new Error("At least 2 teams needed for playoffs");
 		}
@@ -354,9 +346,7 @@ export const generateBracket = mutation({
 		}
 
 		const MS_PER_DAY = 86400000;
-		const seasonGameDays = season.gameDays?.length
-			? season.gameDays
-			: [1, 3];
+		const seasonGameDays = season.gameDays?.length ? season.gameDays : [1, 3];
 		const startDayOfWeek = new Date(season.startDate).getDay();
 		const playoffDates: number[] = [];
 		const seasonEndDate = season.endDate;
@@ -401,8 +391,7 @@ export const generateBracket = mutation({
 							gameNumber: gameNumber++,
 							team1Id: team1.teamId as any,
 							team2Id: team2.teamId as any,
-							scheduledTime:
-								playoffDates[dateIndex % playoffDates.length],
+							scheduledTime: playoffDates[dateIndex % playoffDates.length],
 							status: "scheduled",
 						});
 						dateIndex++;
@@ -416,8 +405,7 @@ export const generateBracket = mutation({
 						tournamentId: args.tournamentId,
 						round: roundNum,
 						gameNumber: gameNumber++,
-						scheduledTime:
-							playoffDates[dateIndex % playoffDates.length],
+						scheduledTime: playoffDates[dateIndex % playoffDates.length],
 						status: "scheduled",
 					});
 					dateIndex++;

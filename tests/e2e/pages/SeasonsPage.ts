@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+
 import { TablePage } from "./TablePage";
 
 export class SeasonsPage extends TablePage {

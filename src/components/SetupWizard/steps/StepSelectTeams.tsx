@@ -1,8 +1,10 @@
 import { useQuery } from "convex/react";
 import { useId, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import { api } from "../../../../convex/_generated/api";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 import { useWizard } from "../SetupWizardContext";

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+
 import { TeamsTable } from "@/components/TeamsTable";
 import { ViewOnlyAlert } from "@/components/ViewOnlyAlert";
 import { useAuth } from "@/hooks/useAuth";

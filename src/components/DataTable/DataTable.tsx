@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import { useCallback, useMemo } from "react";
+
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { usePagination } from "@/hooks/usePagination";
 import { cn } from "@/lib/utils";
+
 import { PaginationControls } from "../PaginationControls";
 import { ActionsCell } from "./ActionsCell";
 import type { ColumnDef, DataTableProps } from "./types";

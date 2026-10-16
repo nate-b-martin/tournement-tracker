@@ -2,6 +2,7 @@ import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { useEffect, useState } from "react";
+
 import { getConvexUrl } from "@/lib/convex-url";
 
 const CONVEX_URL = getConvexUrl();

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+
 import { DataTable } from "@/components/DataTable/DataTable";
 import type { ColumnDef } from "@/components/DataTable/types";
 import { SeasonDialog } from "@/components/SeasonDialog";
@@ -8,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { SeasonListOptions } from "@/hooks/useSeasons";
 import { useSeasons } from "@/hooks/useSeasons";
 import { cn } from "@/lib/utils";
+
 import type { Doc } from "../../convex/_generated/dataModel";
 
 type Season = Doc<"seasons">;
