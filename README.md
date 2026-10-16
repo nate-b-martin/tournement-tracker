@@ -55,9 +55,24 @@ npm run dev
 
 **Note:** The Convex dev server must be running alongside `npm run dev` for the application to work.
 
+### One-Shot Bootstrap (Docker)
+
+Bring the whole containerized stack up and wire the Convex CLI to it in a single command:
+
+```bash
+./scripts/docker-up.sh
+```
+
+The script starts `convex-backend`, `convex-dashboard`, and `frontend` (`docker compose up -d`),
+waits for the backend to report healthy, writes `CONVEX_SELF_HOSTED_URL` /
+`CONVEX_SELF_HOSTED_ADMIN_KEY` into `.env.local`, pushes the Convex functions, and runs the seed
+mutation. It is idempotent — safe to re-run against an already-running stack, and it only ever
+rewrites its own two lines in `.env.local`. The manual equivalents are documented below and in the
+[Docker guide](docs/DOCKER_GUIDE.md#quick-start).
+
 ### Self-Hosted Backend (Docker)
 
-Instead of `npx convex dev`, the Convex backend can run in Docker with its default **SQLite** storage persisted in a volume:
+Instead of `npx convex dev`, the Convex backend can run in Docker with its default **SQLite** storage persisted in a volume. See the [Docker guide](docs/DOCKER_GUIDE.md#convex-backend) for complete details.
 
 ```bash
 cp docker-compose.env.example .env
@@ -73,11 +88,11 @@ docker compose up -d convex-dashboard # optional dashboard at http://127.0.0.1:6
   Previously issued keys keep working across restarts as long as `INSTANCE_NAME` and
   `INSTANCE_SECRET` stay unchanged; changing `INSTANCE_SECRET` invalidates all of them.
 
-> **One backend at a time.** The containerized backend and `npx convex dev` both bind port `3210` and hold separate data stores. Run one or the other — never both. Full self-hosting ops documentation (env template, image pinning/migrations, security) is tracked in the self-hosting feature tickets.
+> **One backend at a time.** The containerized backend and `npx convex dev` both bind port `3210` and hold separate data stores. Run one or the other — never both.
 
 ### Self-Hosted Frontend (Docker)
 
-The TanStack Start app also ships as a production image that serves server-rendered HTML on port `3000`:
+The TanStack Start app also ships as a production image that serves server-rendered HTML on port `3000`. See the [Docker guide](docs/DOCKER_GUIDE.md#frontend) for complete details:
 
 ```bash
 docker compose up -d --build          # backend + frontend
@@ -87,14 +102,13 @@ docker compose up -d convex-dashboard # optional
 Then open <http://localhost:3000>.
 
 - The `frontend` service waits for `convex-backend` to become healthy before starting.
-- Vite inlines `VITE_*` variables **at build time**, so the Convex URL must be one the
+- **Vite `VITE_*` variables are inlined at build time** — the Convex URL must be one the
   *browser* can reach — `http://localhost:3210`, never the compose service name
   `convex-backend:3210`. Change it via `VITE_CONVEX_URL` in `.env`, then rebuild
-  (`docker compose build frontend`); restarting is not enough.
-- Server-side rendering resolves its own Convex URL from the runtime env var
-  `CONVEX_SSR_URL` (default `http://convex-backend:3210`), because SSR runs inside the
-  container where `localhost` is the container itself. It is read from `process.env`, so it
-  never lands in the client bundle and a restart — not a rebuild — is enough to change it.
+  (`docker compose build frontend`); a simple restart is NOT enough.
+- **SSR `CONVEX_SSR_URL` is read at runtime from `process.env`** — since SSR runs inside the
+  container where `localhost` is the container itself, the default `http://convex-backend:3210`
+  is correct inside the container. A restart (without rebuild) is enough to change it.
 - `npm run start` runs the same server locally without Docker.
 
 ### Seed Data
