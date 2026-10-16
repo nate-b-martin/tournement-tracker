@@ -1,16 +1,16 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock("@tanstack/react-router", () => ({
 	Link: ({
 		children,
 		to,
-	}: { children: React.ReactNode; to: string; params: Record<string, string> }) => (
-		<a
-			href={to}
-			onClick={(e) => e.preventDefault()}
-			data-testid="router-link"
-		>
+	}: {
+		children: React.ReactNode;
+		to: string;
+		params: Record<string, string>;
+	}) => (
+		<a href={to} onClick={(e) => e.preventDefault()} data-testid="router-link">
 			{children}
 		</a>
 	),
@@ -22,9 +22,9 @@ vi.mock("@/hooks/useTournaments", () => ({
 }));
 
 import { TournamentTable } from "@/components/TournamentTable";
-import type { Doc } from "../../../convex/_generated/dataModel";
-
 import { useTournaments } from "@/hooks/useTournaments";
+
+import type { Doc } from "../../../convex/_generated/dataModel";
 
 type Tournament = Doc<"tournaments">;
 
@@ -231,9 +231,7 @@ describe("TournamentTable", () => {
 
 		render(<TournamentTable isAdmin={false} />);
 
-		expect(
-			screen.getByPlaceholderText("Search tournaments..."),
-		).toBeTruthy();
+		expect(screen.getByPlaceholderText("Search tournaments...")).toBeTruthy();
 		expect(screen.getByRole("button", { name: "All Statuses" })).toBeTruthy();
 		expect(screen.getByRole("button", { name: "Draft" })).toBeTruthy();
 		expect(screen.getByRole("button", { name: "Open" })).toBeTruthy();

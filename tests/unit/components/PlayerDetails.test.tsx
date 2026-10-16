@@ -1,6 +1,8 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
+
 import { PlayerDetails } from "@/components/PlayerDetails";
+
 import type { Id } from "../../../convex/_generated/dataModel";
 
 const mockUseAuth = vi.fn();

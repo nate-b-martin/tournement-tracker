@@ -6,6 +6,7 @@ import {
 import { useQuery } from "convex/react";
 import { ArrowLeft, Edit, Trophy, Users } from "lucide-react";
 import { useState } from "react";
+
 import { SeasonDialog } from "@/components/SeasonDialog";
 import { SeasonScheduleView } from "@/components/SeasonScheduleView";
 import { SeasonStandingsView } from "@/components/SeasonStandingsView";
@@ -18,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSeasonGames } from "@/hooks/useSeasonGames";
 import { useSeasonById } from "@/hooks/useSeasons";
 import { useSeasonTeams } from "@/hooks/useSeasonTeams";
+
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 

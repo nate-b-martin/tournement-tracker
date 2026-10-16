@@ -13,26 +13,20 @@ test.describe("Authentication", () => {
 			await expect(authPage.signInButton).toBeVisible();
 		});
 
-		test(
-			"redirects from protected route when signed out",
-			async ({ page }) => {
-				const protectedPage = new ProtectedPage(page);
-				await protectedPage.goto();
-				await protectedPage.waitForAccessDenied();
-			},
-		);
+		test("redirects from protected route when signed out", async ({ page }) => {
+			const protectedPage = new ProtectedPage(page);
+			await protectedPage.goto();
+			await protectedPage.waitForAccessDenied();
+		});
 
-		test(
-			"shows access denied message on protected route",
-			async ({ page }) => {
-				const protectedPage = new ProtectedPage(page);
-				await protectedPage.goto();
-				await protectedPage.waitForAccessDenied();
-				await expect(protectedPage.accessDeniedTitle).toContainText(
-					/authentication required/i,
-				);
-			},
-		);
+		test("shows access denied message on protected route", async ({ page }) => {
+			const protectedPage = new ProtectedPage(page);
+			await protectedPage.goto();
+			await protectedPage.waitForAccessDenied();
+			await expect(protectedPage.accessDeniedTitle).toContainText(
+				/authentication required/i,
+			);
+		});
 	});
 
 	test.describe("Authenticated", () => {

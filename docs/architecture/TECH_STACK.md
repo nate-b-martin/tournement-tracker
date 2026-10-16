@@ -64,8 +64,8 @@
 |------|---------|
 | `package.json` | Dependencies, scripts |
 | `tsconfig.json` | Strict TS, `@/*` alias to `src/` |
-| `vite.config.ts` | Vite + Vitest + Tailwind + React + path aliases |
-| `biome.json` | Formatter/linter settings |
+| `vite.config.ts` | Vite+ (Vite 8/Rolldown), Vitest 5, Oxlint, Oxfmt, Tailwind, React |
+| `.node-version` | Node.js version provisioned by Vite+ (shared with CI and Docker) |
 | `playwright.config.ts` | E2E test config (Chromium, port 3000) |
 | `components.json` | shadcn/ui config (new-york, zinc base) |
 | `.env.local` | Local env vars (Convex URL, Clerk keys) |

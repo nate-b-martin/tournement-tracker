@@ -12,19 +12,19 @@ TanStack Tournament Tracker is a React + TypeScript application using TanStack R
 
 ## Build Commands
 
-- `npm run dev` - Start development server on port 3000
-- `npm run build` - Build for production
-- `npm run test` - Run all tests with Vitest
-- `npm run lint` - Run Biome linter
-- `npm run format` - Format code with Biome
-- `npm run check` - Run Biome format + lint
+- `bun run dev` - Start dev server on port 3000 (`vp dev`)
+- `bun run build` - Build for production (`vp build`)
+- `bun run test` - Run all unit tests (`vp test run`, Vitest 5)
+- `bun run lint` - Lint with Oxlint (`vp lint`)
+- `bun run format` - Format with Oxfmt (`vp fmt`)
+- `bun run check` - Format + lint check (`vp check`)
 
 ## Code Style
 
 ### Formatting & Linting
-- Use Biome for formatting (tab indentation, double quotes)
-- Run `npm run check` before committing
-- Biome organizes imports automatically
+- Oxfmt formats and Oxlint lints, both configured in `vite.config.ts` (tab indentation, double quotes, 80-column width)
+- Run `bun run check` before committing
+- Imports are sorted automatically
 
 ### Import Organization
 Order imports as follows:
@@ -58,7 +58,7 @@ Order imports as follows:
 ### shadcn/ui Components
 - Use shadcn components for UI elements: `bunx shadcn@latest add <component>`
 - Common components: Button, Card, Table, Badge, Dialog, DropdownMenu, Input, Form
-- Run `npm run format` after adding new components
+- Run `bun run format` after adding new components
 - Use `cn()` utility from `@/lib/utils` for class merging
 
 ### TailwindCSS
@@ -121,12 +121,12 @@ if (!isAdmin) return <AccessDenied />;
 ## Feature Development Workflow
 
 1. Check relevant design doc in `src/design/` before implementing
-2. Run `npm run check` to verify formatting/linting
-3. Run `npm run test` for affected files
-4. Build with `npm run build` before submitting PRs
+2. Run `bun run check` to verify formatting/linting
+3. Run `bun run test` for affected files
+4. Build with `bun run build` before submitting PRs
 
 ## Testing
 
-- Run tests with `npm run test`
+- Run tests with `bun run test`
 - Mock Convex API with `src/mocks/` directory
 - Use Vitest + React Testing Library for component tests

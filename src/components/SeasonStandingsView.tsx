@@ -1,6 +1,8 @@
 import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import type { SeasonGameWithTeams } from "@/hooks/useSeasonGames";
+
 import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { GenerateBracketDialog } from "./GenerateBracketDialog";
 

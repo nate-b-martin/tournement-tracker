@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
+
 import { DataTable } from "@/components/DataTable/DataTable";
 import type { ColumnDef } from "@/components/DataTable/types";
 
@@ -103,9 +104,7 @@ describe("DataTable", () => {
 						onChange: onSearchChange,
 						placeholder: "Search players...",
 					},
-					filters: [
-						{ label: "Active", active: true, onClick: onFilterClick },
-					],
+					filters: [{ label: "Active", active: true, onClick: onFilterClick }],
 				}}
 			/>,
 		);
@@ -148,7 +147,9 @@ describe("DataTable", () => {
 		fireEvent.click(deleteButtons[0]);
 
 		expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ _id: "1" }));
-		expect(onDelete).toHaveBeenCalledWith(expect.objectContaining({ _id: "1" }));
+		expect(onDelete).toHaveBeenCalledWith(
+			expect.objectContaining({ _id: "1" }),
+		);
 	});
 
 	describe("Filter chips rendering", () => {
@@ -186,9 +187,7 @@ describe("DataTable", () => {
 					onPaginationChange={vi.fn()}
 					itemName="players"
 					toolbar={{
-						filters: [
-							{ label: "Active", active: true, onClick: vi.fn() },
-						],
+						filters: [{ label: "Active", active: true, onClick: vi.fn() }],
 					}}
 				/>,
 			);
@@ -208,9 +207,7 @@ describe("DataTable", () => {
 					onPaginationChange={vi.fn()}
 					itemName="players"
 					toolbar={{
-						filters: [
-							{ label: "Inactive", active: false, onClick: vi.fn() },
-						],
+						filters: [{ label: "Inactive", active: false, onClick: vi.fn() }],
 					}}
 				/>,
 			);
@@ -600,7 +597,9 @@ describe("DataTable", () => {
 				/>,
 			);
 
-			expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
+			expect(
+				screen.getByRole("button", { name: "Clear filters" }),
+			).toBeTruthy();
 		});
 
 		it("renders all toolbar sections together without search", () => {

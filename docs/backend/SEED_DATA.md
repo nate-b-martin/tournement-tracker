@@ -9,7 +9,7 @@ The seed function populates the database with test data for development and test
 ## Running
 
 ```bash
-npx convex seed
+bunx convex seed
 ```
 
 ## Data Insertion Order
@@ -93,7 +93,7 @@ Note: Titans and Legends players have **no stats** since their game is still sch
 ## Clearing Seed Data
 
 ```bash
-npx convex dashboard
+bunx convex dashboard
 # Navigate to Data tab → Click "clearAllData" mutation → Run
 ```
 

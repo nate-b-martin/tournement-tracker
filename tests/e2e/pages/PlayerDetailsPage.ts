@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+
 import { TabbedDetailPage } from "./TabbedDetailPage";
 
 export class PlayerDetailsPage extends TabbedDetailPage {

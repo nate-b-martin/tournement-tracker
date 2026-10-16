@@ -9,11 +9,11 @@ metadata:
 ## Test Commands
 
 ```bash
-npm run test              # Run all Vitest tests
-npm run test <file>       # Run single test file (e.g., src/components/Button.test.tsx)
-npm run test:watch        # Run tests in watch mode
-npx playwright test       # Run all E2E tests
-npx playwright test --ui  # Run E2E tests with UI mode
+bun run test              # Run all Vitest tests
+bun run test <file>       # Run single test file (e.g., src/components/Button.test.tsx)
+bun run test:watch        # Run tests in watch mode
+bunx playwright test       # Run all E2E tests
+bunx playwright test --ui  # Run E2E tests with UI mode
 ```
 
 ## Vitest + React Testing Library
@@ -30,7 +30,7 @@ tests/unit/
 Reference the existing DataTable tests for patterns:
 
 ```typescript
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { DataTable } from "@/components/DataTable/DataTable";
 import type { ColumnDef } from "@/components/DataTable/types";
@@ -49,7 +49,7 @@ Test categories to cover:
 ### Player Table Test Pattern
 
 ```typescript
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { PlayersTable } from "@/components/PlayersTable";
 ```
@@ -65,7 +65,7 @@ Tests to write for table components:
 ### Hook Test Pattern (from `tests/unit/hooks/usePagination.test.ts`)
 
 ```typescript
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { usePagination } from "@/hooks/usePagination";
 
 describe("usePagination", () => {

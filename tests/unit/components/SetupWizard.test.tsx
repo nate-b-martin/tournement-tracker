@@ -1,4 +1,3 @@
-import { useReducer } from "react";
 import {
 	act,
 	fireEvent,
@@ -7,22 +6,24 @@ import {
 	screen,
 	waitFor,
 } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { useReducer } from "react";
+import { describe, expect, it, vi } from "vite-plus/test";
+
 import {
 	initialState,
 	SetupWizardProvider,
 	useWizard,
 	wizardReducer,
 } from "@/components/SetupWizard/SetupWizardContext";
+import { StepConfigureTournament } from "@/components/SetupWizard/steps/StepConfigureTournament";
+import { StepCreateSeason } from "@/components/SetupWizard/steps/StepCreateSeason";
+import { StepManageRosters } from "@/components/SetupWizard/steps/StepManageRosters";
+import { StepReview } from "@/components/SetupWizard/steps/StepReview";
+import { StepReview as StepReviewAlias } from "@/components/SetupWizard/steps/StepReview";
+import { StepSelectTeams } from "@/components/SetupWizard/steps/StepSelectTeams";
 import type { TeamEntry, WizardState } from "@/components/SetupWizard/types";
 import { WizardStep } from "@/components/SetupWizard/types";
 import { WizardStepper } from "@/components/SetupWizard/WizardStepper";
-import { StepSelectTeams } from "@/components/SetupWizard/steps/StepSelectTeams";
-import { StepManageRosters } from "@/components/SetupWizard/steps/StepManageRosters";
-import { StepCreateSeason } from "@/components/SetupWizard/steps/StepCreateSeason";
-import { StepConfigureTournament } from "@/components/SetupWizard/steps/StepConfigureTournament";
-import { StepReview } from "@/components/SetupWizard/steps/StepReview";
-import { StepReview as StepReviewAlias } from "@/components/SetupWizard/steps/StepReview";
 
 vi.mock("convex/react", () => ({
 	useQuery: vi.fn(() => undefined),
@@ -33,7 +34,11 @@ vi.mock("@tanstack/react-router", () => ({
 	Link: ({
 		children,
 		to,
-	}: { children: React.ReactNode; to: string; params: Record<string, string> }) => (
+	}: {
+		children: React.ReactNode;
+		to: string;
+		params: Record<string, string>;
+	}) => (
 		<a href={to} onClick={(e) => e.preventDefault()} data-testid="router-link">
 			{children}
 		</a>
@@ -282,7 +287,12 @@ describe("SetupWizardContext", () => {
 		act(() => {
 			result.current.dispatch({
 				type: "SET_SEASON",
-				season: { name: "Spring", sport: "Baseball", startDate: Date.now(), endDate: Date.now() },
+				season: {
+					name: "Spring",
+					sport: "Baseball",
+					startDate: Date.now(),
+					endDate: Date.now(),
+				},
 			});
 		});
 
@@ -415,11 +425,7 @@ describe("StepManageRosters auto-seed", () => {
 
 	function mockLinkedPlayers(players: unknown[]) {
 		vi.mocked(useQuery).mockImplementation((_fn, args) => {
-			if (
-				typeof args === "object" &&
-				args !== null &&
-				"teamIds" in args
-			) {
+			if (typeof args === "object" && args !== null && "teamIds" in args) {
 				return players as never;
 			}
 			return undefined;
@@ -471,9 +477,7 @@ describe("StepManageRosters auto-seed", () => {
 		);
 		fireEvent.click(screen.getByText("Team A"));
 
-		await waitFor(() =>
-			expect(screen.queryByText("Jane Doe")).toBeNull(),
-		);
+		await waitFor(() => expect(screen.queryByText("Jane Doe")).toBeNull());
 		expect(screen.getByText(/No players added yet./)).toBeTruthy();
 	});
 
@@ -533,9 +537,7 @@ describe("StepManageRosters auto-seed", () => {
 		};
 
 		render(
-			<RosterHarness
-				initial={{ selectedTeams: [existingTeam, newTeam] }}
-			/>,
+			<RosterHarness initial={{ selectedTeams: [existingTeam, newTeam] }} />,
 		);
 
 		fireEvent.click(screen.getByText("Team A"));
@@ -547,9 +549,7 @@ describe("StepManageRosters auto-seed", () => {
 
 	it("shows empty state when no teams are selected", () => {
 		render(<RosterHarness initial={{ selectedTeams: [] }} />);
-		expect(
-			screen.getByText(/No teams selected yet/i),
-		).toBeTruthy();
+		expect(screen.getByText(/No teams selected yet/i)).toBeTruthy();
 	});
 });
 

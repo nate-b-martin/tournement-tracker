@@ -16,7 +16,7 @@ Real-time tournament management system for American sports (starting with softba
 - [Database Schema](backend/SCHEMA.md) — ER diagram, 7 tables, field references, relationships, index status
 - [Queries & Mutations](backend/QUERIES_MUTATIONS.md) — Every `convex/` function with args, return types, auth requirements
 - [Real-Time Updates](backend/REAL_TIME.md) — Convex subscriptions, live data flow, loading states
-- [Seed Data](backend/SEED_DATA.md) — What `npx convex seed` creates
+- [Seed Data](backend/SEED_DATA.md) — What `bunx convex seed` creates
 
 ### Frontend
 

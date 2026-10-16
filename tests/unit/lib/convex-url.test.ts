@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+
 import { getConvexUrl } from "@/lib/convex-url";
 
 const BUILD_TIME_URL = import.meta.env.VITE_CONVEX_URL;

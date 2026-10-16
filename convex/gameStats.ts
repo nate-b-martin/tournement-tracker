@@ -1,5 +1,6 @@
-import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+
+import { query, mutation } from "./_generated/server";
 
 export const getByGame = query({
 	args: { gameId: v.id("games") },
@@ -20,9 +21,7 @@ export const getByPlayer = query({
 	args: { playerId: v.id("players") },
 	handler: async (ctx, args) => {
 		const allStats = await ctx.db.query("gameStats").collect();
-		const playerStats = allStats.filter(
-			(s) => s.playerId === args.playerId,
-		);
+		const playerStats = allStats.filter((s) => s.playerId === args.playerId);
 		return await Promise.all(
 			playerStats.map(async (stat) => {
 				const game = await ctx.db.get(stat.gameId);

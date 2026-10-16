@@ -32,7 +32,7 @@ Step 2: Explore (Playwright MCP browser tools)
          │
          ▼
 Step 3: Verify (Playwright CLI)
-   - Run `npx playwright test --headed` for the flow
+   - Run `bunx playwright test --headed` for the flow
    - Assertions must pass
          │
      ┌───┴───┐
@@ -46,8 +46,8 @@ Test Code    in feature-tickets/debug/
      │
      ▼
 Step 5: Validate
-   - npm run check
-   - npx playwright test
+   - bun run check
+   - bunx playwright test
 ```
 
 ## Step 1: Parse Input
@@ -212,10 +212,10 @@ test.describe("Verify: [Feature Name]", () => {
 
 ```bash
 # Run with headed browser to watch the flow
-npx playwright test tests/e2e/verify-[feature].spec.ts --headed
+bunx playwright test tests/e2e/verify-[feature].spec.ts --headed
 
 # Or run headless
-npx playwright test tests/e2e/verify-[feature].spec.ts
+bunx playwright test tests/e2e/verify-[feature].spec.ts
 ```
 
 ### 3c: Interpret Results
@@ -461,7 +461,7 @@ mkdir -p feature-tickets/debug
 
 Write the debug ticket with all gathered evidence:
 
-1. Capture test output from the failed `npx playwright test` run
+1. Capture test output from the failed `bunx playwright test` run
 2. Capture browser console messages with `playwright_browser_console_messages`
 3. Capture network requests at time of failure with `playwright_browser_network_requests`
 4. Capture page snapshot at failure point with `playwright_browser_snapshot`
@@ -476,25 +476,25 @@ Write the debug ticket with all gathered evidence:
 
 ### Format Check
 ```bash
-npm run check
+bun run check
 ```
 
 ### Run the New Tests
 ```bash
 # Run just the new test file
-npx playwright test tests/e2e/<feature>.spec.ts
+bunx playwright test tests/e2e/<feature>.spec.ts
 
 # Run with visible browser to watch
-npx playwright test tests/e2e/<feature>.spec.ts --headed
+bunx playwright test tests/e2e/<feature>.spec.ts --headed
 
 # Run matching specific test name
-npx playwright test tests/e2e/<feature>.spec.ts -g "<test description>"
+bunx playwright test tests/e2e/<feature>.spec.ts -g "<test description>"
 ```
 
 ### Full Validation
 ```bash
-npm run check
-npx playwright test tests/e2e/<feature>.spec.ts
+bun run check
+bunx playwright test tests/e2e/<feature>.spec.ts
 ```
 
 ## Complete Working Example
@@ -545,7 +545,7 @@ Then user can view the schedule
 ### Step 3: Verify with CLI
 
 ```bash
-npx playwright test tests/e2e/verify-season-schedule.spec.ts --headed
+bunx playwright test tests/e2e/verify-season-schedule.spec.ts --headed
 # ✅ PASS: All assertions passed
 ```
 
@@ -624,10 +624,10 @@ test.describe("Season Details", () => {
 ### Step 5: Validate
 ```bash
 # Run format check
-npm run check
+bun run check
 
 # Run the test
-npx playwright test tests/e2e/seasons.spec.ts
+bunx playwright test tests/e2e/seasons.spec.ts
 ```
 
 ## Failure Example (for reference)

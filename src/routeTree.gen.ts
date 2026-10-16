@@ -9,51 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TournamentspageIndexRouteImport } from './routes/tournamentspage/index'
-import { Route as TeamspageIndexRouteImport } from './routes/teamspage/index'
-import { Route as SeasonspageIndexRouteImport } from './routes/seasonspage/index'
-import { Route as PlayerspageIndexRouteImport } from './routes/playerspage/index'
-import { Route as GamespageIndexRouteImport } from './routes/gamespage/index'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as TournamentsIdIndexRouteImport } from './routes/tournaments/$id/index'
-import { Route as SeasonsIdIndexRouteImport } from './routes/seasons/$id/index'
+import { Route as GamespageIndexRouteImport } from './routes/gamespage/index'
+import { Route as PlayerspageIndexRouteImport } from './routes/playerspage/index'
+import { Route as SeasonspageIndexRouteImport } from './routes/seasonspage/index'
+import { Route as TeamspageIndexRouteImport } from './routes/teamspage/index'
+import { Route as TournamentspageIndexRouteImport } from './routes/tournamentspage/index'
 import { Route as PlayersIdIndexRouteImport } from './routes/players/$id/index'
+import { Route as SeasonsIdIndexRouteImport } from './routes/seasons/$id/index'
+import { Route as TournamentsIdIndexRouteImport } from './routes/tournaments/$id/index'
 
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TournamentspageIndexRoute = TournamentspageIndexRouteImport.update({
-  id: '/tournamentspage/',
-  path: '/tournamentspage/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TeamspageIndexRoute = TeamspageIndexRouteImport.update({
-  id: '/teamspage/',
-  path: '/teamspage/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SeasonspageIndexRoute = SeasonspageIndexRouteImport.update({
-  id: '/seasonspage/',
-  path: '/seasonspage/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlayerspageIndexRoute = PlayerspageIndexRouteImport.update({
-  id: '/playerspage/',
-  path: '/playerspage/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GamespageIndexRoute = GamespageIndexRouteImport.update({
-  id: '/gamespage/',
-  path: '/gamespage/',
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -61,14 +36,29 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TournamentsIdIndexRoute = TournamentsIdIndexRouteImport.update({
-  id: '/tournaments/$id/',
-  path: '/tournaments/$id/',
+const GamespageIndexRoute = GamespageIndexRouteImport.update({
+  id: '/gamespage/',
+  path: '/gamespage/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SeasonsIdIndexRoute = SeasonsIdIndexRouteImport.update({
-  id: '/seasons/$id/',
-  path: '/seasons/$id/',
+const PlayerspageIndexRoute = PlayerspageIndexRouteImport.update({
+  id: '/playerspage/',
+  path: '/playerspage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SeasonspageIndexRoute = SeasonspageIndexRouteImport.update({
+  id: '/seasonspage/',
+  path: '/seasonspage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamspageIndexRoute = TeamspageIndexRouteImport.update({
+  id: '/teamspage/',
+  path: '/teamspage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentspageIndexRoute = TournamentspageIndexRouteImport.update({
+  id: '/tournamentspage/',
+  path: '/tournamentspage/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayersIdIndexRoute = PlayersIdIndexRouteImport.update({
@@ -76,19 +66,29 @@ const PlayersIdIndexRoute = PlayersIdIndexRouteImport.update({
   path: '/players/$id/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SeasonsIdIndexRoute = SeasonsIdIndexRouteImport.update({
+  id: '/seasons/$id/',
+  path: '/seasons/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentsIdIndexRoute = TournamentsIdIndexRouteImport.update({
+  id: '/tournaments/$id/',
+  path: '/tournaments/$id/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
-  '/dashboard': typeof DashboardIndexRoute
-  '/gamespage': typeof GamespageIndexRoute
-  '/playerspage': typeof PlayerspageIndexRoute
-  '/seasonspage': typeof SeasonspageIndexRoute
-  '/teamspage': typeof TeamspageIndexRoute
-  '/tournamentspage': typeof TournamentspageIndexRoute
-  '/players/$id': typeof PlayersIdIndexRoute
-  '/seasons/$id': typeof SeasonsIdIndexRoute
-  '/tournaments/$id': typeof TournamentsIdIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/gamespage/': typeof GamespageIndexRoute
+  '/playerspage/': typeof PlayerspageIndexRoute
+  '/seasonspage/': typeof SeasonspageIndexRoute
+  '/teamspage/': typeof TeamspageIndexRoute
+  '/tournamentspage/': typeof TournamentspageIndexRoute
+  '/players/$id/': typeof PlayersIdIndexRoute
+  '/seasons/$id/': typeof SeasonsIdIndexRoute
+  '/tournaments/$id/': typeof TournamentsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -122,15 +122,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/mcp'
-    | '/dashboard'
-    | '/gamespage'
-    | '/playerspage'
-    | '/seasonspage'
-    | '/teamspage'
-    | '/tournamentspage'
-    | '/players/$id'
-    | '/seasons/$id'
-    | '/tournaments/$id'
+    | '/dashboard/'
+    | '/gamespage/'
+    | '/playerspage/'
+    | '/seasonspage/'
+    | '/teamspage/'
+    | '/tournamentspage/'
+    | '/players/$id/'
+    | '/seasons/$id/'
+    | '/tournaments/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,13 +175,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -189,67 +182,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tournamentspage/': {
-      id: '/tournamentspage/'
-      path: '/tournamentspage'
-      fullPath: '/tournamentspage'
-      preLoaderRoute: typeof TournamentspageIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/teamspage/': {
-      id: '/teamspage/'
-      path: '/teamspage'
-      fullPath: '/teamspage'
-      preLoaderRoute: typeof TeamspageIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/seasonspage/': {
-      id: '/seasonspage/'
-      path: '/seasonspage'
-      fullPath: '/seasonspage'
-      preLoaderRoute: typeof SeasonspageIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/playerspage/': {
-      id: '/playerspage/'
-      path: '/playerspage'
-      fullPath: '/playerspage'
-      preLoaderRoute: typeof PlayerspageIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gamespage/': {
-      id: '/gamespage/'
-      path: '/gamespage'
-      fullPath: '/gamespage'
-      preLoaderRoute: typeof GamespageIndexRouteImport
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
       id: '/dashboard/'
       path: '/dashboard'
-      fullPath: '/dashboard'
+      fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tournaments/$id/': {
-      id: '/tournaments/$id/'
-      path: '/tournaments/$id'
-      fullPath: '/tournaments/$id'
-      preLoaderRoute: typeof TournamentsIdIndexRouteImport
+    '/gamespage/': {
+      id: '/gamespage/'
+      path: '/gamespage'
+      fullPath: '/gamespage/'
+      preLoaderRoute: typeof GamespageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/seasons/$id/': {
-      id: '/seasons/$id/'
-      path: '/seasons/$id'
-      fullPath: '/seasons/$id'
-      preLoaderRoute: typeof SeasonsIdIndexRouteImport
+    '/playerspage/': {
+      id: '/playerspage/'
+      path: '/playerspage'
+      fullPath: '/playerspage/'
+      preLoaderRoute: typeof PlayerspageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seasonspage/': {
+      id: '/seasonspage/'
+      path: '/seasonspage'
+      fullPath: '/seasonspage/'
+      preLoaderRoute: typeof SeasonspageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teamspage/': {
+      id: '/teamspage/'
+      path: '/teamspage'
+      fullPath: '/teamspage/'
+      preLoaderRoute: typeof TeamspageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournamentspage/': {
+      id: '/tournamentspage/'
+      path: '/tournamentspage'
+      fullPath: '/tournamentspage/'
+      preLoaderRoute: typeof TournamentspageIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/players/$id/': {
       id: '/players/$id/'
       path: '/players/$id'
-      fullPath: '/players/$id'
+      fullPath: '/players/$id/'
       preLoaderRoute: typeof PlayersIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seasons/$id/': {
+      id: '/seasons/$id/'
+      path: '/seasons/$id'
+      fullPath: '/seasons/$id/'
+      preLoaderRoute: typeof SeasonsIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/$id/': {
+      id: '/tournaments/$id/'
+      path: '/tournaments/$id'
+      fullPath: '/tournaments/$id/'
+      preLoaderRoute: typeof TournamentsIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

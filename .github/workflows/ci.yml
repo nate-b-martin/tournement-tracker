@@ -13,29 +13,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v4
+      # Installs Vite+, the pinned Node.js version, the package manager, and
+      # project dependencies (with dependency caching) in one step.
+      - name: Set up Vite+
+        uses: voidzero-dev/setup-vp@v1.21.2
         with:
-          node-version: 24
-
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: npm install
+          node-version: "24.22.0"
+          cache: true
 
       - name: Run lint and type checks
-        run: npm run check || true
+        run: vp check
 
       - name: Build
-        run: npm run build
+        run: vp build
 
       - name: Detect unit tests
         id: detect_unit
@@ -48,9 +38,9 @@ jobs:
             echo "has_unit=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Run unit tests (Vitest)
+      - name: Run unit tests (Vitest via Vite+)
         if: ${{ steps.detect_unit.outputs.has_unit == 'true' }}
-        run: npm run test
+        run: vp test
 
       - name: Check for e2e script
         id: check_e2e
@@ -62,7 +52,7 @@ jobs:
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: |
           echo "Starting Convex dev server"
-          npx convex dev &> convex.log & echo $! > convex.pid
+          vp exec convex dev &> convex.log & echo $! > convex.pid
           # wait for convex to be ready (check if it's running and has initialized)
           for i in $(seq 1 60); do
             if grep -q "Convex functions ready" convex.log 2>/dev/null; then
@@ -79,11 +69,11 @@ jobs:
         run: |
           # Call the seed function via Convex CLI
           sleep 2
-          npx convex run seed || true
+          vp exec convex run seed || true
 
       - name: Install Playwright Browsers
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
-        run: npx playwright install --with-deps
+        run: vp exec playwright install --with-deps
 
       - name: Export Convex and Clerk env for e2e
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
@@ -118,7 +108,7 @@ jobs:
           CLERK_SECRET_KEY: ${{ env.CLERK_SECRET_KEY }}
           CLERK_TEST_EMAIL: ${{ env.CLERK_TEST_EMAIL }}
           CLERK_TEST_PASSWORD: ${{ env.CLERK_TEST_PASSWORD }}
-        run: npm run test:e2e
+        run: vp run test:e2e
 
       - name: Upload test results on failure
         if: ${{ failure() && steps.check_e2e.outputs.has_e2e == 'true' }}

@@ -143,9 +143,9 @@ docker compose logs -f frontend
 
 ### Switching between Docker and local Convex dev
 
-**Never run both simultaneously** — both the Docker backend and `npx convex dev` bind port 3210 and use separate data stores.
+**Never run both simultaneously** — both the Docker backend and `bunx convex dev` bind port 3210 and use separate data stores.
 
-- To use local `npx convex dev`: `docker compose down`
+- To use local `bunx convex dev`: `docker compose down`
 - To use Docker backend: `docker compose up -d convex-backend`
 
 ## Production Deployment

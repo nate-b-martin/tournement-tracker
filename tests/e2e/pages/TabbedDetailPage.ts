@@ -12,7 +12,10 @@ export interface TabbedDetailConfig {
  * Provides tab navigation keyed by tab name.
  */
 export class TabbedDetailPage {
-	constructor(protected page: Page, protected config: TabbedDetailConfig) {}
+	constructor(
+		protected page: Page,
+		protected config: TabbedDetailConfig,
+	) {}
 
 	get backButton() {
 		return this.page.getByRole("button", { name: this.config.backPattern });

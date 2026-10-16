@@ -29,7 +29,9 @@ test.describe("Seasons Page", () => {
 			await seasonsPage.waitForPageLoad();
 
 			// Table should be visible with data or empty state
-			const tableVisible = await seasonsPage.table.isVisible().catch(() => false);
+			const tableVisible = await seasonsPage.table
+				.isVisible()
+				.catch(() => false);
 			const emptyStateVisible = await page
 				.getByText(/no seasons found/i)
 				.isVisible()
@@ -78,7 +80,10 @@ test.describe("Seasons Page", () => {
 			await seasonsPage.waitForPageLoad();
 
 			// If there are season links, clicking one should navigate to detail
-			const seasonLink = page.getByRole("link").filter({ has: page.locator("text=") }).first();
+			const seasonLink = page
+				.getByRole("link")
+				.filter({ has: page.locator("text=") })
+				.first();
 			if (await seasonLink.isVisible().catch(() => false)) {
 				const href = await seasonLink.getAttribute("href").catch(() => null);
 				if (href) {

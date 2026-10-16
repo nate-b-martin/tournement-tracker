@@ -97,7 +97,9 @@ test.describe("Teams Page", () => {
 			await expect(teamsPage.coachPhoneInput).toBeVisible();
 		});
 
-		test("shows validation error when team name is missing", async ({ page }) => {
+		test("shows validation error when team name is missing", async ({
+			page,
+		}) => {
 			const teamsPage = new TeamsPage(page);
 			await teamsPage.goto();
 			await teamsPage.waitForPageLoad();

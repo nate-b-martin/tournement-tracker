@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { ArrowLeft, Edit, Mail, User, Users } from "lucide-react";
 import { useState } from "react";
+
 import { PlayerDialog } from "@/components/PlayerDialog";
 import { PlayerGameStatsDialog } from "@/components/PlayerGameStatsDialog";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useGameStatsByPlayer } from "@/hooks/useGameStats";
 import { usePlayerById } from "@/hooks/usePlayerById";
+
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 

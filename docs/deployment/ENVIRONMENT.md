@@ -6,7 +6,7 @@
 
 ```env
 # Convex — your project's backend URL
-# Get from: npx convex init or Convex dashboard → Settings → Deployment URL
+# Get from: bunx convex init or Convex dashboard → Settings → Deployment URL
 VITE_CONVEX_URL=https://your-project.convex.cloud
 
 # Clerk — authentication provider
@@ -36,7 +36,7 @@ Same three variables as local dev, but with production values.
 ### VITE_CONVEX_URL
 
 ```bash
-npx convex init
+bunx convex init
 # Follow the prompts to link your Convex project
 # The URL is displayed after successful init
 ```

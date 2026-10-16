@@ -12,15 +12,15 @@ Before committing, run through these checks in order. Stop and fix issues at eac
 
 ### 1. Formatting & Linting
 
-Run `npm run check` and fix all reported issues. This runs Biome format + lint.
+Run `bun run check` and fix all reported issues. This runs Oxfmt format + Oxlint.
 
-- Verify all imports are organized (Biome handles this automatically)
-- No Biome suppression comments without explicit justification
+- Verify all imports are organized (Oxfmt sorts them automatically)
+- No Oxlint suppression comments without explicit justification
 - No trailing whitespace or missing trailing newlines
 
 ### 2. Build Verification
 
-Run `npm run build` and confirm it succeeds.
+Run `bun run build` and confirm it succeeds.
 
 - TypeScript strict mode must pass with no errors
 - No `any` types in new or modified code (use `unknown` with type guards if needed)
@@ -29,7 +29,7 @@ Run `npm run build` and confirm it succeeds.
 
 ### 3. Test Suite
 
-Run tests with `npm run test` and confirm all pass.
+Run tests with `bun run test` and confirm all pass.
 
 - New features must include corresponding tests
 - Bug fixes must include a regression test
@@ -83,9 +83,9 @@ Review `git diff` for the staged changes. Check for:
 
 | Step | Command | Expected |
 |------|---------|----------|
-| Format + lint | `npm run check` | No errors |
-| Build | `npm run build` | Success |
-| Tests | `npm run test` | All passing |
+| Format + lint | `bun run check` | No errors |
+| Build | `bun run build` | Success |
+| Tests | `bun run test` | All passing |
 | Diff | `git diff --cached` | Reviewed manually |
 
 ## Resolution Guide

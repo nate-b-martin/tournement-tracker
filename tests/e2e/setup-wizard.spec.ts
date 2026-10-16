@@ -64,9 +64,7 @@ test.describe("Setup Wizard", () => {
 				wizard.existingTeam("Swing Sisters"),
 			];
 			const bothTeamsVisible = (
-				await Promise.all(
-					teams.map((t) => t.isVisible().catch(() => false)),
-				)
+				await Promise.all(teams.map((t) => t.isVisible().catch(() => false)))
 			).every(Boolean);
 			test.skip(!bothTeamsVisible, "Seeded teams not available");
 
@@ -150,7 +148,9 @@ test.describe("Setup Wizard", () => {
 			);
 			await expect(wizard.selectedTeamChip("E2E New Team")).toBeVisible();
 
-			const selectTeamsDone = await wizard.selectedTeamChip("E2E New Team").isVisible();
+			const selectTeamsDone = await wizard
+				.selectedTeamChip("E2E New Team")
+				.isVisible();
 			test.skip(!selectTeamsDone, "Team not added");
 
 			// Select another existing team to meet minimum 2 teams
@@ -169,7 +169,12 @@ test.describe("Setup Wizard", () => {
 
 			// Go to review
 			await wizard.goNext();
-			await wizard.fillSeason("E2E Season", "Baseball", "2026-08-01", "2026-09-30");
+			await wizard.fillSeason(
+				"E2E Season",
+				"Baseball",
+				"2026-08-01",
+				"2026-09-30",
+			);
 			await wizard.goNext();
 			await wizard.fillTournament("E2E Tournament", "E2E City");
 			await wizard.goNext();
@@ -177,14 +182,14 @@ test.describe("Setup Wizard", () => {
 
 			// Verify new team appears in review
 			await expect(wizard.summaryCard("Teams")).toBeVisible();
-			await expect(
-				wizard.page.getByText("E2E New Team").first(),
-			).toBeVisible();
+			await expect(wizard.page.getByText("E2E New Team").first()).toBeVisible();
 		});
 	});
 
 	test.describe("Flow 3b: Admin searches and adds existing players", () => {
-		test("browses and adds an existing player to a roster", async ({ page }) => {
+		test("browses and adds an existing player to a roster", async ({
+			page,
+		}) => {
 			const wizard = new SetupWizardPage(page);
 			await wizard.goto();
 			await wizard.openWizard();
@@ -212,7 +217,10 @@ test.describe("Setup Wizard", () => {
 			await wizard.searchPlayersInput.fill("Player");
 			await page.waitForTimeout(500);
 
-			const firstAddButton = wizard.addExistingPlayerToRoster("Diamond", "Player");
+			const firstAddButton = wizard.addExistingPlayerToRoster(
+				"Diamond",
+				"Player",
+			);
 			const hasResult = await firstAddButton.isVisible().catch(() => false);
 			test.skip(!hasResult, "No seeded players matched the search");
 

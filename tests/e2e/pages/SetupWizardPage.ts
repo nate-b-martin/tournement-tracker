@@ -318,11 +318,7 @@ export class SetupWizardPage {
 		await this.addTeamButton.click();
 	}
 
-	async addPlayer(
-		firstName: string,
-		lastName: string,
-		jersey?: string,
-	) {
+	async addPlayer(firstName: string, lastName: string, jersey?: string) {
 		await this.playerFirstNameInput.fill(firstName);
 		await this.playerLastNameInput.fill(lastName);
 		if (jersey) {

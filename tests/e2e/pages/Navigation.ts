@@ -1,39 +1,37 @@
-import type {Page} from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 export class Navigation {
-    constructor(private page: Page) {}
+	constructor(private page: Page) {}
 
-    get sidebar() {
-        return this.page.locator("aside").first();
-    }
+	get sidebar() {
+		return this.page.locator("aside").first();
+	}
 
-    get hamburgerButton() {
-        return this.page.getByRole('button', { name: 'Open menu' });
-    }
+	get hamburgerButton() {
+		return this.page.getByRole("button", { name: "Open menu" });
+	}
 
-    get signInButton() {
-        return this.page.getByRole('button', { name: /sign in/i });
-    }
+	get signInButton() {
+		return this.page.getByRole("button", { name: /sign in/i });
+	}
 
-    get closeMenuButton() {
-        return this.page.getByRole('button', { name: 'Close menu' });
-    }
+	get closeMenuButton() {
+		return this.page.getByRole("button", { name: "Close menu" });
+	}
 
-    async openMenu() {
-        await this.hamburgerButton.click();
-    }
+	async openMenu() {
+		await this.hamburgerButton.click();
+	}
 
-    async closeMenu() {
-        await this.closeMenuButton.click();
-    }
+	async closeMenu() {
+		await this.closeMenuButton.click();
+	}
 
-    get seasonsLink() {
-        return this.page.getByRole('link', { name: 'Seasons' });
-    }
+	get seasonsLink() {
+		return this.page.getByRole("link", { name: "Seasons" });
+	}
 
-    async clickSeasons() {
-        await this.seasonsLink.click();
-    }
-
-
+	async clickSeasons() {
+		await this.seasonsLink.click();
+	}
 }

@@ -367,24 +367,24 @@ test.describe("[Feature] Empty State", () => {
 
 ### 4a: Check Formatting
 ```bash
-npm run check
+bun run check
 ```
 
 ### 4b: Run the Generated Test
 ```bash
 # Run just the new test file
-npx playwright test tests/e2e/<feature>.spec.ts
+bunx playwright test tests/e2e/<feature>.spec.ts
 
 # Or run with visible browser for debugging
-npx playwright test tests/e2e/<feature>.spec.ts --headed
+bunx playwright test tests/e2e/<feature>.spec.ts --headed
 
 # Or filter to just the new test
-npx playwright test tests/e2e/<feature>.spec.ts -g "<scenario name>"
+bunx playwright test tests/e2e/<feature>.spec.ts -g "<scenario name>"
 ```
 
 ### 4c: Debug Failures
 If the test fails:
-1. Run with `--debug` to step through: `npx playwright test --debug tests/e2e/<feature>.spec.ts`
+1. Run with `--debug` to step through: `bunx playwright test --debug tests/e2e/<feature>.spec.ts`
 2. Use MCP browser snapshot on the failing page to re-check locators
 3. Check that the locator strategy matches the actual DOM (use `getByRole` with correct name pattern)
 4. Verify auth state: are you authenticated when you expect to be?

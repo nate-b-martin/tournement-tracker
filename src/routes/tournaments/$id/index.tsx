@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "convex/react";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+
 import { BracketView } from "@/components/Bracket/BracketView";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { FieldsList } from "@/components/FieldsList";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+
 import { api } from "../../../../convex/_generated/api";
 import type { Doc, Id } from "../../../../convex/_generated/dataModel";
 

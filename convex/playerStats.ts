@@ -1,6 +1,7 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
+
 import type { Doc, Id } from "./_generated/dataModel";
+import { query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 
 const ListArgs = {
@@ -52,7 +53,10 @@ const EMPTY_TOTALS: AggregatedTotals = {
 	rbi: 0,
 };
 
-function addToTotals(current: AggregatedTotals, entry: Doc<"gameStats">): AggregatedTotals {
+function addToTotals(
+	current: AggregatedTotals,
+	entry: Doc<"gameStats">,
+): AggregatedTotals {
 	return {
 		gamesPlayed: current.gamesPlayed + entry.gamesPlayed,
 		atBats: current.atBats + entry.atBats,

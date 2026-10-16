@@ -6,9 +6,9 @@
 flowchart LR
     A["1. Check<br/>feature-tickets/"] --> B["2. Create Design Doc<br/>src/design/"]
     B --> C["3. Implement<br/>Code"]
-    C --> D["4. Run Tests<br/>npm run test"]
-    D --> E["5. Lint & Format<br/>npm run check"]
-    E --> F["6. Build<br/>npm run build"]
+    C --> D["4. Run Tests<br/>bun run test"]
+    D --> E["5. Lint & Format<br/>bun run check"]
+    E --> F["6. Build<br/>bun run build"]
     F --> G["7. Verify<br/>RBAC & UX"]
 ```
 
@@ -53,30 +53,30 @@ Order of work:
 ### Step 4: Testing
 
 ```bash
-npm run test                # Run all unit tests
-npm run test <path>         # Run specific test
-npm run test:watch          # Watch mode
-npm run test:e2e            # E2E tests (requires dev server)
+bun run test                # Run all unit tests
+bun run test <path>         # Run specific test
+bun run test:watch          # Watch mode
+bun run test:e2e            # E2E tests (requires dev server)
 ```
 
 ### Step 5: Lint & Format
 
 ```bash
-npm run check     # Format + lint check (must pass before commit)
-npm run format    # Auto-format all files
-npm run lint      # Lint check only
+bun run check     # Format + lint check (must pass before commit)
+bun run format    # Auto-format all files
+bun run lint      # Lint check only
 ```
 
-**Biome rules**:
+**Oxfmt / Oxlint rules** (configured in `vite.config.ts`):
 - Tab indentation
 - Double quotes
 - Imports organized automatically
-- `routeTree.gen.ts` and `styles.css` are excluded
+- `routeTree.gen.ts` and `convex/_generated/**` are excluded
 
 ### Step 6: Build
 
 ```bash
-npm run build
+bun run build
 ```
 
 Verify no build errors. Output goes to `dist/client/`.
@@ -169,10 +169,10 @@ Tickets are markdown files with:
 
 | Command | When to Use |
 |---------|-------------|
-| `npm run dev` | Start local development |
-| `npx convex dev` | Start Convex backend (second terminal) |
-| `npx convex seed` | Load test data |
-| `npm run test` | Run unit tests after changes |
-| `npm run check` | Before committing |
-| `npm run build` | Before pushing / deploying |
+| `bun run dev` | Start local development |
+| `bunx convex dev` | Start Convex backend (second terminal) |
+| `bunx convex seed` | Load test data |
+| `bun run test` | Run unit tests after changes |
+| `bun run check` | Before committing |
+| `bun run build` | Before pushing / deploying |
 | `bunx shadcn@latest add` | Add new UI component |

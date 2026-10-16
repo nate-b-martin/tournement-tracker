@@ -212,7 +212,7 @@ if (!profile || profile.role !== "admin") {
 
 ## Seed Data
 
-Seed data lives in `convex/seed.ts`. Use `npx convex seed` to run:
+Seed data lives in `convex/seed.ts`. Use `bunx convex seed` to run:
 
 ```typescript
 import { mutation } from "./_generated/server";
@@ -241,8 +241,8 @@ export const clearAllData = mutation({
 ```
 
 ## Development Commands
-- `npx convex dev` — Start local Convex backend (must run alongside `npm run dev`)
-- `npx convex seed` — Run the seed mutation to populate test data
-- `npx convex deploy` — Deploy to production
-- `npx convex dashboard` — Open Convex dashboard
-- `npx convex logs` — View function logs
+- `bunx convex dev` — Start local Convex backend (must run alongside `bun run dev`)
+- `bunx convex seed` — Run the seed mutation to populate test data
+- `bunx convex deploy` — Deploy to production
+- `bunx convex dashboard` — Open Convex dashboard
+- `bunx convex logs` — View function logs

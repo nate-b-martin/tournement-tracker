@@ -42,17 +42,17 @@ if ! docker compose version >/dev/null 2>&1; then
 	exit 1
 fi
 
-# Resolve a Convex CLI runner. The project documents `npx`, but fall back to Bun
-# so the script also works on machines that only have Bun installed.
+# Resolve a Convex CLI runner. The project is Bun-first; fall back to npm's npx
+# so the script also works on machines that only have Node.js installed.
 CONVEX_CLI=()
-if command -v npx >/dev/null 2>&1; then
-	CONVEX_CLI=(npx convex)
-elif command -v bunx >/dev/null 2>&1; then
+if command -v bunx >/dev/null 2>&1; then
 	CONVEX_CLI=(bunx convex)
 elif command -v bun >/dev/null 2>&1; then
 	CONVEX_CLI=(bun x convex)
+elif command -v npx >/dev/null 2>&1; then
+	CONVEX_CLI=(npx convex)
 else
-	echo "✗ Neither npx nor bunx is available — install Node.js (npm) or Bun first." >&2
+	echo "✗ Neither bunx nor npx is available — install Bun (or Node.js) first." >&2
 	exit 1
 fi
 

@@ -2,6 +2,7 @@ import { ConvexQueryClient } from "@convex-dev/react-query";
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { ConvexReactClient } from "convex/react";
+
 import { getConvexUrl } from "./lib/convex-url";
 import { routeTree } from "./routeTree.gen";
 

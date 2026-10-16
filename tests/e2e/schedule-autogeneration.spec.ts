@@ -36,7 +36,10 @@ test.describe("Schedule Auto-Generation", () => {
 				.catch(() => false);
 
 			if (!generateBtnVisible) {
-				test.skip(true, "Generate Schedule not visible — not admin or no teams");
+				test.skip(
+					true,
+					"Generate Schedule not visible — not admin or no teams",
+				);
 			}
 
 			// Open the generate schedule dialog

@@ -19,3 +19,4 @@ error-screenshots
 playwright/.clerk
 playwright-report/*.html
 playwright-report/data
+.vitest/
