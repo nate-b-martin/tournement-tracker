@@ -10,13 +10,21 @@ metadata:
 
 Before committing, run through these checks in order. Stop and fix issues at each step before proceeding.
 
-### 1. Formatting & Linting
+### 1. Formatting & Linting (Vite+)
 
-Run `bun run check` and fix all reported issues. This runs Oxfmt format + Oxlint.
+The project uses the Vite+ toolchain (`vite-plus`, invoked as `vp`) through package scripts. Run these before every commit:
+
+1. `bun run format` — auto-format with Oxfmt (`vp fmt`)
+2. `bun run lint` — lint with Oxlint (`vp lint`)
+3. `bun run check` — combined format + lint gate (`vp check`); this must finish with **no errors and no warnings**
+
+`bun run check` is the required final gate. Run `bun run format` first so auto-fixable issues are resolved, then `bun run check` to confirm the result. Do not commit while it reports warnings.
 
 - Verify all imports are organized (Oxfmt sorts them automatically)
 - No Oxlint suppression comments without explicit justification
 - No trailing whitespace or missing trailing newlines
+- Treat every `vp check` warning as a failure to fix, not as informational output
+- Run the command from the repo root so the `vite.config.ts` `fmt`, `lint`, and `test` blocks apply
 
 ### 2. Build Verification
 
@@ -79,14 +87,41 @@ Review `git diff` for the staged changes. Check for:
 - Color contrast meets WCAG AA standards
 - Focus indicators are visible
 
+### 8. Commit & Push Gate
+
+Run the Vite+ checks again immediately before committing — passing them earlier is not enough if files changed since:
+
+```bash
+bun run format
+bun run check
+bun run test
+```
+
+Then commit and push only when all three succeed:
+
+```bash
+git add -A
+git commit -m "type(scope): summary"
+git push
+```
+
+- Never commit with failing `bun run check`, failing tests, or unformatted files
+- If a pre-commit or pre-push hook fails, fix the root cause and re-run the commands; do not bypass hooks with `--no-verify`
+- After pushing, confirm the push succeeded and any CI checks triggered by it are expected to pass
+- Run `bun run test` as the last check before `git push` so the pushed commit matches what was validated
+
 ## Quick Reference
 
 | Step | Command | Expected |
 |------|---------|----------|
-| Format + lint | `bun run check` | No errors |
+| Format | `bun run format` (`vp fmt`) | Files formatted |
+| Lint | `bun run lint` (`vp lint`) | No warnings or errors |
+| Format + lint gate | `bun run check` (`vp check`) | No warnings or errors |
 | Build | `bun run build` | Success |
 | Tests | `bun run test` | All passing |
 | Diff | `git diff --cached` | Reviewed manually |
+| Commit | `git commit -m "..."` | After all checks pass |
+| Push | `git push` | After checks and tests pass |
 
 ## Resolution Guide
 

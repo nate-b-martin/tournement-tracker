@@ -19,7 +19,6 @@ import { StepConfigureTournament } from "@/components/SetupWizard/steps/StepConf
 import { StepCreateSeason } from "@/components/SetupWizard/steps/StepCreateSeason";
 import { StepManageRosters } from "@/components/SetupWizard/steps/StepManageRosters";
 import { StepReview } from "@/components/SetupWizard/steps/StepReview";
-import { StepReview as StepReviewAlias } from "@/components/SetupWizard/steps/StepReview";
 import { StepSelectTeams } from "@/components/SetupWizard/steps/StepSelectTeams";
 import type { TeamEntry, WizardState } from "@/components/SetupWizard/types";
 import { WizardStep } from "@/components/SetupWizard/types";

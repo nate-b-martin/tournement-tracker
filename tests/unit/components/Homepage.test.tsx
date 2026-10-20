@@ -26,9 +26,7 @@ vi.mock("@tanstack/react-router", () => ({
 }));
 
 vi.mock("@/components/SetupWizard", () => ({
-	SetupWizard: ({ open }: { open: boolean }) => (
-		<div data-testid="setup-wizard" />
-	),
+	SetupWizard: () => <div data-testid="setup-wizard" />,
 }));
 
 vi.mock("@clerk/clerk-react", () => ({

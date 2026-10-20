@@ -135,7 +135,15 @@ function applySorting(
 			return (aValue - bValue) * directionMultiplier;
 		}
 
-		return String(aValue).localeCompare(String(bValue)) * directionMultiplier;
+		if (typeof aValue === "string" && typeof bValue === "string") {
+			return aValue.localeCompare(bValue) * directionMultiplier;
+		}
+
+		if (typeof aValue === "boolean" && typeof bValue === "boolean") {
+			return (Number(aValue) - Number(bValue)) * directionMultiplier;
+		}
+
+		return 0;
 	});
 
 	return sorted;

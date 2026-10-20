@@ -37,6 +37,26 @@ function SortIndicator({
 	);
 }
 
+function formatDebugValue(value: unknown): string {
+	if (value === null) return "null";
+	switch (typeof value) {
+		case "string":
+			return value;
+		case "number":
+		case "boolean":
+		case "bigint":
+			return `${value}`;
+		case "undefined":
+			return "undefined";
+		case "symbol":
+			return value.toString();
+		case "function":
+			return value.name || "function";
+		default:
+			return JSON.stringify(value) ?? "undefined";
+	}
+}
+
 export function DataTable<T extends { _id: string }>({
 	data,
 	columns,
@@ -193,10 +213,7 @@ export function DataTable<T extends { _id: string }>({
 						<div className="mb-1">Debug info:</div>
 						{Object.entries(debugInfo).map(([key, value]) => (
 							<div key={key}>
-								{key}:{" "}
-								{typeof value === "object"
-									? JSON.stringify(value)
-									: String(value)}
+								{key}: {formatDebugValue(value)}
 							</div>
 						))}
 					</div>
@@ -338,10 +355,7 @@ export function DataTable<T extends { _id: string }>({
 					<div className="mb-1">Debug info:</div>
 					{Object.entries(debugInfo).map(([key, value]) => (
 						<div key={key}>
-							{key}:{" "}
-							{typeof value === "object"
-								? JSON.stringify(value)
-								: String(value)}
+							{key}: {formatDebugValue(value)}
 						</div>
 					))}
 				</div>

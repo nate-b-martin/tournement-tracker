@@ -97,7 +97,9 @@ describe("generateRoundRobinPairings", () => {
 
 		for (const round of rounds) {
 			for (const game of round) {
-				const key = [game.homeTeamIndex, game.awayTeamIndex].sort().join("-");
+				const key = [game.homeTeamIndex, game.awayTeamIndex]
+					.sort((a, b) => a - b)
+					.join("-");
 				matchups.add(key);
 			}
 		}
@@ -113,7 +115,7 @@ describe("generateRoundRobinPairings", () => {
 		for (const round of rounds) {
 			for (const game of round) {
 				const sorted = [game.homeTeamIndex, game.awayTeamIndex]
-					.sort()
+					.sort((a, b) => a - b)
 					.join("-");
 				matchups.set(sorted, (matchups.get(sorted) || 0) + 1);
 			}

@@ -5,7 +5,7 @@ export function DoubleEliminationBracket({
 }: {
 	games: BracketViewProps["games"];
 }) {
-	const rounds = [...new Set(games.map((g) => g.round))].sort();
+	const rounds = [...new Set(games.map((g) => g.round))].sort((a, b) => a - b);
 
 	return (
 		<div className="overflow-x-auto pb-4">

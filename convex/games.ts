@@ -333,7 +333,6 @@ export const generateBracket = mutation({
 		}
 
 		const bracketSlots = nextPowerOf2(playoffCount);
-		const byes = bracketSlots - playoffCount;
 		const playoffTeams = sortedTeams.slice(0, playoffCount);
 
 		for (const game of gamesToDelete) {

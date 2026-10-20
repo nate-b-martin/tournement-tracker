@@ -95,7 +95,7 @@ export function SeasonStandingsView({
 
 	const hasCompletedGames = games.some((g) => g.status === "completed");
 
-	if (sorted.length === 0 || sorted.every((s) => s.gamesPlayed === 0)) {
+	if (sorted.every((s) => s.gamesPlayed === 0)) {
 		return (
 			<div className="text-center py-12 text-muted-foreground">
 				No completed games to calculate standings.

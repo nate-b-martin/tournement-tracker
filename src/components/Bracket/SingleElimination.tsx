@@ -5,7 +5,7 @@ export function SingleEliminationBracket({
 }: {
 	games: BracketViewProps["games"];
 }) {
-	const rounds = [...new Set(games.map((g) => g.round))].sort();
+	const rounds = [...new Set(games.map((g) => g.round))].sort((a, b) => a - b);
 	const maxRounds = rounds.length;
 
 	return (

@@ -177,7 +177,7 @@ describe("DataTable", () => {
 		});
 
 		it("renders active filter chip with primary styling", () => {
-			const { container } = render(
+			render(
 				<DataTable
 					data={baseData}
 					columns={columns}
@@ -197,7 +197,7 @@ describe("DataTable", () => {
 		});
 
 		it("renders inactive filter chip with default styling", () => {
-			const { container } = render(
+			render(
 				<DataTable
 					data={baseData}
 					columns={columns}

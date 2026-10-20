@@ -163,7 +163,7 @@ function WizardContent({
 			dispatch({ type: "RESET" });
 			onOpenChange(false);
 			onSuccess?.();
-			navigate({ to: `/seasons/${seasonId}` });
+			void navigate({ to: `/seasons/${seasonId}` });
 		} catch (err) {
 			const message =
 				err instanceof Error ? err.message : "An unexpected error occurred";
