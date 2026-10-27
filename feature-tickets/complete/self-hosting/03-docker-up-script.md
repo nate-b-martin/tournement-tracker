@@ -87,13 +87,27 @@ Add a "Dockerized deployment" section (expanded in ticket `04`):
 
 ## Acceptance Criteria
 
-- [ ] `scripts/docker-up.sh` exists and is executable
-- [ ] Running it brings up the stack and waits for a healthy backend
-- [ ] `.env.local` gains `CONVEX_SELF_HOSTED_URL` + `CONVEX_SELF_HOSTED_ADMIN_KEY` (idempotent — reruns don't duplicate lines)
-- [ ] Functions are pushed to the self-hosted backend (verified via a scratch query or the dashboard)
-- [ ] `npx convex run seed` executes against the self-hosted backend
-- [ ] Script exits non-zero with a clear message if the backend never becomes healthy
-- [ ] Running the script again after `docker compose down` works (admin key stable)
+- [x] `scripts/docker-up.sh` exists and is executable
+- [x] Running it brings up the stack and waits for a healthy backend
+- [x] `.env.local` gains `CONVEX_SELF_HOSTED_URL` + `CONVEX_SELF_HOSTED_ADMIN_KEY` (idempotent — reruns don't duplicate lines)
+- [x] Functions are pushed to the self-hosted backend (verified via a scratch query or the dashboard)
+- [x] `npx convex run seed` executes against the self-hosted backend
+- [x] Script exits non-zero with a clear message if the backend never becomes healthy
+- [x] Running the script again after `docker compose down` works (admin key stable)
+
+> **Verification notes (2026-10-20):** Ran the script three times plus a
+> `docker compose down` → rerun cycle. Backend/frontend came up healthy,
+> functions pushed, and `.env.local` stayed at exactly one copy of each
+> `CONVEX_SELF_HOSTED_*` line.
+>
+> The seed invocation currently returns `Unauthorized: Must be logged in` from
+> `assertSeedOperationAuthorized`; the script treats this as expected until the
+> seed auth work in ticket `07` lands.
+>
+> `generate_admin_key.sh` issues a fresh key on every run, so the stored key
+> value changes, but previously issued keys remain valid against the same
+> `INSTANCE_NAME`/`INSTANCE_SECRET` (verified with an older key), which is what
+> keeps reruns working.
 
 ## Testing Considerations
 

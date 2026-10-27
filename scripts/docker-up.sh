@@ -5,8 +5,9 @@
 # Brings up the containerized stack (convex-backend, convex-dashboard, frontend),
 # waits for the backend to become healthy, wires the Convex CLI to the
 # self-hosted deployment by writing CONVEX_SELF_HOSTED_URL /
-# CONVEX_SELF_HOSTED_ADMIN_KEY into .env.local, pushes the backend functions,
-# and seeds the database.
+# CONVEX_SELF_HOSTED_ADMIN_KEY into .env.local, ensures the Convex Auth env vars
+# exist on the deployment (SITE_URL, JWT_PRIVATE_KEY, JWKS — generated once and
+# reused), pushes the backend functions, and seeds the database.
 #
 # Idempotent: safe to re-run against an already-running stack. Reruns only ever
 # rewrite the two CONVEX_SELF_HOSTED_* lines in .env.local; every other variable
@@ -112,6 +113,11 @@ echo "✓ Obtained admin key"
 # Idempotent: drop any previous self-hosted lines, then append the current ones.
 touch "$ENV_LOCAL"
 sed -i.bak '/^CONVEX_SELF_HOSTED_URL=/d; /^CONVEX_SELF_HOSTED_ADMIN_KEY=/d' "$ENV_LOCAL"
+# Guarantee the file ends with a newline, otherwise the appended variables would
+# be concatenated onto the last existing line and corrupt an unrelated value.
+if [ -s "$ENV_LOCAL" ] && [ -n "$(tail -c 1 "$ENV_LOCAL")" ]; then
+	printf '\n' >>"$ENV_LOCAL"
+fi
 {
 	echo "CONVEX_SELF_HOSTED_URL=${CLIENT_URL}"
 	echo "CONVEX_SELF_HOSTED_ADMIN_KEY=${admin_key}"
@@ -125,6 +131,14 @@ if grep -qE '^[[:space:]]*CONVEX_DEPLOYMENT=' "$ENV_LOCAL" 2>/dev/null; then
 	echo "⚠️  ${ENV_LOCAL} still sets CONVEX_DEPLOYMENT; the Convex CLI will refuse the" >&2
 	echo "    self-hosted backend until it is unset/commented out." >&2
 fi
+
+# --- Convex Auth environment ------------------------------------------------
+# SITE_URL and the RS256 signing keys live in the deployment's env store (not in
+# .env.local). The helper is idempotent: existing keys are reused so reruns do
+# not invalidate sessions. Set them once per backend — local `npx convex dev`
+# and the Dockerized backend each keep their own env.
+echo "⏳ Ensuring Convex Auth environment variables..."
+bash scripts/convex-auth-env.sh
 
 # --- Push functions, then seed ----------------------------------------------
 echo "⏳ Pushing Convex functions to the self-hosted backend..."

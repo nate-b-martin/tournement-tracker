@@ -8,9 +8,11 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as fields from "../fields.js";
 import type * as gameStats from "../gameStats.js";
 import type * as games from "../games.js";
+import type * as http from "../http.js";
 import type * as playerStats from "../playerStats.js";
 import type * as players from "../players.js";
 import type * as seasonGames from "../seasonGames.js";
@@ -28,9 +30,11 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   fields: typeof fields;
   gameStats: typeof gameStats;
   games: typeof games;
+  http: typeof http;
   playerStats: typeof playerStats;
   players: typeof players;
   seasonGames: typeof seasonGames;

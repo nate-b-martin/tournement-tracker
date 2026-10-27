@@ -55,7 +55,15 @@ bun run dev
 
 **Note:** The Convex dev server must be running alongside `bun run dev` for the application to work.
 
-### One-Shot Bootstrap (Docker)
+## Self-Hosted Docker Deployment
+
+The containerized stack uses no `convex.cloud` and no Clerk: Convex runs as a
+self-hosted container with **SQLite** persisted in a named volume, and the
+frontend is a local production image. The complete walkthrough lives in the
+[Docker guide](docs/DOCKER_GUIDE.md); `.env.example` documents every variable
+used by both the Docker and local-dev workflows.
+
+### Bootstrap
 
 Bring the whole containerized stack up and wire the Convex CLI to it in a single command:
 
@@ -69,6 +77,101 @@ waits for the backend to report healthy, writes `CONVEX_SELF_HOSTED_URL` /
 mutation. It is idempotent — safe to re-run against an already-running stack, and it only ever
 rewrites its own two lines in `.env.local`. The manual equivalents are documented below and in the
 [Docker guide](docs/DOCKER_GUIDE.md#quick-start).
+
+### One backend at a time
+
+The Docker stack and `bunx convex dev` **both bind port `3210`** and keep separate data stores and
+separate Convex env vars. Run one or the other — never both simultaneously:
+
+```bash
+docker compose down   # before switching to `bunx convex dev`
+# Ctrl-C the dev backend before running `docker compose up`
+```
+
+### Backups
+
+The database is the `data` volume mounted at `/convex/data` (SQLite). Stop the
+backend first so you do not archive a database mid-write. The volume is named
+`<compose-project>_data`; for this repository that is `tournement-tracker_data`
+(the compose project takes the directory name). Check with:
+
+```bash
+docker volume ls --filter name=_data
+```
+
+Back the volume up into a dated tarball in the current directory:
+
+```bash
+docker compose down
+docker run --rm \
+  -v tournement-tracker_data:/data \
+  -v "$PWD":/backup \
+  alpine tar czf "/backup/convex-backup-$(date +%F).tar.gz" -C /data .
+docker compose up -d
+```
+
+### Restore
+
+With the stack stopped, replace the volume contents from a backup:
+
+```bash
+docker compose down
+docker run --rm \
+  -v tournement-tracker_data:/data \
+  -v "$PWD":/backup \
+  alpine sh -c 'find /data -mindepth 1 -delete && tar xzf /backup/convex-backup-YYYY-MM-DD.tar.gz -C /data'
+docker compose up -d
+```
+
+Keep backups somewhere outside the Docker volume itself; `docker compose down -v` deletes the
+volume and every backup stored inside it.
+
+### Upgrades
+
+The compose file currently uses `ghcr.io/get-convex/convex-backend:latest` as a
+placeholder. **Pin a concrete tag** before treating a deployment as production:
+
+```yaml
+services:
+  convex-backend:
+    image: ghcr.io/get-convex/convex-backend:v1.xx.x # pin, don't float on latest
+  convex-dashboard:
+    image: ghcr.io/get-convex/convex-dashboard:v1.xx.x
+```
+
+Then, before bumping either tag:
+
+1. Read the self-hosted upgrade notes for the target release — some versions
+   require a backend migration: <https://github.com/get-convex/convex-backend/blob/main/self-hosted/README.md>.
+2. Back up the `data` volume (above).
+3. `docker compose pull && docker compose up -d`.
+4. Re-run `./scripts/docker-up.sh` if the CLI wiring or function push needs refreshing.
+
+Changing `INSTANCE_SECRET` is **not** an upgrade step — it invalidates every
+previously issued admin key.
+
+### Limitations
+
+- **Single node only.** The self-hosted backend is not horizontally scalable and
+  has no built-in HA/failover. Run exactly one `convex-backend` container.
+- **FSL license.** Convex is fair-source: each release converts to Apache-2.0
+  after roughly two years. Review the license if you redistribute the stack.
+- **No support plan.** Self-hosted Convex has no official vendor support
+  contract; treat upgrades as manual maintenance.
+- **No cloud dependencies.** The Docker deployment does not use `convex.cloud`
+  or Clerk. (Local `bunx convex dev` still uses the current Clerk setup until
+  the Convex Auth migration in Phase 2 lands.)
+- **Dashboard exposure.** `convex-dashboard` publishes on `127.0.0.1:6791` only;
+  keep it off public interfaces and log in with an admin key.
+
+### Security headers
+
+`netlify.toml` sets the CSP for the Netlify deployment. Its `connect-src` allows
+the self-hosted Convex origins (`http://localhost:3210`, `ws://localhost:3210`,
+`http://127.0.0.1:3210`, `ws://127.0.0.1:3210`, plus the `:3211` site origins)
+and no longer lists `convex.cloud` or Clerk domains. The Docker frontend serves
+via `srvx`, which does not set security headers itself — put it behind a
+reverse proxy that injects the same policy if you need strict CSP there.
 
 ### Self-Hosted Backend (Docker)
 

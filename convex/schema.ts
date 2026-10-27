@@ -1,7 +1,11 @@
+import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+	// Convex Auth tables: users, authSessions, authAccounts, authVerificationRequests.
+	...authTables,
+
 	tournaments: defineTable({
 		// core info
 		name: v.string(),

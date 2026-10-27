@@ -2,6 +2,8 @@ node_modules
 .DS_Store
 dist
 dist-ssr
+# Local environment files. Committed templates (.env.example,
+# docker-compose.env.example) are intentionally not covered.
 *.local
 count.txt
 .env
@@ -12,6 +14,8 @@ count.txt
 .vinxi
 todos.json
 mcp-todos.json
+# Database backups produced by the README's Docker backup command.
+convex-backup-*.tar.gz
 # Local Netlify folder
 .netlify
 .claude/**

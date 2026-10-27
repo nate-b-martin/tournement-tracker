@@ -114,6 +114,38 @@ VITE_CLERK_PUBLISHABLE_KEY: pk_test_...
 CONVEX_SSR_URL: http://convex-backend:3210  # Service name works inside container
 ```
 
+### Convex Auth environment (set on the deployment, not in `.env`)
+
+Convex Auth signs its own JWTs, so three variables live in the **deployment's**
+env store rather than in `.env`/`.env.local`:
+
+| Variable | Purpose |
+|----------|---------|
+| `SITE_URL` | Web app origin used for auth redirects. Defaults to `http://localhost:3000` (the frontend). |
+| `JWT_PRIVATE_KEY` | RS256 private key (PKCS8 PEM) used to sign session JWTs. |
+| `JWKS` | Public JWK set served at `/.well-known/jwks.json`. |
+
+`scripts/docker-up.sh` calls `scripts/convex-auth-env.sh` automatically. Run it
+by hand (or `bun run auth:env`) when wiring a backend outside that script — for
+example a local `npx convex dev` deployment. The helper is idempotent: it sets
+`SITE_URL` only when missing and generates the keypair only when
+`JWT_PRIVATE_KEY`/`JWKS` are both absent, so reruns never invalidate sessions.
+
+- Env is **per deployment**: the Dockerized backend and the local `npx convex
+  dev` backend each need their own run.
+- Never commit the keypair. It is generated into a temporary directory, pushed
+  with `convex env set`, and deleted; only the variable names are logged.
+- Verify the site origin serves the OIDC document:
+
+  ```bash
+  curl -fsS http://localhost:3211/.well-known/openid-configuration
+  curl -fsS http://localhost:3211/.well-known/jwks.json
+  ```
+
+`SITE_URL` is the **frontend** origin (`:3000`), not the Convex site origin
+(`:3211`). Password sign-in does not redirect, so it works even with `SITE_URL`
+unset, but setting it correctly keeps any future `redirectTo` flow valid.
+
 ### Important: VITE_* vs CONVEX_SSR_URL
 
 | Variable | When resolved | Value format | Who resolves it |
@@ -169,15 +201,21 @@ docker compose up -d frontend
 
 ### Backups
 
-SQLite data is in the `data` volume. To backup:
+SQLite data lives in the `data` volume (`<compose-project>_data`; for this repo that is
+`tournement-tracker_data`) at `/convex/data`. Stop the backend before archiving so SQLite is not
+mid-write:
 
 ```bash
 docker compose down
-docker run --rm -v tournament-tracker_data:/data alpine tar czf /backup/convex-data.tar.gz -C /data .
-# Or use docker volume cp:
-docker volume cp tournament-tracker_data:/convex/data ./data-backup/
+docker run --rm \
+  -v tournement-tracker_data:/data \
+  -v "$PWD":/backup \
+  alpine tar czf "/backup/convex-backup-$(date +%F).tar.gz" -C /data .
 docker compose up -d
 ```
+
+To restore, extract the archive back into the stopped volume. The exact commands are in the
+[README](../README.md#restore).
 
 ## Admin Key Management
 

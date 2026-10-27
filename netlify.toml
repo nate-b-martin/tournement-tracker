@@ -11,7 +11,12 @@ port = 8888
 [[headers]]
 for = "/*"
 [headers.values]
-Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.convex.cloud https://*.clerk.accounts.dev https://*.clerk.accounts.com; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+# Self-hosted Convex listens on :3210 (client sync, including its WebSocket
+# upgrade) and :3211 (site proxy for HTTP actions/JWKS). Cloud Convex and Clerk
+# origins are intentionally absent: the Dockerized deployment talks only to the
+# self-hosted backend. `challenges.cloudflare.com` stays in script-src/frame-src
+# until Clerk is removed (ticket 11); it is not a connect-src origin.
+Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://localhost:3210 ws://localhost:3210 http://127.0.0.1:3210 ws://127.0.0.1:3210 http://localhost:3211 http://127.0.0.1:3211; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
 Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 X-Frame-Options = "SAMEORIGIN"
 X-Content-Type-Options = "nosniff"
