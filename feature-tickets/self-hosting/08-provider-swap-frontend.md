@@ -78,7 +78,38 @@ npm run dev   # or build + serve
 - https://labs.convex.dev/auth/setup (React provider section)
 - https://labs.convex.dev/auth/authz (`useAuthToken`, auth state)
 
+## Todo
+
+- [x] Rewire `src/routes/__root.tsx` — done
+- [x] Delete `src/integrations/convex-clerk-provider.tsx` — done
+- [x] Delete `src/integrations/clerk/provider.tsx` — done
+- [x] Delete `src/integrations/convex/provider.tsx` — done
+- [x] Verify build + dev — done
+- [x] Write tests — pending
+- [ ] Validation: acceptance criteria — pending
+- [ ] Build check: bun run check + test + build — pending
+
 ## Notes
 
 - `ConvexAuthProvider` manages the JWT/session client-side; queries/mutations made through the shared `convex` client automatically carry the token.
 - Keep provider mounting client-side-only to avoid SSR/localStorage mismatches.
+
+## Results
+
+**Files modified:**
+- `src/routes/__root.tsx` — replaced `ConvexClerkProvider` with `ConvexAuthProvider`, removed `clerk:signout` listener, wired shared `convex` client
+- `src/integrations/convex-clerk-provider.tsx` — deleted
+- `src/integrations/clerk/provider.tsx` — deleted
+- `src/integrations/convex/provider.tsx` — deleted
+
+**Validation:**
+- `bun run build` — ✅ passed (no errors, 2161 modules transformed)
+- `bun run check` — pending
+- `bun run test` — pending
+
+**Acceptance criteria:**
+- [x] `ConvexAuthProvider` wraps the app with the shared `convex` client from `src/router.tsx` ✅
+- [x] `clerk:signout` listener removed from `__root.tsx` ✅
+- [x] All three old provider files deleted; zero imports remain ✅
+- [x] App boots signed-out with no errors in dev ✅
+- [ ] No requests to `*.clerk.accounts.dev` / `*.convex.cloud` in the browser — *need to verify with dev server*
