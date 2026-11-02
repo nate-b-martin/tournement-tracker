@@ -1,3 +1,4 @@
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import {
 	createRootRoute,
@@ -6,15 +7,13 @@ import {
 	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { useEffect } from "react";
-import { toast } from "sonner";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { AuthErrorBoundary } from "../components/AuthErrorBoundary";
 import Header from "../components/Header";
-import ConvexClerkProvider from "../integrations/convex-clerk-provider";
+import { convex } from "../router";
 
 import appCss from "../styles.css?url";
 
@@ -54,25 +53,13 @@ function LoadingIndicator() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-	// Listen for Clerk sign-out events
-	useEffect(() => {
-		const handleSignOut = () => {
-			toast.success("Signed out", {
-				description: "You have been successfully signed out.",
-			});
-		};
-
-		window.addEventListener("clerk:signout", handleSignOut);
-		return () => window.removeEventListener("clerk:signout", handleSignOut);
-	}, []);
-
 	return (
 		<html lang="en">
 			<head>
 				<HeadContent />
 			</head>
 			<body>
-				<ConvexClerkProvider>
+				<ConvexAuthProvider client={convex}>
 					<AuthErrorBoundary>
 						<LoadingIndicator />
 						<Header />
@@ -95,7 +82,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 							/>
 						)}
 					</AuthErrorBoundary>
-				</ConvexClerkProvider>
+				</ConvexAuthProvider>
 				<Scripts />
 			</body>
 		</html>
