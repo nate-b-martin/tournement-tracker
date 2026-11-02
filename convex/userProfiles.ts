@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { query, mutation } from "./_generated/server";
@@ -24,12 +25,12 @@ export const getCurrentUser = query({
 	},
 	returns: v.union(userProfileValidator, v.null()),
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) {
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) {
 			throw new Error("Unauthorized");
 		}
 
-		if (args.userId !== identity.subject) {
+		if (args.userId !== userId) {
 			throw new Error("Forbidden: Cannot read profile for another user");
 		}
 
@@ -53,12 +54,12 @@ export const getUserRole = query({
 		v.null(),
 	),
 	handler: async (ctx, args): Promise<Role | null> => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) {
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) {
 			throw new Error("Unauthorized");
 		}
 
-		if (args.userId !== identity.subject) {
+		if (args.userId !== userId) {
 			throw new Error("Forbidden: Cannot read role for another user");
 		}
 
@@ -92,12 +93,12 @@ export const createUserProfile = mutation({
 	},
 	returns: v.union(userProfileValidator, v.null()),
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) {
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) {
 			throw new Error("Unauthorized: Must be logged in to create a profile");
 		}
 
-		if (args.userId !== identity.subject) {
+		if (args.userId !== userId) {
 			throw new Error("Unauthorized: Cannot create profile for another user");
 		}
 
@@ -115,7 +116,7 @@ export const createUserProfile = mutation({
 		const role: Role = isFirstUser ? "admin" : "spectator";
 
 		const userProfileId = await ctx.db.insert("userProfiles", {
-			userId: args.userId,
+			userId,
 			email: args.email,
 			displayName: args.displayName,
 			role,
@@ -137,14 +138,14 @@ export const updateUserRole = mutation({
 	},
 	returns: v.union(userProfileValidator, v.null()),
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) {
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) {
 			throw new Error("Unauthorized");
 		}
 
 		const adminProfile = await ctx.db
 			.query("userProfiles")
-			.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+			.withIndex("by_userId", (q) => q.eq("userId", userId))
 			.unique();
 
 		if (!adminProfile || adminProfile.role !== "admin") {

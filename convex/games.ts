@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
@@ -223,12 +224,12 @@ export const generateBracket = mutation({
 		playoffTeamsCount: v.number(),
 	},
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) throw new Error("Unauthorized");
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) throw new Error("Unauthorized");
 
 		const profile = await ctx.db
 			.query("userProfiles")
-			.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+			.withIndex("by_userId", (q) => q.eq("userId", userId))
 			.first();
 		if (
 			!profile ||

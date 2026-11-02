@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { mutation, query, type QueryCtx } from "./_generated/server";
@@ -6,12 +7,12 @@ const MAX_PAGE_SIZE = 100;
 const MAX_SEARCH_LENGTH = 100;
 
 async function isViewerAdmin(ctx: QueryCtx): Promise<boolean> {
-	const identity = await ctx.auth.getUserIdentity();
-	if (!identity) return false;
+	const userId = await getAuthUserId(ctx);
+	if (userId === null) return false;
 
 	const viewerProfile = await ctx.db
 		.query("userProfiles")
-		.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+		.withIndex("by_userId", (q) => q.eq("userId", userId))
 		.unique();
 
 	return viewerProfile?.role === "admin";
@@ -275,12 +276,12 @@ export const create = mutation({
 		),
 	},
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) throw new Error("Unauthorized");
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) throw new Error("Unauthorized");
 
 		return await ctx.db.insert("players", {
 			...args,
-			userId: identity.subject,
+			userId,
 			isCaptain: args.isCaptain ?? false,
 			status: args.status ?? "active",
 			createdAt: Date.now(),

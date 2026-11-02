@@ -1,19 +1,190 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { Scrypt } from "lucia";
+
 import { type Id } from "./_generated/dataModel";
 import { mutation, type MutationCtx } from "./_generated/server";
+import type { Role } from "./userProfiles";
 
-async function assertSeedOperationAuthorized(ctx: MutationCtx) {
-	const identity = await ctx.auth.getUserIdentity();
-	if (!identity) {
-		throw new Error("Unauthorized: Must be logged in");
+type SeedAccountConfig = {
+	email: string;
+	password: string;
+	name: string;
+	displayName: string;
+	role: Role;
+};
+
+/**
+ * Deterministic auth accounts created by seeding.
+ *
+ * Passwords are read from env so that committed code never contains real
+ * credentials. The documented dev defaults are only for development/test
+ * environments; production deployments never run the seed (see the
+ * environment gate in `assertSeedOperationAuthorized`).
+ */
+const SEED_ACCOUNTS: {
+	admin: SeedAccountConfig;
+	organizer: SeedAccountConfig;
+	spectator: SeedAccountConfig;
+} = {
+	admin: {
+		email: process.env.SITE_ADMIN_EMAIL ?? "admin@example.com",
+		password: process.env.SITE_ADMIN_PASSWORD ?? "dev-password",
+		name: "Seed Admin",
+		displayName: "Seed Admin",
+		role: "admin",
+	},
+	organizer: {
+		email: process.env.SITE_ORGANIZER_EMAIL ?? "organizer@example.com",
+		password: process.env.SITE_ORGANIZER_PASSWORD ?? "dev-password",
+		name: "Seed Organizer",
+		displayName: "Seed Organizer",
+		role: "organizer",
+	},
+	spectator: {
+		email: process.env.SITE_SPECTATOR_EMAIL ?? "spectator@example.com",
+		password: process.env.SITE_SPECTATOR_PASSWORD ?? "dev-password",
+		name: "Seed Spectator",
+		displayName: "Seed Spectator",
+		role: "spectator",
+	},
+};
+
+/**
+ * Ensure a Convex Auth password account exists for `email` (idempotent).
+ *
+ * Documents are written in the exact shape the Password provider reads:
+ * - `users`: profile fields (`email`, `name`, ...)
+ * - `authAccounts`: keyed by (provider, providerAccountId) — the same lookup
+ *   `retrieveAccountWithCredentials` uses on sign-in — with `secret` holding
+ *   a lucia Scrypt hash, which the provider verifies via `Scrypt.verify`.
+ */
+async function ensureAuthUser(
+	ctx: Pick<MutationCtx, "db">,
+	account: SeedAccountConfig,
+): Promise<Id<"users">> {
+	const existingAccount = await ctx.db
+		.query("authAccounts")
+		.withIndex("providerAndAccountId", (q) =>
+			q.eq("provider", "password").eq("providerAccountId", account.email),
+		)
+		.unique();
+	if (existingAccount) {
+		return existingAccount.userId;
 	}
 
-	const adminProfile = await ctx.db
-		.query("userProfiles")
-		.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
-		.unique();
+	// Link the account to an existing user with the same email when one is
+	// present (e.g. partial sign-up state), matching how Convex Auth links
+	// accounts by email on sign-in.
+	const existingUser = await ctx.db
+		.query("users")
+		.withIndex("email", (q) => q.eq("email", account.email))
+		.first();
+	const userId =
+		existingUser?._id ??
+		(await ctx.db.insert("users", {
+			name: account.name,
+			email: account.email,
+		}));
 
-	if (!adminProfile || adminProfile.role !== "admin") {
-		throw new Error("Forbidden: Admin access required");
+	const secret = await new Scrypt().hash(account.password);
+	await ctx.db.insert("authAccounts", {
+		userId,
+		provider: "password",
+		providerAccountId: account.email,
+		secret,
+	});
+
+	return userId;
+}
+
+/** Ensure the matching `userProfiles` row exists (idempotent). */
+async function ensureUserProfile(
+	ctx: Pick<MutationCtx, "db">,
+	userId: Id<"users">,
+	account: SeedAccountConfig,
+) {
+	const existing = await ctx.db
+		.query("userProfiles")
+		.withIndex("by_userId", (q) => q.eq("userId", userId))
+		.first();
+	if (existing) {
+		return existing;
+	}
+
+	const profileId = await ctx.db.insert("userProfiles", {
+		userId,
+		role: account.role,
+		email: account.email,
+		displayName: account.displayName,
+	});
+	return await ctx.db.get(profileId);
+}
+
+/**
+ * Ensure all seed auth accounts exist, idempotently.
+ *
+ * The admin is inserted first so it owns the oldest `userProfiles` row; that
+ * keeps `createUserProfile`'s first-user rule inert for later sign-ups (new
+ * users become spectators, per the row-based `getIsFirstUser` check).
+ */
+async function ensureSeedAuthUsers(ctx: Pick<MutationCtx, "db">): Promise<{
+	admin: Id<"users">;
+	organizer: Id<"users">;
+	spectator: Id<"users">;
+}> {
+	const admin = await ensureAuthUser(ctx, SEED_ACCOUNTS.admin);
+	await ensureUserProfile(ctx, admin, SEED_ACCOUNTS.admin);
+	const organizer = await ensureAuthUser(ctx, SEED_ACCOUNTS.organizer);
+	await ensureUserProfile(ctx, organizer, SEED_ACCOUNTS.organizer);
+	const spectator = await ensureAuthUser(ctx, SEED_ACCOUNTS.spectator);
+	await ensureUserProfile(ctx, spectator, SEED_ACCOUNTS.spectator);
+	return { admin, organizer, spectator };
+}
+
+/**
+ * True when every `users`/`userProfiles` document belongs to the seed
+ * accounts. Used to gate unauthenticated ("bootstrap") seeding.
+ */
+async function databaseIsSeedOnly(ctx: Pick<MutationCtx, "db">) {
+	const seedEmails = new Set(
+		Object.values(SEED_ACCOUNTS).map((account) => account.email),
+	);
+	const users = await ctx.db.query("users").collect();
+	for (const user of users) {
+		if (user.email === undefined || !seedEmails.has(user.email)) {
+			return false;
+		}
+	}
+
+	const profiles = await ctx.db.query("userProfiles").collect();
+	const seedUserIds = new Set(users.map((user) => user._id));
+	for (const profile of profiles) {
+		if (!seedUserIds.has(profile.userId as Id<"users">)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+async function assertSeedOperationAuthorized(ctx: MutationCtx) {
+	const userId = await getAuthUserId(ctx);
+	if (userId !== null) {
+		const adminProfile = await ctx.db
+			.query("userProfiles")
+			.withIndex("by_userId", (q) => q.eq("userId", userId))
+			.unique();
+
+		if (!adminProfile || adminProfile.role !== "admin") {
+			throw new Error("Forbidden: Admin access required");
+		}
+	} else {
+		// Bootstrap support for `npx convex run seed` / `ensureAuthSeedUsers`:
+		// seeding before any user can sign in. Unauthenticated access is only
+		// allowed while the database contains nothing but seed users — once a
+		// real account exists, an authenticated admin is required.
+		if (!(await databaseIsSeedOnly(ctx))) {
+			throw new Error("Unauthorized: Must be logged in");
+		}
 	}
 
 	const runtimeEnv = (
@@ -33,7 +204,8 @@ async function assertSeedOperationAuthorized(ctx: MutationCtx) {
  * Seed function to populate the database with comprehensive test data for MVP testing.
  *
  * DATA INSERTION ORDER (critical for foreign key constraints):
- *  1. userProfiles       — no dependencies
+ *  1. auth users         — Convex Auth `users` + `authAccounts` (+ userProfiles
+ *                          rows) provide the seeded admin id used for ownership
  *  2. seasons            — no FK dependencies
  *  3. tournaments        — seasonId is optional, insert without it first
  *  4. fields             — tournaments
@@ -51,14 +223,13 @@ export const seed = mutation({
 		await assertSeedOperationAuthorized(ctx);
 
 		// ============================================================
-		// STEP 1: INSERT USER PROFILE
+		// STEP 1: ENSURE AUTH USERS + USER PROFILES
 		// ============================================================
-		await ctx.db.insert("userProfiles", {
-			userId: "user_clerk_test_001",
-			role: "admin",
-			email: "admin@tournament-tracker.test",
-			displayName: "Test Admin",
-		});
+		// Creates the Convex Auth accounts (users + authAccounts) and matching
+		// userProfiles rows for admin / organizer / spectator, then reuses the
+		// seeded admin id for all ownership fields below (replacing legacy
+		// synthetic Clerk fixture ids).
+		const { admin: adminUserId } = await ensureSeedAuthUsers(ctx);
 
 		// ============================================================
 		// STEP 2: INSERT SEASONS (3 records)
@@ -70,7 +241,7 @@ export const seed = mutation({
 			startDate: new Date("2026-03-01T00:00:00Z").getTime(),
 			endDate: new Date("2026-06-30T23:59:59Z").getTime(),
 			status: "active",
-			organizerId: "user_clerk_test_001",
+			organizerId: adminUserId,
 			regularSeasonWeeks: 8,
 			gamesPerWeek: 2,
 			gameDays: [1, 3],
@@ -86,7 +257,7 @@ export const seed = mutation({
 			startDate: new Date("2025-09-01T00:00:00Z").getTime(),
 			endDate: new Date("2025-12-31T23:59:59Z").getTime(),
 			status: "complete",
-			organizerId: "user_clerk_test_001",
+			organizerId: adminUserId,
 			createdAt: Date.now(),
 			updatedAt: Date.now(),
 		});
@@ -98,7 +269,7 @@ export const seed = mutation({
 			startDate: new Date("2026-07-01T00:00:00Z").getTime(),
 			endDate: new Date("2026-09-30T23:59:59Z").getTime(),
 			status: "planning",
-			organizerId: "user_clerk_test_001",
+			organizerId: adminUserId,
 			createdAt: Date.now(),
 			updatedAt: Date.now(),
 		});
@@ -123,7 +294,7 @@ export const seed = mutation({
 			gameDuration: 60,
 			breakBetweenGames: 15,
 			status: "active",
-			organizerId: "user_clerk_test_001",
+			organizerId: adminUserId,
 			seedingType: "random",
 			gameFormatRules: {
 				innings: 7,
@@ -153,7 +324,7 @@ export const seed = mutation({
 			gameDuration: 45,
 			breakBetweenGames: 10,
 			status: "draft",
-			organizerId: "user_clerk_test_001",
+			organizerId: adminUserId,
 			seedingType: "random",
 			createdAt: Date.now(),
 			updatedAt: Date.now(),
@@ -176,7 +347,7 @@ export const seed = mutation({
 			gameDuration: 90,
 			breakBetweenGames: 20,
 			status: "registration_open",
-			organizerId: "user_clerk_test_001",
+			organizerId: adminUserId,
 			seedingType: "manual",
 			createdAt: Date.now(),
 			updatedAt: Date.now(),
@@ -382,7 +553,6 @@ export const seed = mutation({
 		];
 		for (let i = 0; i < team1PlayerNames.length; i++) {
 			const id = await ctx.db.insert("players", {
-				userId: `user_clerk_team1_p${i + 1}`,
 				teamId: team1Id,
 				firstName: team1PlayerNames[i].firstName,
 				lastName: team1PlayerNames[i].lastName,
@@ -414,7 +584,6 @@ export const seed = mutation({
 		];
 		for (let i = 0; i < team2PlayerNames.length; i++) {
 			const id = await ctx.db.insert("players", {
-				userId: `user_clerk_team2_p${i + 1}`,
 				teamId: team2Id,
 				firstName: team2PlayerNames[i].firstName,
 				lastName: team2PlayerNames[i].lastName,
@@ -444,7 +613,6 @@ export const seed = mutation({
 		];
 		for (let i = 0; i < team3PlayerNames.length; i++) {
 			const id = await ctx.db.insert("players", {
-				userId: `user_clerk_team3_p${i + 1}`,
 				teamId: team3Id,
 				firstName: team3PlayerNames[i].firstName,
 				lastName: team3PlayerNames[i].lastName,
@@ -474,7 +642,6 @@ export const seed = mutation({
 		];
 		for (let i = 0; i < team4PlayerNames.length; i++) {
 			const id = await ctx.db.insert("players", {
-				userId: `user_clerk_team4_p${i + 1}`,
 				teamId: team4Id,
 				firstName: team4PlayerNames[i].firstName,
 				lastName: team4PlayerNames[i].lastName,
@@ -552,7 +719,6 @@ export const seed = mutation({
 		];
 		for (let i = 0; i < team5PlayerData.length; i++) {
 			const id = await ctx.db.insert("players", {
-				userId: `user_clerk_team5_p${i + 1}`,
 				teamId: team5Id,
 				firstName: team5PlayerData[i].firstName,
 				lastName: team5PlayerData[i].lastName,
@@ -632,7 +798,6 @@ export const seed = mutation({
 		];
 		for (let i = 0; i < team6PlayerData.length; i++) {
 			const id = await ctx.db.insert("players", {
-				userId: `user_clerk_team6_p${i + 1}`,
 				teamId: team6Id,
 				firstName: team6PlayerData[i].firstName,
 				lastName: team6PlayerData[i].lastName,
@@ -712,7 +877,6 @@ export const seed = mutation({
 		];
 		for (let i = 0; i < team7PlayerData.length; i++) {
 			const id = await ctx.db.insert("players", {
-				userId: `user_clerk_team7_p${i + 1}`,
 				teamId: team7Id,
 				firstName: team7PlayerData[i].firstName,
 				lastName: team7PlayerData[i].lastName,
@@ -792,7 +956,6 @@ export const seed = mutation({
 		];
 		for (let i = 0; i < team8PlayerData.length; i++) {
 			const id = await ctx.db.insert("players", {
-				userId: `user_clerk_team8_p${i + 1}`,
 				teamId: team8Id,
 				firstName: team8PlayerData[i].firstName,
 				lastName: team8PlayerData[i].lastName,
@@ -1248,7 +1411,30 @@ export const seed = mutation({
 			playerCount: 48,
 			seasonIds: [season1Id, season2Id, season3Id],
 			message:
-				"Seed data inserted successfully: 1 user profile, 3 seasons, 3 tournaments, 6 fields, 8 teams (48 players), 6 seasonTeams, 8 seasonGames (6 completed, 2 scheduled), 4 tournament games (2 completed, 1 scheduled, 1 TBD), and 14 gameStats records.",
+				"Seed data inserted successfully: 3 auth users + userProfiles (admin, organizer, spectator), 3 seasons, 3 tournaments, 6 fields, 8 teams (48 players), 6 seasonTeams, 8 seasonGames (6 completed, 2 scheduled), 4 tournament games (2 completed, 1 scheduled, 1 TBD), and 14 gameStats records.",
+		};
+	},
+});
+
+/**
+ * Idempotently ensure the seeded auth accounts exist: Convex Auth `users` +
+ * `authAccounts` documents for admin / organizer / spectator, plus matching
+ * `userProfiles` rows. Exported so CI and tests can guarantee the accounts
+ * exist before attempting sign-in (see ticket `07` in feature-tickets).
+ *
+ * Callable either by an authenticated admin or, on a fresh/seed-only
+ * database, unauthenticated via `npx convex run ensureAuthSeedUsers`.
+ */
+export const ensureAuthSeedUsers = mutation({
+	args: {},
+	handler: async (ctx) => {
+		await assertSeedOperationAuthorized(ctx);
+
+		const users = await ensureSeedAuthUsers(ctx);
+		return {
+			...users,
+			message:
+				"Seed auth users ensured: admin, organizer, and spectator accounts exist (idempotent).",
 		};
 	},
 });
@@ -1258,14 +1444,22 @@ export const seed = mutation({
  * Useful for resetting the database before re-seeding.
  *
  * WARNING: This will delete ALL data in the database, not just seed data.
+ * Convex Auth tables are cleared too: re-seeding then recreates the auth
+ * accounts with fresh ids; stale sessions are invalidated and callers are
+ * signed out on their next request.
  */
 export const clearAllData = mutation({
 	args: {},
 	handler: async (ctx) => {
 		await assertSeedOperationAuthorized(ctx);
 
-		// Query all tables and delete all records.
+		// Query all tables and delete all records. Auth child tables are
+		// cleared before `users`; everything else before `userProfiles`.
 		const tables = [
+			"authVerificationCodes",
+			"authAccounts",
+			"authRefreshTokens",
+			"authSessions",
 			"seasonGames",
 			"seasonTeams",
 			"seasons",
@@ -1276,6 +1470,7 @@ export const clearAllData = mutation({
 			"fields",
 			"tournaments",
 			"userProfiles",
+			"users",
 		];
 
 		for (const table of tables) {

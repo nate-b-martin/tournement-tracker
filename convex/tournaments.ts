@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
@@ -143,12 +144,12 @@ export const create = mutation({
 		),
 	},
 	handler: async (ctx, args) => {
-		const identity = await ctx.auth.getUserIdentity();
-		if (!identity) throw new Error("Unauthorized");
+		const userId = await getAuthUserId(ctx);
+		if (userId === null) throw new Error("Unauthorized");
 
 		return await ctx.db.insert("tournaments", {
 			...args,
-			organizerId: identity.subject,
+			organizerId: userId,
 			currentTeamCount: 0,
 			status: args.status ?? "draft",
 			createdAt: Date.now(),

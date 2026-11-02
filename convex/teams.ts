@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { mutation, query, type QueryCtx } from "./_generated/server";
@@ -6,12 +7,12 @@ const MAX_PAGE_SIZE = 100;
 const MAX_SEARCH_LENGTH = 100;
 
 async function isViewerAdmin(ctx: QueryCtx): Promise<boolean> {
-	const identity = await ctx.auth.getUserIdentity();
-	if (!identity) return false;
+	const userId = await getAuthUserId(ctx);
+	if (userId === null) return false;
 
 	const viewerProfile = await ctx.db
 		.query("userProfiles")
-		.withIndex("by_userId", (q) => q.eq("userId", identity.subject))
+		.withIndex("by_userId", (q) => q.eq("userId", userId))
 		.unique();
 
 	return viewerProfile?.role === "admin";
