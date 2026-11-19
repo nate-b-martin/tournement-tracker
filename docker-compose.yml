@@ -22,6 +22,8 @@ services:
       test: curl -f http://localhost:3210/version
       interval: 5s
       start_period: 10s
+    networks:
+      - host_net
 
   frontend:
     build:
@@ -42,6 +44,8 @@ services:
     depends_on:
       convex-backend:
         condition: service_healthy
+    networks:
+      - host_net
 
   convex-dashboard:
     image: ghcr.io/get-convex/convex-dashboard:latest
@@ -54,6 +58,13 @@ services:
     depends_on:
       convex-backend:
         condition: service_healthy
+    networks:
+      - host_net
+
+networks:
+  host_net:
+    driver: host
+    external: false
 
 volumes:
   data:

@@ -1,16 +1,18 @@
-import { SignInButton, UserButton, useClerk } from "@clerk/clerk-react";
+import { SignInButton, UserButton } from "@clerk/clerk-react";
+import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
 import { Eye, LogOut, Shield } from "lucide-react";
 import { toast } from "sonner";
-
-import { useAuth } from "@/hooks/useAuth";
 
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+
 export function AuthWidget() {
-	const { isLoaded, isSignedIn, isAdmin, user, profile } = useAuth();
-	const { signOut } = useClerk();
+	const { isAuthenticated, isLoading } = useConvexAuth();
+	const { signOut } = useAuthActions();
+	const { profile, isAdmin } = useCurrentUser();
 
 	const handleSignOut = async () => {
 		try {
@@ -23,7 +25,7 @@ export function AuthWidget() {
 	};
 
 	// Loading state
-	if (!isLoaded) {
+	if (!isLoading) {
 		return (
 			<div className="flex items-center gap-3 p-3">
 				<Skeleton className="h-10 w-10 rounded-full" />
@@ -36,7 +38,7 @@ export function AuthWidget() {
 	}
 
 	// Signed out state
-	if (!isSignedIn) {
+	if (!isAuthenticated) {
 		return (
 			<SignInButton mode="modal">
 				<Button variant="outline" className="w-full justify-start gap-2">
@@ -62,10 +64,10 @@ export function AuthWidget() {
 					/>
 					<div className="flex flex-col min-w-0">
 						<span className="text-sm font-medium text-white truncate">
-							{profile?.displayName || user?.firstName || "User"}
+							{profile?.displayName || "User"}
 						</span>
 						<span className="text-xs text-gray-400 truncate">
-							{profile?.email || user?.primaryEmailAddress?.emailAddress}
+							{profile?.email}
 						</span>
 					</div>
 				</div>
