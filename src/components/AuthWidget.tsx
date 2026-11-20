@@ -1,13 +1,19 @@
-import { SignInButton, UserButton } from "@clerk/clerk-react";
 import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
-import { Eye, LogOut, Shield } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Eye, LogIn, LogOut, Shield } from "lucide-react";
 import { toast } from "sonner";
+
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+function getInitials(profile: { displayName?: string; email?: string } | null) {
+	const source = profile?.displayName || profile?.email || "?";
+
+	return source.slice(0, 1).toUpperCase();
+}
 
 export function AuthWidget() {
 	const { isAuthenticated, isLoading } = useConvexAuth();
@@ -25,7 +31,7 @@ export function AuthWidget() {
 	};
 
 	// Loading state
-	if (!isLoading) {
+	if (isLoading) {
 		return (
 			<div className="flex items-center gap-3 p-3">
 				<Skeleton className="h-10 w-10 rounded-full" />
@@ -40,11 +46,12 @@ export function AuthWidget() {
 	// Signed out state
 	if (!isAuthenticated) {
 		return (
-			<SignInButton mode="modal">
-				<Button variant="outline" className="w-full justify-start gap-2">
+			<Button asChild variant="outline" className="w-full justify-start gap-2">
+				<Link to="/signin">
+					<LogIn className="h-4 w-4" />
 					<span>Sign In</span>
-				</Button>
-			</SignInButton>
+				</Link>
+			</Button>
 		);
 	}
 
@@ -54,14 +61,12 @@ export function AuthWidget() {
 			{/* User info section */}
 			<div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-gray-800/50">
 				<div className="flex items-center gap-2 flex-1 min-w-0">
-					<UserButton
-						afterSignOutUrl="/"
-						appearance={{
-							elements: {
-								avatarBox: "w-8 h-8",
-							},
-						}}
-					/>
+					<div
+						className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-cyan-600 text-sm font-semibold text-white"
+						aria-hidden="true"
+					>
+						{getInitials(profile)}
+					</div>
 					<div className="flex flex-col min-w-0">
 						<span className="text-sm font-medium text-white truncate">
 							{profile?.displayName || "User"}

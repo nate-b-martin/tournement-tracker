@@ -20,23 +20,17 @@ const userProfileValidator = v.object({
 });
 
 export const getCurrentUser = query({
-	args: {
-		userId: v.string(),
-	},
+	args: {},
 	returns: v.union(userProfileValidator, v.null()),
-	handler: async (ctx, args) => {
+	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
 		if (userId === null) {
-			throw new Error("Unauthorized");
-		}
-
-		if (args.userId !== userId) {
-			throw new Error("Forbidden: Cannot read profile for another user");
+			return null;
 		}
 
 		const userProfile = await ctx.db
 			.query("userProfiles")
-			.withIndex("by_userId", (q) => q.eq("userId", args.userId))
+			.withIndex("by_userId", (q) => q.eq("userId", userId))
 			.unique();
 		return userProfile;
 	},
@@ -87,7 +81,6 @@ export const getIsFirstUser = query({
 
 export const createUserProfile = mutation({
 	args: {
-		userId: v.string(),
 		email: v.optional(v.string()),
 		displayName: v.optional(v.string()),
 	},
@@ -98,13 +91,9 @@ export const createUserProfile = mutation({
 			throw new Error("Unauthorized: Must be logged in to create a profile");
 		}
 
-		if (args.userId !== userId) {
-			throw new Error("Unauthorized: Cannot create profile for another user");
-		}
-
 		const existingProfile = await ctx.db
 			.query("userProfiles")
-			.withIndex("by_userId", (q) => q.eq("userId", args.userId))
+			.withIndex("by_userId", (q) => q.eq("userId", userId))
 			.unique();
 
 		if (existingProfile) {
@@ -115,10 +104,14 @@ export const createUserProfile = mutation({
 		const isFirstUser = existingUser === null;
 		const role: Role = isFirstUser ? "admin" : "spectator";
 
+		const identity = await ctx.auth.getUserIdentity();
+		const email = args.email ?? identity?.email;
+		const displayName = args.displayName ?? identity?.name;
+
 		const userProfileId = await ctx.db.insert("userProfiles", {
 			userId,
-			email: args.email,
-			displayName: args.displayName,
+			...(email ? { email } : {}),
+			...(displayName ? { displayName } : {}),
 			role,
 		});
 

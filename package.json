@@ -20,7 +20,6 @@
 	},
 	"dependencies": {
 		"@auth/core": "0.41.1",
-		"@clerk/clerk-react": "^5.49.0",
 		"@convex-dev/auth": "0.0.96",
 		"@convex-dev/react-query": "0.0.0-alpha.11",
 		"@hookform/resolvers": "^5.4.0",

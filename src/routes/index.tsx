@@ -1,4 +1,3 @@
-import { SignInButton } from "@clerk/clerk-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import {
@@ -282,9 +281,9 @@ function App() {
 					<p className="text-gray-400 mb-4">
 						Sign in to manage tournaments, teams, and players.
 					</p>
-					<SignInButton mode="modal">
-						<Button>Sign In</Button>
-					</SignInButton>
+					<Button asChild>
+						<Link to="/signin">Sign In</Link>
+					</Button>
 				</div>
 			)}
 		</div>

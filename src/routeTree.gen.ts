@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as SigninRouteImport } from './routes/signin'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as GamespageIndexRouteImport } from './routes/gamespage/index'
 import { Route as PlayerspageIndexRouteImport } from './routes/playerspage/index'
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardIndexRoute = DashboardIndexRouteImport.update({
@@ -80,6 +86,7 @@ const TournamentsIdIndexRoute = TournamentsIdIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
+  '/signin': typeof SigninRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/gamespage/': typeof GamespageIndexRoute
   '/playerspage/': typeof PlayerspageIndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
+  '/signin': typeof SigninRoute
   '/dashboard': typeof DashboardIndexRoute
   '/gamespage': typeof GamespageIndexRoute
   '/playerspage': typeof PlayerspageIndexRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mcp': typeof McpRoute
+  '/signin': typeof SigninRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/gamespage/': typeof GamespageIndexRoute
   '/playerspage/': typeof PlayerspageIndexRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/mcp'
+    | '/signin'
     | '/dashboard/'
     | '/gamespage/'
     | '/playerspage/'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/mcp'
+    | '/signin'
     | '/dashboard'
     | '/gamespage'
     | '/playerspage'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/mcp'
+    | '/signin'
     | '/dashboard/'
     | '/gamespage/'
     | '/playerspage/'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   McpRoute: typeof McpRoute
+  SigninRoute: typeof SigninRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   GamespageIndexRoute: typeof GamespageIndexRoute
   PlayerspageIndexRoute: typeof PlayerspageIndexRoute
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/': {
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   McpRoute: McpRoute,
+  SigninRoute: SigninRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   GamespageIndexRoute: GamespageIndexRoute,
   PlayerspageIndexRoute: PlayerspageIndexRoute,

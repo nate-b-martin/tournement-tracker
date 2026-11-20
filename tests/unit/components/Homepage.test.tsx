@@ -29,12 +29,6 @@ vi.mock("@/components/SetupWizard", () => ({
 	SetupWizard: () => <div data-testid="setup-wizard" />,
 }));
 
-vi.mock("@clerk/clerk-react", () => ({
-	SignInButton: ({ children }: { children: React.ReactNode }) => (
-		<span>{children}</span>
-	),
-}));
-
 async function renderHomepage() {
 	const { Route } = await import("@/routes/index");
 	const Component = Route.options.component;

@@ -3,7 +3,7 @@ services:
     # Pin to a specific release revision for reproducible upgrades, e.g.
     # image: ghcr.io/get-convex/convex-backend:v1.xx.x
     # Upgrade notes (incl. required backend migrations) live in ticket 04.
-    image: ghcr.io/get-convex/convex-backend:latest
+    image: ghcr.io/convex/convex-backend:latest
     stop_grace_period: 10s
     stop_signal: SIGINT
     ports:
@@ -23,7 +23,7 @@ services:
       interval: 5s
       start_period: 10s
     networks:
-      - host_net
+      - default
 
   frontend:
     build:
@@ -45,10 +45,10 @@ services:
       convex-backend:
         condition: service_healthy
     networks:
-      - host_net
+      - default
 
   convex-dashboard:
-    image: ghcr.io/get-convex/convex-dashboard:latest
+    image: ghcr.io/convex/convex-dashboard:latest
     stop_grace_period: 10s
     stop_signal: SIGINT
     ports:
@@ -59,12 +59,11 @@ services:
       convex-backend:
         condition: service_healthy
     networks:
-      - host_net
+      - default
 
 networks:
-  host_net:
-    driver: host
-    external: false
+  default:
+    driver: bridge
 
 volumes:
   data:

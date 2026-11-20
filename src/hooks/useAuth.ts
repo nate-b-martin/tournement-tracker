@@ -32,7 +32,7 @@ interface UseAuthResult {
 const MAX_RETRIES = 3;
 
 export function useAuth(): UseAuthResult {
-	// If Clerk is not configured, return a safe unauthenticated state so
+	// If Convex is not configured, return a safe unauthenticated state so
 	// components still render instead of stalling. Tests that require auth
 	// should skip when Convex URL isn't present.
 	if (!import.meta.env.VITE_CONVEX_URL) {
@@ -65,8 +65,7 @@ export function useAuth(): UseAuthResult {
 	);
 	const signInToastShown = useRef(false);
 
-	const userId = "skip";
-	const profile = useQuery(api.userProfiles.getCurrentUser, userId);
+	const profile = useQuery(api.userProfiles.getCurrentUser, {});
 
 	const createProfile = useMutation(api.userProfiles.createUserProfile);
 
@@ -127,11 +126,7 @@ export function useAuth(): UseAuthResult {
 			setIsCreatingProfile(true);
 			setError(null);
 
-			createProfile({
-				userId: "skip",
-				email: "skip",
-				displayName: "skip",
-			})
+			createProfile({})
 				.then(() => {
 					toast.success("Welcome! Your profile has been created.");
 				})
@@ -211,7 +206,7 @@ export function useAuth(): UseAuthResult {
 	const isSpectator = currentProfile?.role === "spectator";
 
 	const isLoading =
-		!authLoading ||
+		authLoading ||
 		isCreatingProfile ||
 		(!!isAuthenticated && profile === undefined);
 
