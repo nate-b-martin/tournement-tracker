@@ -10,10 +10,12 @@ type Role = "admin" | "organizer" | "player" | "spectator";
 
 type UserProfile = Doc<"userProfiles">;
 
+type AuthUser = Doc<"users">;
+
 interface UseAuthResult {
 	isLoaded: boolean;
 	isSignedIn: boolean;
-	user: null;
+	user: AuthUser | null;
 	profile: UserProfile | null;
 	isAdmin: boolean;
 	isOrganizer: boolean;
@@ -32,9 +34,10 @@ interface UseAuthResult {
 const MAX_RETRIES = 3;
 
 export function useAuth(): UseAuthResult {
-	// If Convex is not configured, return a safe unauthenticated state so
-	// components still render instead of stalling. Tests that require auth
-	// should skip when Convex URL isn't present.
+	// If Convex is not configured, return a safe unauthenticated state before
+	// any hooks run — the Convex Auth and Convex hooks throw without a
+	// configured client. Components still render instead of stalling. Tests
+	// that require auth should skip when the Convex URL isn't present.
 	if (!import.meta.env.VITE_CONVEX_URL) {
 		return {
 			isLoaded: true,
@@ -65,7 +68,14 @@ export function useAuth(): UseAuthResult {
 	);
 	const signInToastShown = useRef(false);
 
-	const profile = useQuery(api.userProfiles.getCurrentUser, {});
+	// Skip both queries while signed out ("skip" → no network request). The
+	// backend resolves the Convex Auth `users._id` from the session token, so
+	// no user id is ever passed from the client.
+	const user = useQuery(api.users.getCurrent, isAuthenticated ? {} : "skip");
+	const profile = useQuery(
+		api.userProfiles.getCurrentUser,
+		isAuthenticated ? {} : "skip",
+	);
 
 	const createProfile = useMutation(api.userProfiles.createUserProfile);
 
@@ -110,29 +120,35 @@ export function useAuth(): UseAuthResult {
 		};
 	}, []);
 
-	// Effect must be called before conditional returns (React Rules of Hooks)
+	// Auto-create the user profile the first time a signed-in user is seen
+	// without one. `isCreatingProfile` blocks concurrent runs, `error` stops
+	// re-firing until `retry()`/the backoff clears it, and a duplicate insert
+	// reported by the server (profile already created by another tab or a
+	// race with the profile query) is treated as success so the guard stays
+	// idempotent.
 	useEffect(() => {
-		// If Convex is not configured, skip profile creation
-		if (!import.meta.env.VITE_CONVEX_URL) {
-			return;
-		}
-
 		if (
 			!authLoading &&
 			isAuthenticated &&
+			user &&
 			profile === null &&
-			!isCreatingProfile
+			!isCreatingProfile &&
+			!error
 		) {
 			setIsCreatingProfile(true);
 			setError(null);
 
-			createProfile({})
+			createProfile({ email: user.email, displayName: user.name })
 				.then(() => {
 					toast.success("Welcome! Your profile has been created.");
 				})
 				.catch((err) => {
 					const errorMsg =
 						err instanceof Error ? err.message : "Failed to create profile";
+					if (errorMsg.includes("already exists")) {
+						// Another create won the race — the profile exists.
+						return;
+					}
 					setError(err instanceof Error ? err : new Error(errorMsg));
 					toast.error(`Auth error: ${errorMsg}`);
 					if (import.meta.env.DEV) {
@@ -143,7 +159,15 @@ export function useAuth(): UseAuthResult {
 					setIsCreatingProfile(false);
 				});
 		}
-	}, [authLoading, isAuthenticated, profile, isCreatingProfile, createProfile]);
+	}, [
+		authLoading,
+		isAuthenticated,
+		user,
+		profile,
+		isCreatingProfile,
+		error,
+		createProfile,
+	]);
 
 	// Show role-specific welcome toast only once when user first signs in
 	useEffect(() => {
@@ -175,30 +199,6 @@ export function useAuth(): UseAuthResult {
 		}
 	}, [authLoading, isAuthenticated, profile]);
 
-	// If Convex is not configured (e.g. in CI or local dev without keys),
-	// return a safe unauthenticated state so components still render instead of
-	// stalling. Tests that require auth should skip when Convex URL isn't present.
-	if (!import.meta.env.VITE_CONVEX_URL) {
-		return {
-			isLoaded: true,
-			isSignedIn: false,
-			user: null,
-			profile: null,
-			isAdmin: false,
-			isOrganizer: false,
-			isPlayer: false,
-			isSpectator: false,
-			isLoading: false,
-			error: null,
-			hasError: false,
-			refetch: () => {},
-			retry: () => {},
-			retryCount: 0,
-			hasMaxRetries: false,
-			isOnline: true,
-		};
-	}
-
 	const currentProfile = profile ?? null;
 	const isAdmin = currentProfile?.role === "admin";
 	const isOrganizer = currentProfile?.role === "organizer";
@@ -213,7 +213,7 @@ export function useAuth(): UseAuthResult {
 	return {
 		isLoaded: !authLoading,
 		isSignedIn: !!isAuthenticated,
-		user: null,
+		user: user ?? null,
 		profile: currentProfile,
 		isAdmin: !!isAdmin,
 		isOrganizer: !!isOrganizer,

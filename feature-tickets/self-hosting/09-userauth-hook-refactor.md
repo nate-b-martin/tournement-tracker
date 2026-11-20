@@ -91,3 +91,23 @@ Grep the app for `primaryEmailAddress`, `firstName`, `fullName`, `username` (Cle
 
 - Keep the exported `Role`/`UserProfile` types and the rest of the interface byte-for-byte stable to avoid cascading changes.
 - The `user` object shape differs from Clerk's; centralize name/email fallbacks so only this hook (and ticket `10`) touch them.
+
+## Results
+
+**Files changed:**
+- `convex/users.ts` — NEW: `getCurrent` query returning the caller's Convex Auth `users` doc (or `null`). Added because `@convex-dev/auth/react@0.0.96` does **not** export `useUser`; the official Convex Auth pattern (labs.convex.dev/auth/authz) is a `currentUser`-style query using `getAuthUserId(ctx)`.
+- `convex/_generated/api.d.ts` — registered the `users` module (manual, matches codegen output; `bunx convex codegen` requires the local backend at `127.0.0.1:3210` running — regenerate with `bunx convex dev` when it is up).
+- `src/hooks/useAuth.ts` — internals rewritten; exports/types unchanged except `user` widened from `null` to `Doc<"users"> | null` (enables ticket `10`'s `user?.name`/`user?.email`).
+- `tests/unit/hooks/useAuth.test.ts` — NEW: 7 unit tests (signed-out skip, loading, signed-in exposure, auto-create args, duplicate idempotency, failure state, unconfigured fallback).
+
+**Deviations from the ticket text (adapted to the completed prerequisites):**
+- Step 1: `useUser` doesn't exist in the installed package → official `currentUser` query instead (`api.users.getCurrent`).
+- Step 2: `getCurrentUser` (ticket `06`) takes no `userId` arg — it resolves `users._id` from the session token server-side, so the client keys on `isAuthenticated ? {} : "skip"` rather than passing the id.
+- Auto-create guard also includes `!error`: without it a failed create hot-looped mutations and the existing retry/backoff (`retryCount`, `MAX_RETRIES`) could never engage; with it, `retry()` clears `error` and re-arms the attempt as designed. Duplicate-insert ("already exists") rejections are treated as success for idempotency.
+
+**Validation:**
+- `bun run check` — ✅ passed (also fixed pre-existing `skills-lock.json` formatting failure via `vp check --fix`)
+- `bun run test` — ✅ passed (267/267, was 260 baseline)
+- `bun run build` — ✅ passed
+
+**Acceptance criteria:** 6/6 verified ✅ (clerk-free hook, skip-when-signed-out, Convex-URL fallback, idempotent auto-create, stable return shape, check+build pass)
