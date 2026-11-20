@@ -1,10 +1,11 @@
-import { useConvexAuth, useAuthActions } from "@convex-dev/auth/react";
-import { Link } from "@tanstack/react-router";
-import { Eye, LogIn, LogOut, Shield } from "lucide-react";
-import { toast } from "sonner";
+import { useConvexAuth } from "@convex-dev/auth/react";
+import { Eye, LogIn, Shield } from "lucide-react";
+import { useState } from "react";
 
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
+import SignInDialog from "./auth/SignInDialog";
+import SignOutButton from "./auth/SignOutButton";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
@@ -17,18 +18,8 @@ function getInitials(profile: { displayName?: string; email?: string } | null) {
 
 export function AuthWidget() {
 	const { isAuthenticated, isLoading } = useConvexAuth();
-	const { signOut } = useAuthActions();
 	const { profile, isAdmin } = useCurrentUser();
-
-	const handleSignOut = async () => {
-		try {
-			await signOut();
-			toast.success("You have been signed out.");
-		} catch (error) {
-			console.error("Sign out error:", error);
-			toast.error("Failed to sign out. Please try again.");
-		}
-	};
+	const [signInOpen, setSignInOpen] = useState(false);
 
 	// Loading state
 	if (isLoading) {
@@ -43,15 +34,20 @@ export function AuthWidget() {
 		);
 	}
 
-	// Signed out state
+	// Signed out state - show Sign In button that opens dialog
 	if (!isAuthenticated) {
 		return (
-			<Button asChild variant="outline" className="w-full justify-start gap-2">
-				<Link to="/signin">
+			<div className="flex items-center gap-3">
+				<Button
+					variant="outline"
+					onClick={() => setSignInOpen(true)}
+					className="w-full justify-start gap-2"
+				>
 					<LogIn className="h-4 w-4" />
 					<span>Sign In</span>
-				</Link>
-			</Button>
+				</Button>
+				<SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
+			</div>
 		);
 	}
 
@@ -95,15 +91,7 @@ export function AuthWidget() {
 			</div>
 
 			{/* Sign out button */}
-			<Button
-				variant="ghost"
-				size="sm"
-				onClick={handleSignOut}
-				className="w-full justify-start gap-2 text-gray-400 hover:text-white hover:bg-gray-800"
-			>
-				<LogOut className="w-4 h-4" />
-				Sign Out
-			</Button>
+			<SignOutButton />
 		</div>
 	);
 }

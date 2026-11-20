@@ -63,12 +63,12 @@ Grep the app for `primaryEmailAddress`, `firstName`, `fullName`, `username` (Cle
 
 ## Acceptance Criteria
 
-- [ ] `useAuth` return shape unchanged (no consumer re-writes required beyond ticket `10`)
-- [ ] Uses `useConvexAuth` + `useUser` from `@convex-dev/auth/react`; zero `@clerk/clerk-react` imports in the hook
-- [ ] Profile query keyed on Convex Auth `users._id` with `"skip"` when signed out
-- [ ] Auto profile creation runs with Convex Auth user data and is idempotent
-- [ ] Fallback activates when `VITE_CONVEX_URL` is unset
-- [ ] `npm run check` + `npm run build` pass
+- [x] `useAuth` return shape unchanged (no consumer re-writes required beyond ticket `10`) — same keys; `user` widened `null` → `Doc<"users"> | null` only
+- [x] Uses `useConvexAuth` from `@convex-dev/auth/react`; zero `@clerk/clerk-react` imports in the hook — ⚠️ `useUser` does not exist in `@convex-dev/auth/react@0.0.96`; replaced by the official `api.users.getCurrent` query (see Results)
+- [x] Profile query keyed on Convex Auth `users._id` with `"skip"` when signed out — keying is server-side (ticket `06` `getCurrentUser` takes no arg); client gates with `isAuthenticated ? {} : "skip"`
+- [x] Auto profile creation runs with Convex Auth user data and is idempotent — passes `email`/`name` from the `users` doc; concurrency guard + duplicate-insert tolerance
+- [x] Fallback activates when `VITE_CONVEX_URL` is unset
+- [x] `npm run check` + `npm run build` pass — run as `bun run check` / `bun run build` ✅ (plus `bun run test` 267/267)
 
 ## Testing Considerations
 
