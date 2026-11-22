@@ -182,7 +182,7 @@ describe("Homepage", () => {
 		expect(screen.getByText("Sign In")).toBeTruthy();
 	});
 
-	it "does not render the sign-in prompt while still loading", async () => {
+	it("does not render the sign-in prompt while still loading", async () => {
 		mockUseAuth.mockReturnValue({
 			isLoading: true,
 			isSignedIn: false,
@@ -193,7 +193,7 @@ describe("Homepage", () => {
 		await renderHomepage();
 
 		expect(screen.queryByText("Tournament Administrator?")).toBeNull();
-	};
+	});
 
 	it("hides the Setup & Management panel for spectators", async () => {
 		mockUseAuth.mockReturnValue(signedInAuth({ isSpectator: true }));
@@ -203,7 +203,7 @@ describe("Homepage", () => {
 		expect(screen.queryByText("Setup & Management")).toBeNull();
 	});
 
-	it "shows Setup & Management for organizers without the Setup Wizard button", async () => {
+	it("shows Setup & Management for organizers without the Setup Wizard button", async () => {
 		mockUseAuth.mockReturnValue(signedInAuth({ isOrganizer: true }));
 		queryValues.push(0, 0, 0, 0, { data: [] }, { data: [] });
 		await renderHomepage();
@@ -213,7 +213,7 @@ describe("Homepage", () => {
 		expect(screen.queryByText("Setup Wizard")).toBeNull();
 	});
 
-	it "shows Setup & Management with the Setup Wizard button for admins", async () => {
+	it("shows Setup & Management with the Setup Wizard button for admins", async () => {
 		mockUseAuth.mockReturnValue(signedInAuth({ isAdmin: true }));
 		queryValues.push(0, 0, 0, 0, { data: [] }, { data: [] });
 		await renderHomepage();

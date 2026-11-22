@@ -128,9 +128,10 @@ When creating new design docs, include:
 
 ## Authentication & Authorization
 
-### Clerk + Convex Integration
-- Clerk handles user authentication, Convex stores user profiles and roles
-- Authentication flow: Clerk JWT → Convex auth.config.ts → stored in `userProfiles` table
+### Convex Auth Integration
+
+- Convex Auth handles user authentication via the site origin JWT flow
+- Authentication flow: Convex Auth JWT → stored in `userProfiles` table
 - Use `useAuth()` hook from `src/hooks/useAuth.ts` to get user + profile + role
 - First user created auto-promotes to `admin` role; subsequent users default to `spectator`
 - Roles: `admin` (full access), `organizer` (tournament management), `player` (team/player data), `spectator` (read-only)

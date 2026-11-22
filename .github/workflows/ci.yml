@@ -75,28 +75,20 @@ jobs:
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: vp exec playwright install --with-deps
 
-      - name: Export Convex and Clerk env for e2e
+      - name: Export Convex env for e2e
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: |
           echo "VITE_CONVEX_URL=http://localhost:3210" >> $GITHUB_ENV
-          echo "VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" >> $GITHUB_ENV
-          echo "CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}" >> $GITHUB_ENV
-          echo "CLERK_TEST_EMAIL=${{ secrets.CLERK_TEST_EMAIL }}" >> $GITHUB_ENV
-          echo "CLERK_TEST_PASSWORD=${{ secrets.CLERK_TEST_PASSWORD }}" >> $GITHUB_ENV
 
       - name: Debug - Verify env vars are set
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
         run: |
           echo "VITE_CONVEX_URL: $VITE_CONVEX_URL"
-          echo "VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:0:10}..." 
-          echo "CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:0:10}..."
-          echo "CLERK_TEST_EMAIL: ${CLERK_TEST_EMAIL:0:10}..."
-          echo "CLERK_TEST_PASSWORD exists: ${CLERK_TEST_PASSWORD:+yes}"
-          if [ -z "$VITE_CONVEX_URL" ] || [ -z "$VITE_CLERK_PUBLISHABLE_KEY" ] || [ -z "$CLERK_SECRET_KEY" ] || [ -z "$CLERK_TEST_EMAIL" ]; then
-            echo "❌ ERROR: Secrets are empty! Check GitHub repository secrets configuration."
+          if [ -z "$VITE_CONVEX_URL" ]; then
+            echo "❌ ERROR: VITE_CONVEX_URL is empty!"
             exit 1
           fi
-          echo "✅ All secrets are populated"
+          echo "✅ VITE_CONVEX_URL is set"
 
       - name: Run e2e tests (Playwright)
         if: ${{ steps.check_e2e.outputs.has_e2e == 'true' }}
@@ -104,10 +96,6 @@ jobs:
         env:
           CI: "true"
           VITE_CONVEX_URL: ${{ env.VITE_CONVEX_URL }}
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ env.VITE_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ env.CLERK_SECRET_KEY }}
-          CLERK_TEST_EMAIL: ${{ env.CLERK_TEST_EMAIL }}
-          CLERK_TEST_PASSWORD: ${{ env.CLERK_TEST_PASSWORD }}
         run: vp run test:e2e
 
       - name: Upload test results on failure

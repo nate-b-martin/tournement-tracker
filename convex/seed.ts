@@ -13,6 +13,13 @@ type SeedAccountConfig = {
 	role: Role;
 };
 
+const ENV =
+	(
+		globalThis as typeof globalThis & {
+			process?: { env?: Record<string, string | undefined> };
+		}
+	).process?.env ?? {};
+
 /**
  * Deterministic auth accounts created by seeding.
  *
@@ -27,22 +34,22 @@ const SEED_ACCOUNTS: {
 	spectator: SeedAccountConfig;
 } = {
 	admin: {
-		email: process.env.SITE_ADMIN_EMAIL ?? "admin@example.com",
-		password: process.env.SITE_ADMIN_PASSWORD ?? "dev-password",
+		email: ENV.SITE_ADMIN_EMAIL ?? "admin@example.com",
+		password: ENV.SITE_ADMIN_PASSWORD ?? "dev-password",
 		name: "Seed Admin",
 		displayName: "Seed Admin",
 		role: "admin",
 	},
 	organizer: {
-		email: process.env.SITE_ORGANIZER_EMAIL ?? "organizer@example.com",
-		password: process.env.SITE_ORGANIZER_PASSWORD ?? "dev-password",
+		email: ENV.SITE_ORGANIZER_EMAIL ?? "organizer@example.com",
+		password: ENV.SITE_ORGANIZER_PASSWORD ?? "dev-password",
 		name: "Seed Organizer",
 		displayName: "Seed Organizer",
 		role: "organizer",
 	},
 	spectator: {
-		email: process.env.SITE_SPECTATOR_EMAIL ?? "spectator@example.com",
-		password: process.env.SITE_SPECTATOR_PASSWORD ?? "dev-password",
+		email: ENV.SITE_SPECTATOR_EMAIL ?? "spectator@example.com",
+		password: ENV.SITE_SPECTATOR_PASSWORD ?? "dev-password",
 		name: "Seed Spectator",
 		displayName: "Seed Spectator",
 		role: "spectator",
@@ -188,9 +195,9 @@ async function assertSeedOperationAuthorized(ctx: MutationCtx) {
 	}
 
 	const runtimeEnv = (
-		process.env.CONVEX_DEPLOYMENT ??
-		process.env.APP_ENV ??
-		process.env.NODE_ENV ??
+		ENV.CONVEX_DEPLOYMENT ??
+		ENV.APP_ENV ??
+		ENV.NODE_ENV ??
 		""
 	).toLowerCase();
 

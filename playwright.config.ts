@@ -8,7 +8,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, ".env.local") });
 
 const VITE_CONVEX_URL = process.env.VITE_CONVEX_URL ?? "http://localhost:3210";
-const VITE_CLERK_PUBLISHABLE_KEY = process.env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
 
 export default defineConfig({
 	testDir: "./tests/e2e",
@@ -31,7 +30,7 @@ export default defineConfig({
 			name: "chromium",
 			use: {
 				...devices["Desktop Chrome"],
-				storageState: "playwright/.clerk/user.json",
+				storageState: "playwright/.auth/user.json",
 			},
 			dependencies: ["global setup"],
 		},
@@ -44,7 +43,6 @@ export default defineConfig({
 		env: {
 			...process.env,
 			VITE_CONVEX_URL,
-			VITE_CLERK_PUBLISHABLE_KEY,
 		},
 	},
 });

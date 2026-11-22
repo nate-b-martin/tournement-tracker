@@ -1,6 +1,6 @@
 # TanStack Tournament Tracker
 
-A real-time tournament management system for American sports (starting with softball), built with React 19, TanStack Router, Convex (serverless backend), and Clerk (authentication).
+A real-time tournament management system for American sports (starting with softball), built with React 19, TanStack Router, Convex (serverless backend), and Convex Auth.
 
 ## Project Status
 
@@ -26,7 +26,6 @@ A real-time tournament management system for American sports (starting with soft
 ### Prerequisites
 - Node.js 18+ (or Bun)
 - Convex account
-- Clerk account
 
 ### Installation & Setup
 
@@ -38,11 +37,14 @@ bun install
 2. **Set up environment variables** in `.env.local`:
 ```
 VITE_CONVEX_URL=https://your-project.convex.cloud
-VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_JWT_ISSUER_DOMAIN=https://your-domain.clerk.accounts.com
+VITE_CONVEX_SITE_URL=http://localhost:3000
+
+# Seeded admin credentials (set by ticket 07; used by E2E auth flow)
+SITE_ADMIN_EMAIL=nate.martinb@gmail
+SITE_ADMIN_PASSWORD=!TimCPw 2486$
 ```
 
-(Run `bunx convex init` and `bunx clerk init` to generate these automatically)
+(Run `bunx convex init` and `` to generate these automatically)
 
 3. **Start development with both servers running concurrently:**
 ```bash
@@ -158,8 +160,8 @@ previously issued admin key.
   after roughly two years. Review the license if you redistribute the stack.
 - **No support plan.** Self-hosted Convex has no official vendor support
   contract; treat upgrades as manual maintenance.
-- **No cloud dependencies.** The Docker deployment does not use `convex.cloud`
-  or Clerk. (Local `bunx convex dev` still uses the current Clerk setup until
+- **No cloud dependencies.** The Docker deployment does not use `convex.cloud`.
+  (Local `bunx convex dev` still uses the current auth setup until
   the Convex Auth migration in Phase 2 lands.)
 - **Dashboard exposure.** `convex-dashboard` publishes on `127.0.0.1:6791` only;
   keep it off public interfaces and log in with an admin key.
@@ -169,7 +171,7 @@ previously issued admin key.
 `netlify.toml` sets the CSP for the Netlify deployment. Its `connect-src` allows
 the self-hosted Convex origins (`http://localhost:3210`, `ws://localhost:3210`,
 `http://127.0.0.1:3210`, `ws://127.0.0.1:3210`, plus the `:3211` site origins)
-and no longer lists `convex.cloud` or Clerk domains. The Docker frontend serves
+and no longer lists `convex.cloud` domains. The Docker frontend serves
 via `srvx`, which does not set security headers itself — put it behind a
 reverse proxy that injects the same policy if you need strict CSP there.
 
@@ -264,7 +266,7 @@ E2E tests are in `tests/e2e/` and cover:
 - Navigation behavior (menu open/close, sign-in visibility)
 - Protected route access control
 
-Requires running the dev server. Tests use Clerk test credentials via `auth.ts` fixture and `global-setup.ts` storage state persistence.
+Requires running the dev server. Tests use seeded admin credentials via `.env.local` and `global-setup.ts` storage state persistence.
 
 ## Linting & Formatting
 
@@ -299,7 +301,7 @@ The project includes an MCP (Model Context Protocol) server endpoint at `/mcp`, 
 ### Key Technologies
 - **Frontend**: React 19, TanStack Router (file-based routing), TanStack Query
 - **Backend**: Convex (serverless database + backend)
-- **Auth**: Clerk (authentication) + Convex (role storage)
+- **Auth**: Convex Auth + Convex (role storage)
 - **Styling**: Tailwind CSS v4 + shadcn/ui
 - **Tables**: Custom DataTable component with search, filter chips, sort, pagination
 - **Icons**: Lucide React
@@ -316,9 +318,9 @@ The project includes an MCP (Model Context Protocol) server endpoint at `/mcp`, 
 - `teams.ts`, `players.ts`, `playerStats.ts`, `tournaments.ts` — Query functions
 - `userProfiles.ts` — User roles and profile mutations
 - `seed.ts` — Development seed data
-- `auth.config.ts` — Clerk JWT configuration
+- `auth.config.ts` — Convex Auth JWT configuration
 
-**Clerk** handles user authentication. On first sign-in:
+**Convex Auth** handles user authentication via the site origin JWT flow. On first sign-in:
 - User is automatically promoted to `admin` role
 - Subsequent users default to `spectator` role
 - Roles: `admin` (full access), `organizer` (tournament management), `player` (team/player data), `spectator` (read-only)
@@ -342,7 +344,7 @@ src/
   components/       - React components (ui/, DataTable/, feature/)
   hooks/            - Custom hooks (useAuth, useTeams, usePlayers, etc.)
   design/           - Design docs for routes
-  integrations/     - Convex & Clerk provider setup
+  integrations/     - Convex provider setup
   mocks/            - Mock data for development/testing
   utils/            - Utility functions (cn, etc.)
 
@@ -354,7 +356,7 @@ convex/
   tournaments.ts    - Tournaments query (count only)
   userProfiles.ts   - User profile queries + mutations
   seed.ts           - Development seed data
-  auth.config.ts    - Clerk JWT configuration
+  auth.config.ts    - Convex Auth JWT configuration
 
 tests/
   unit/             - Vitest + React Testing Library tests
@@ -402,5 +404,5 @@ For detailed code style, patterns, authentication/authorization, database best p
 - **[src/design/](src/design/)** — Route design specifications
 - **Convex Docs** — https://docs.convex.dev
 - **TanStack Router** — https://tanstack.com/router
-- **Clerk Docs** — https://clerk.com/docs
+- **Auth Docs** — https://docs.convex.dev/auth/authz
 - **shadcn/ui** — https://ui.shadcn.com

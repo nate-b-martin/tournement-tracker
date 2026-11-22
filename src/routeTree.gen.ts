@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
@@ -21,6 +22,11 @@ import { Route as PlayersIdIndexRouteImport } from './routes/players/$id/index'
 import { Route as SeasonsIdIndexRouteImport } from './routes/seasons/$id/index'
 import { Route as TournamentsIdIndexRouteImport } from './routes/tournaments/$id/index'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -78,6 +84,7 @@ const TournamentsIdIndexRoute = TournamentsIdIndexRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/signin': typeof SigninRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/tournaments/$id/': typeof TournamentsIdIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/signin': typeof SigninRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -105,6 +113,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/mcp': typeof McpRoute
   '/signin': typeof SigninRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -120,6 +129,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/mcp'
     | '/signin'
     | '/dashboard/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/tournaments/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/mcp'
     | '/signin'
     | '/dashboard'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/tournaments/$id'
   id:
     | '__root__'
+    | '/'
     | '/mcp'
     | '/signin'
     | '/dashboard/'
@@ -160,6 +172,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   McpRoute: typeof McpRoute
   SigninRoute: typeof SigninRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -175,6 +188,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
@@ -256,6 +276,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   McpRoute: McpRoute,
   SigninRoute: SigninRoute,
   DashboardIndexRoute: DashboardIndexRoute,
